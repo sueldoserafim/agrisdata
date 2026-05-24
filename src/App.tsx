@@ -5,14 +5,8 @@ import { TooltipProvider } from '@/components/ui/tooltip'
 import Layout from './components/Layout'
 
 import Index from './pages/Index'
-import Patients from './pages/Patients'
-import Messages from './pages/Messages'
-import Appointments from './pages/Appointments'
-import MedicalRecords from './pages/MedicalRecords'
-import Analytics from './pages/Analytics'
-import Billing from './pages/Billing'
-import Settings from './pages/Settings'
 import NotFound from './pages/NotFound'
+import { Navigate } from 'react-router-dom'
 import Login from './pages/Login'
 import SignUp from './pages/SignUp'
 import { AuthProvider } from './hooks/use-auth'
@@ -55,14 +49,30 @@ const App = () => (
           </Route>
           <Route element={<ProtectedRoute />}>
             <Route element={<Layout />}>
-              <Route path="/" element={<Index />} />
-              <Route path="/patients" element={<Patients />} />
-              <Route path="/messages" element={<Messages />} />
-              <Route path="/appointments" element={<Appointments />} />
-              <Route path="/records" element={<MedicalRecords />} />
-              <Route path="/analytics" element={<Analytics />} />
-              <Route path="/billing" element={<Billing />} />
-              <Route path="/settings" element={<Settings />} />
+              <Route path="/" element={<Navigate to="/app" replace />} />
+              <Route path="/app" element={<Index />} />
+              <Route
+                path="/app/producao"
+                element={<div className="p-8 font-semibold text-xl">Produção</div>}
+              />
+              <Route
+                path="/app/packing"
+                element={<div className="p-8 font-semibold text-xl">Packing</div>}
+              />
+              <Route
+                path="/app/exportacao"
+                element={<div className="p-8 font-semibold text-xl">Exportação</div>}
+              />
+              <Route
+                path="/app/financeiro"
+                element={<div className="p-8 font-semibold text-xl">Financeiro</div>}
+              />
+              <Route path="/app/rh" element={<div className="p-8 font-semibold text-xl">RH</div>} />
+              <Route
+                path="/app/frota"
+                element={<div className="p-8 font-semibold text-xl">Frota</div>}
+              />
+              <Route path="/app/bi" element={<div className="p-8 font-semibold text-xl">BI</div>} />
             </Route>
           </Route>
           <Route path="*" element={<NotFound />} />
