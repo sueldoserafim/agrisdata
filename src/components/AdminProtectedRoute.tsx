@@ -26,14 +26,14 @@ export function AdminProtectedRoute() {
     }
   }, [session, loading])
 
-  if (loading || isAdmin === null) {
+  if (loading || (session && isAdmin === null)) {
     return (
       <div className="flex min-h-screen items-center justify-center">Verificando permissões...</div>
     )
   }
 
   if (!session || !isAdmin) {
-    return <Navigate to="/" replace />
+    return <Navigate to="/login" replace />
   }
 
   return <Outlet />
