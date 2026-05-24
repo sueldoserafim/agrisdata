@@ -1,11 +1,17 @@
 // AVOID UPDATING THIS FILE DIRECTLY. It is automatically generated.
-export type Json = string | number | boolean | null | { [key: string]: Json | undefined } | Json[]
+export type Json =
+  | string
+  | number
+  | boolean
+  | null
+  | { [key: string]: Json | undefined }
+  | Json[]
 
 export type Database = {
   // Allows to automatically instantiate createClient with right options
   // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
   __InternalSupabase: {
-    PostgrestVersion: '14.5'
+    PostgrestVersion: "14.5"
   }
   public: {
     Tables: {
@@ -51,18 +57,18 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: 'amostras_qualidade_campo_empresa_id_fkey'
-            columns: ['empresa_id']
+            foreignKeyName: "amostras_qualidade_campo_empresa_id_fkey"
+            columns: ["empresa_id"]
             isOneToOne: false
-            referencedRelation: 'empresas'
-            referencedColumns: ['id']
+            referencedRelation: "empresas"
+            referencedColumns: ["id"]
           },
           {
-            foreignKeyName: 'amostras_qualidade_campo_talhao_id_fkey'
-            columns: ['talhao_id']
+            foreignKeyName: "amostras_qualidade_campo_talhao_id_fkey"
+            columns: ["talhao_id"]
             isOneToOne: false
-            referencedRelation: 'talhoes'
-            referencedColumns: ['id']
+            referencedRelation: "talhoes"
+            referencedColumns: ["id"]
           },
         ]
       }
@@ -114,18 +120,18 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: 'analises_solo_empresa_id_fkey'
-            columns: ['empresa_id']
+            foreignKeyName: "analises_solo_empresa_id_fkey"
+            columns: ["empresa_id"]
             isOneToOne: false
-            referencedRelation: 'empresas'
-            referencedColumns: ['id']
+            referencedRelation: "empresas"
+            referencedColumns: ["id"]
           },
           {
-            foreignKeyName: 'analises_solo_talhao_id_fkey'
-            columns: ['talhao_id']
+            foreignKeyName: "analises_solo_talhao_id_fkey"
+            columns: ["talhao_id"]
             isOneToOne: false
-            referencedRelation: 'talhoes'
-            referencedColumns: ['id']
+            referencedRelation: "talhoes"
+            referencedColumns: ["id"]
           },
         ]
       }
@@ -162,11 +168,11 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: 'armazens_empresa_id_fkey'
-            columns: ['empresa_id']
+            foreignKeyName: "armazens_empresa_id_fkey"
+            columns: ["empresa_id"]
             isOneToOne: false
-            referencedRelation: 'empresas'
-            referencedColumns: ['id']
+            referencedRelation: "empresas"
+            referencedColumns: ["id"]
           },
         ]
       }
@@ -206,18 +212,18 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: 'audit_logs_empresa_id_fkey'
-            columns: ['empresa_id']
+            foreignKeyName: "audit_logs_empresa_id_fkey"
+            columns: ["empresa_id"]
             isOneToOne: false
-            referencedRelation: 'empresas'
-            referencedColumns: ['id']
+            referencedRelation: "empresas"
+            referencedColumns: ["id"]
           },
           {
-            foreignKeyName: 'audit_logs_usuario_id_fkey'
-            columns: ['usuario_id']
+            foreignKeyName: "audit_logs_usuario_id_fkey"
+            columns: ["usuario_id"]
             isOneToOne: false
-            referencedRelation: 'usuarios'
-            referencedColumns: ['id']
+            referencedRelation: "usuarios"
+            referencedColumns: ["id"]
           },
         ]
       }
@@ -260,18 +266,18 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: 'balanco_massas_empresa_id_fkey'
-            columns: ['empresa_id']
+            foreignKeyName: "balanco_massas_empresa_id_fkey"
+            columns: ["empresa_id"]
             isOneToOne: false
-            referencedRelation: 'empresas'
-            referencedColumns: ['id']
+            referencedRelation: "empresas"
+            referencedColumns: ["id"]
           },
           {
-            foreignKeyName: 'balanco_massas_safra_id_fkey'
-            columns: ['safra_id']
+            foreignKeyName: "balanco_massas_safra_id_fkey"
+            columns: ["safra_id"]
             isOneToOne: false
-            referencedRelation: 'safras'
-            referencedColumns: ['id']
+            referencedRelation: "safras"
+            referencedColumns: ["id"]
           },
         ]
       }
@@ -311,25 +317,25 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: 'caderno_campo_empresa_id_fkey'
-            columns: ['empresa_id']
+            foreignKeyName: "caderno_campo_empresa_id_fkey"
+            columns: ["empresa_id"]
             isOneToOne: false
-            referencedRelation: 'empresas'
-            referencedColumns: ['id']
+            referencedRelation: "empresas"
+            referencedColumns: ["id"]
           },
           {
-            foreignKeyName: 'caderno_campo_responsavel_id_fkey'
-            columns: ['responsavel_id']
+            foreignKeyName: "caderno_campo_responsavel_id_fkey"
+            columns: ["responsavel_id"]
             isOneToOne: false
-            referencedRelation: 'usuarios'
-            referencedColumns: ['id']
+            referencedRelation: "usuarios"
+            referencedColumns: ["id"]
           },
           {
-            foreignKeyName: 'caderno_campo_talhao_id_fkey'
-            columns: ['talhao_id']
+            foreignKeyName: "caderno_campo_talhao_id_fkey"
+            columns: ["talhao_id"]
             isOneToOne: false
-            referencedRelation: 'talhoes'
-            referencedColumns: ['id']
+            referencedRelation: "talhoes"
+            referencedColumns: ["id"]
           },
         ]
       }
@@ -363,11 +369,11 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: 'centros_custo_empresa_id_fkey'
-            columns: ['empresa_id']
+            foreignKeyName: "centros_custo_empresa_id_fkey"
+            columns: ["empresa_id"]
             isOneToOne: false
-            referencedRelation: 'empresas'
-            referencedColumns: ['id']
+            referencedRelation: "empresas"
+            referencedColumns: ["id"]
           },
         ]
       }
@@ -410,11 +416,11 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: 'clientes_empresa_id_fkey'
-            columns: ['empresa_id']
+            foreignKeyName: "clientes_empresa_id_fkey"
+            columns: ["empresa_id"]
             isOneToOne: false
-            referencedRelation: 'empresas'
-            referencedColumns: ['id']
+            referencedRelation: "empresas"
+            referencedColumns: ["id"]
           },
         ]
       }
@@ -457,18 +463,18 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: 'colheita_registros_empresa_id_fkey'
-            columns: ['empresa_id']
+            foreignKeyName: "colheita_registros_empresa_id_fkey"
+            columns: ["empresa_id"]
             isOneToOne: false
-            referencedRelation: 'empresas'
-            referencedColumns: ['id']
+            referencedRelation: "empresas"
+            referencedColumns: ["id"]
           },
           {
-            foreignKeyName: 'colheita_registros_safra_id_fkey'
-            columns: ['safra_id']
+            foreignKeyName: "colheita_registros_safra_id_fkey"
+            columns: ["safra_id"]
             isOneToOne: false
-            referencedRelation: 'safras'
-            referencedColumns: ['id']
+            referencedRelation: "safras"
+            referencedColumns: ["id"]
           },
         ]
       }
@@ -514,32 +520,32 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: 'compras_pedido_empresa_id_fkey'
-            columns: ['empresa_id']
+            foreignKeyName: "compras_pedido_empresa_id_fkey"
+            columns: ["empresa_id"]
             isOneToOne: false
-            referencedRelation: 'empresas'
-            referencedColumns: ['id']
+            referencedRelation: "empresas"
+            referencedColumns: ["id"]
           },
           {
-            foreignKeyName: 'compras_pedido_fornecedor_id_fkey'
-            columns: ['fornecedor_id']
+            foreignKeyName: "compras_pedido_fornecedor_id_fkey"
+            columns: ["fornecedor_id"]
             isOneToOne: false
-            referencedRelation: 'fornecedores'
-            referencedColumns: ['id']
+            referencedRelation: "fornecedores"
+            referencedColumns: ["id"]
           },
           {
-            foreignKeyName: 'compras_pedido_produto_id_fkey'
-            columns: ['produto_id']
+            foreignKeyName: "compras_pedido_produto_id_fkey"
+            columns: ["produto_id"]
             isOneToOne: false
-            referencedRelation: 'produtos'
-            referencedColumns: ['id']
+            referencedRelation: "produtos"
+            referencedColumns: ["id"]
           },
           {
-            foreignKeyName: 'compras_pedido_requisicao_id_fkey'
-            columns: ['requisicao_id']
+            foreignKeyName: "compras_pedido_requisicao_id_fkey"
+            columns: ["requisicao_id"]
             isOneToOne: false
-            referencedRelation: 'compras_requisicao'
-            referencedColumns: ['id']
+            referencedRelation: "compras_requisicao"
+            referencedColumns: ["id"]
           },
         ]
       }
@@ -579,18 +585,18 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: 'compras_requisicao_empresa_id_fkey'
-            columns: ['empresa_id']
+            foreignKeyName: "compras_requisicao_empresa_id_fkey"
+            columns: ["empresa_id"]
             isOneToOne: false
-            referencedRelation: 'empresas'
-            referencedColumns: ['id']
+            referencedRelation: "empresas"
+            referencedColumns: ["id"]
           },
           {
-            foreignKeyName: 'compras_requisicao_solicitante_id_fkey'
-            columns: ['solicitante_id']
+            foreignKeyName: "compras_requisicao_solicitante_id_fkey"
+            columns: ["solicitante_id"]
             isOneToOne: false
-            referencedRelation: 'usuarios'
-            referencedColumns: ['id']
+            referencedRelation: "usuarios"
+            referencedColumns: ["id"]
           },
         ]
       }
@@ -627,18 +633,18 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: 'cultivares_cultura_id_fkey'
-            columns: ['cultura_id']
+            foreignKeyName: "cultivares_cultura_id_fkey"
+            columns: ["cultura_id"]
             isOneToOne: false
-            referencedRelation: 'culturas'
-            referencedColumns: ['id']
+            referencedRelation: "culturas"
+            referencedColumns: ["id"]
           },
           {
-            foreignKeyName: 'cultivares_empresa_id_fkey'
-            columns: ['empresa_id']
+            foreignKeyName: "cultivares_empresa_id_fkey"
+            columns: ["empresa_id"]
             isOneToOne: false
-            referencedRelation: 'empresas'
-            referencedColumns: ['id']
+            referencedRelation: "empresas"
+            referencedColumns: ["id"]
           },
         ]
       }
@@ -675,11 +681,11 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: 'culturas_empresa_id_fkey'
-            columns: ['empresa_id']
+            foreignKeyName: "culturas_empresa_id_fkey"
+            columns: ["empresa_id"]
             isOneToOne: false
-            referencedRelation: 'empresas'
-            referencedColumns: ['id']
+            referencedRelation: "empresas"
+            referencedColumns: ["id"]
           },
         ]
       }
@@ -725,32 +731,32 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: 'custos_talhao_centro_custo_id_fkey'
-            columns: ['centro_custo_id']
+            foreignKeyName: "custos_talhao_centro_custo_id_fkey"
+            columns: ["centro_custo_id"]
             isOneToOne: false
-            referencedRelation: 'centros_custo'
-            referencedColumns: ['id']
+            referencedRelation: "centros_custo"
+            referencedColumns: ["id"]
           },
           {
-            foreignKeyName: 'custos_talhao_empresa_id_fkey'
-            columns: ['empresa_id']
+            foreignKeyName: "custos_talhao_empresa_id_fkey"
+            columns: ["empresa_id"]
             isOneToOne: false
-            referencedRelation: 'empresas'
-            referencedColumns: ['id']
+            referencedRelation: "empresas"
+            referencedColumns: ["id"]
           },
           {
-            foreignKeyName: 'custos_talhao_safra_id_fkey'
-            columns: ['safra_id']
+            foreignKeyName: "custos_talhao_safra_id_fkey"
+            columns: ["safra_id"]
             isOneToOne: false
-            referencedRelation: 'safras'
-            referencedColumns: ['id']
+            referencedRelation: "safras"
+            referencedColumns: ["id"]
           },
           {
-            foreignKeyName: 'custos_talhao_talhao_id_fkey'
-            columns: ['talhao_id']
+            foreignKeyName: "custos_talhao_talhao_id_fkey"
+            columns: ["talhao_id"]
             isOneToOne: false
-            referencedRelation: 'talhoes'
-            referencedColumns: ['id']
+            referencedRelation: "talhoes"
+            referencedColumns: ["id"]
           },
         ]
       }
@@ -796,11 +802,11 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: 'empresas_plano_id_fkey'
-            columns: ['plano_id']
+            foreignKeyName: "empresas_plano_id_fkey"
+            columns: ["plano_id"]
             isOneToOne: false
-            referencedRelation: 'planos'
-            referencedColumns: ['id']
+            referencedRelation: "planos"
+            referencedColumns: ["id"]
           },
         ]
       }
@@ -840,11 +846,11 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: 'equipamentos_empresa_id_fkey'
-            columns: ['empresa_id']
+            foreignKeyName: "equipamentos_empresa_id_fkey"
+            columns: ["empresa_id"]
             isOneToOne: false
-            referencedRelation: 'empresas'
-            referencedColumns: ['id']
+            referencedRelation: "empresas"
+            referencedColumns: ["id"]
           },
         ]
       }
@@ -884,18 +890,18 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: 'estoque_movimento_empresa_id_fkey'
-            columns: ['empresa_id']
+            foreignKeyName: "estoque_movimento_empresa_id_fkey"
+            columns: ["empresa_id"]
             isOneToOne: false
-            referencedRelation: 'empresas'
-            referencedColumns: ['id']
+            referencedRelation: "empresas"
+            referencedColumns: ["id"]
           },
           {
-            foreignKeyName: 'estoque_movimento_lote_id_fkey'
-            columns: ['lote_id']
+            foreignKeyName: "estoque_movimento_lote_id_fkey"
+            columns: ["lote_id"]
             isOneToOne: false
-            referencedRelation: 'lotes_estoque'
-            referencedColumns: ['id']
+            referencedRelation: "lotes_estoque"
+            referencedColumns: ["id"]
           },
         ]
       }
@@ -947,11 +953,11 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: 'fazendas_empresa_id_fkey'
-            columns: ['empresa_id']
+            foreignKeyName: "fazendas_empresa_id_fkey"
+            columns: ["empresa_id"]
             isOneToOne: false
-            referencedRelation: 'empresas'
-            referencedColumns: ['id']
+            referencedRelation: "empresas"
+            referencedColumns: ["id"]
           },
         ]
       }
@@ -991,11 +997,11 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: 'fornecedores_empresa_id_fkey'
-            columns: ['empresa_id']
+            foreignKeyName: "fornecedores_empresa_id_fkey"
+            columns: ["empresa_id"]
             isOneToOne: false
-            referencedRelation: 'empresas'
-            referencedColumns: ['id']
+            referencedRelation: "empresas"
+            referencedColumns: ["id"]
           },
         ]
       }
@@ -1035,11 +1041,11 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: 'funcionarios_empresa_id_fkey'
-            columns: ['empresa_id']
+            foreignKeyName: "funcionarios_empresa_id_fkey"
+            columns: ["empresa_id"]
             isOneToOne: false
-            referencedRelation: 'empresas'
-            referencedColumns: ['id']
+            referencedRelation: "empresas"
+            referencedColumns: ["id"]
           },
         ]
       }
@@ -1079,18 +1085,18 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: 'graus_dia_empresa_id_fkey'
-            columns: ['empresa_id']
+            foreignKeyName: "graus_dia_empresa_id_fkey"
+            columns: ["empresa_id"]
             isOneToOne: false
-            referencedRelation: 'empresas'
-            referencedColumns: ['id']
+            referencedRelation: "empresas"
+            referencedColumns: ["id"]
           },
           {
-            foreignKeyName: 'graus_dia_talhao_id_fkey'
-            columns: ['talhao_id']
+            foreignKeyName: "graus_dia_talhao_id_fkey"
+            columns: ["talhao_id"]
             isOneToOne: false
-            referencedRelation: 'talhoes'
-            referencedColumns: ['id']
+            referencedRelation: "talhoes"
+            referencedColumns: ["id"]
           },
         ]
       }
@@ -1127,18 +1133,18 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: 'historico_produtividade_talhao_empresa_id_fkey'
-            columns: ['empresa_id']
+            foreignKeyName: "historico_produtividade_talhao_empresa_id_fkey"
+            columns: ["empresa_id"]
             isOneToOne: false
-            referencedRelation: 'empresas'
-            referencedColumns: ['id']
+            referencedRelation: "empresas"
+            referencedColumns: ["id"]
           },
           {
-            foreignKeyName: 'historico_produtividade_talhao_talhao_id_fkey'
-            columns: ['talhao_id']
+            foreignKeyName: "historico_produtividade_talhao_talhao_id_fkey"
+            columns: ["talhao_id"]
             isOneToOne: false
-            referencedRelation: 'talhoes'
-            referencedColumns: ['id']
+            referencedRelation: "talhoes"
+            referencedColumns: ["id"]
           },
         ]
       }
@@ -1184,25 +1190,25 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: 'lotes_estoque_armazem_id_fkey'
-            columns: ['armazem_id']
+            foreignKeyName: "lotes_estoque_armazem_id_fkey"
+            columns: ["armazem_id"]
             isOneToOne: false
-            referencedRelation: 'armazens'
-            referencedColumns: ['id']
+            referencedRelation: "armazens"
+            referencedColumns: ["id"]
           },
           {
-            foreignKeyName: 'lotes_estoque_empresa_id_fkey'
-            columns: ['empresa_id']
+            foreignKeyName: "lotes_estoque_empresa_id_fkey"
+            columns: ["empresa_id"]
             isOneToOne: false
-            referencedRelation: 'empresas'
-            referencedColumns: ['id']
+            referencedRelation: "empresas"
+            referencedColumns: ["id"]
           },
           {
-            foreignKeyName: 'lotes_estoque_produto_id_fkey'
-            columns: ['produto_id']
+            foreignKeyName: "lotes_estoque_produto_id_fkey"
+            columns: ["produto_id"]
             isOneToOne: false
-            referencedRelation: 'produtos'
-            referencedColumns: ['id']
+            referencedRelation: "produtos"
+            referencedColumns: ["id"]
           },
         ]
       }
@@ -1245,18 +1251,18 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: 'monitoramento_pragas_empresa_id_fkey'
-            columns: ['empresa_id']
+            foreignKeyName: "monitoramento_pragas_empresa_id_fkey"
+            columns: ["empresa_id"]
             isOneToOne: false
-            referencedRelation: 'empresas'
-            referencedColumns: ['id']
+            referencedRelation: "empresas"
+            referencedColumns: ["id"]
           },
           {
-            foreignKeyName: 'monitoramento_pragas_talhao_id_fkey'
-            columns: ['talhao_id']
+            foreignKeyName: "monitoramento_pragas_talhao_id_fkey"
+            columns: ["talhao_id"]
             isOneToOne: false
-            referencedRelation: 'talhoes'
-            referencedColumns: ['id']
+            referencedRelation: "talhoes"
+            referencedColumns: ["id"]
           },
         ]
       }
@@ -1296,32 +1302,32 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: 'operacao_insumos_empresa_id_fkey'
-            columns: ['empresa_id']
+            foreignKeyName: "operacao_insumos_empresa_id_fkey"
+            columns: ["empresa_id"]
             isOneToOne: false
-            referencedRelation: 'empresas'
-            referencedColumns: ['id']
+            referencedRelation: "empresas"
+            referencedColumns: ["id"]
           },
           {
-            foreignKeyName: 'operacao_insumos_lote_id_fkey'
-            columns: ['lote_id']
+            foreignKeyName: "operacao_insumos_lote_id_fkey"
+            columns: ["lote_id"]
             isOneToOne: false
-            referencedRelation: 'lotes_estoque'
-            referencedColumns: ['id']
+            referencedRelation: "lotes_estoque"
+            referencedColumns: ["id"]
           },
           {
-            foreignKeyName: 'operacao_insumos_operacao_id_fkey'
-            columns: ['operacao_id']
+            foreignKeyName: "operacao_insumos_operacao_id_fkey"
+            columns: ["operacao_id"]
             isOneToOne: false
-            referencedRelation: 'operacoes_campo'
-            referencedColumns: ['id']
+            referencedRelation: "operacoes_campo"
+            referencedColumns: ["id"]
           },
           {
-            foreignKeyName: 'operacao_insumos_produto_id_fkey'
-            columns: ['produto_id']
+            foreignKeyName: "operacao_insumos_produto_id_fkey"
+            columns: ["produto_id"]
             isOneToOne: false
-            referencedRelation: 'produtos'
-            referencedColumns: ['id']
+            referencedRelation: "produtos"
+            referencedColumns: ["id"]
           },
         ]
       }
@@ -1379,32 +1385,32 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: 'operacoes_campo_empresa_id_fkey'
-            columns: ['empresa_id']
+            foreignKeyName: "operacoes_campo_empresa_id_fkey"
+            columns: ["empresa_id"]
             isOneToOne: false
-            referencedRelation: 'empresas'
-            referencedColumns: ['id']
+            referencedRelation: "empresas"
+            referencedColumns: ["id"]
           },
           {
-            foreignKeyName: 'operacoes_campo_receituario_id_fkey'
-            columns: ['receituario_id']
+            foreignKeyName: "operacoes_campo_receituario_id_fkey"
+            columns: ["receituario_id"]
             isOneToOne: false
-            referencedRelation: 'receituarios_agronomicos'
-            referencedColumns: ['id']
+            referencedRelation: "receituarios_agronomicos"
+            referencedColumns: ["id"]
           },
           {
-            foreignKeyName: 'operacoes_campo_responsavel_id_fkey'
-            columns: ['responsavel_id']
+            foreignKeyName: "operacoes_campo_responsavel_id_fkey"
+            columns: ["responsavel_id"]
             isOneToOne: false
-            referencedRelation: 'usuarios'
-            referencedColumns: ['id']
+            referencedRelation: "usuarios"
+            referencedColumns: ["id"]
           },
           {
-            foreignKeyName: 'operacoes_campo_safra_id_fkey'
-            columns: ['safra_id']
+            foreignKeyName: "operacoes_campo_safra_id_fkey"
+            columns: ["safra_id"]
             isOneToOne: false
-            referencedRelation: 'safras'
-            referencedColumns: ['id']
+            referencedRelation: "safras"
+            referencedColumns: ["id"]
           },
         ]
       }
@@ -1447,25 +1453,25 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: 'planejamento_safra_empresa_id_fkey'
-            columns: ['empresa_id']
+            foreignKeyName: "planejamento_safra_empresa_id_fkey"
+            columns: ["empresa_id"]
             isOneToOne: false
-            referencedRelation: 'empresas'
-            referencedColumns: ['id']
+            referencedRelation: "empresas"
+            referencedColumns: ["id"]
           },
           {
-            foreignKeyName: 'planejamento_safra_responsavel_id_fkey'
-            columns: ['responsavel_id']
+            foreignKeyName: "planejamento_safra_responsavel_id_fkey"
+            columns: ["responsavel_id"]
             isOneToOne: false
-            referencedRelation: 'usuarios'
-            referencedColumns: ['id']
+            referencedRelation: "usuarios"
+            referencedColumns: ["id"]
           },
           {
-            foreignKeyName: 'planejamento_safra_safra_id_fkey'
-            columns: ['safra_id']
+            foreignKeyName: "planejamento_safra_safra_id_fkey"
+            columns: ["safra_id"]
             isOneToOne: false
-            referencedRelation: 'safras'
-            referencedColumns: ['id']
+            referencedRelation: "safras"
+            referencedColumns: ["id"]
           },
         ]
       }
@@ -1541,18 +1547,18 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: 'pluviometria_empresa_id_fkey'
-            columns: ['empresa_id']
+            foreignKeyName: "pluviometria_empresa_id_fkey"
+            columns: ["empresa_id"]
             isOneToOne: false
-            referencedRelation: 'empresas'
-            referencedColumns: ['id']
+            referencedRelation: "empresas"
+            referencedColumns: ["id"]
           },
           {
-            foreignKeyName: 'pluviometria_talhao_id_fkey'
-            columns: ['talhao_id']
+            foreignKeyName: "pluviometria_talhao_id_fkey"
+            columns: ["talhao_id"]
             isOneToOne: false
-            referencedRelation: 'talhoes'
-            referencedColumns: ['id']
+            referencedRelation: "talhoes"
+            referencedColumns: ["id"]
           },
         ]
       }
@@ -1592,11 +1598,11 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: 'produtos_empresa_id_fkey'
-            columns: ['empresa_id']
+            foreignKeyName: "produtos_empresa_id_fkey"
+            columns: ["empresa_id"]
             isOneToOne: false
-            referencedRelation: 'empresas'
-            referencedColumns: ['id']
+            referencedRelation: "empresas"
+            referencedColumns: ["id"]
           },
         ]
       }
@@ -1636,18 +1642,18 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: 'receituarios_agronomicos_cultura_id_fkey'
-            columns: ['cultura_id']
+            foreignKeyName: "receituarios_agronomicos_cultura_id_fkey"
+            columns: ["cultura_id"]
             isOneToOne: false
-            referencedRelation: 'culturas'
-            referencedColumns: ['id']
+            referencedRelation: "culturas"
+            referencedColumns: ["id"]
           },
           {
-            foreignKeyName: 'receituarios_agronomicos_empresa_id_fkey'
-            columns: ['empresa_id']
+            foreignKeyName: "receituarios_agronomicos_empresa_id_fkey"
+            columns: ["empresa_id"]
             isOneToOne: false
-            referencedRelation: 'empresas'
-            referencedColumns: ['id']
+            referencedRelation: "empresas"
+            referencedColumns: ["id"]
           },
         ]
       }
@@ -1684,11 +1690,11 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: 'saas_faturas_empresa_id_fkey'
-            columns: ['empresa_id']
+            foreignKeyName: "saas_faturas_empresa_id_fkey"
+            columns: ["empresa_id"]
             isOneToOne: false
-            referencedRelation: 'empresas'
-            referencedColumns: ['id']
+            referencedRelation: "empresas"
+            referencedColumns: ["id"]
           },
         ]
       }
@@ -1734,25 +1740,25 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: 'safras_cultivar_id_fkey'
-            columns: ['cultivar_id']
+            foreignKeyName: "safras_cultivar_id_fkey"
+            columns: ["cultivar_id"]
             isOneToOne: false
-            referencedRelation: 'cultivares'
-            referencedColumns: ['id']
+            referencedRelation: "cultivares"
+            referencedColumns: ["id"]
           },
           {
-            foreignKeyName: 'safras_empresa_id_fkey'
-            columns: ['empresa_id']
+            foreignKeyName: "safras_empresa_id_fkey"
+            columns: ["empresa_id"]
             isOneToOne: false
-            referencedRelation: 'empresas'
-            referencedColumns: ['id']
+            referencedRelation: "empresas"
+            referencedColumns: ["id"]
           },
           {
-            foreignKeyName: 'safras_talhao_id_fkey'
-            columns: ['talhao_id']
+            foreignKeyName: "safras_talhao_id_fkey"
+            columns: ["talhao_id"]
             isOneToOne: false
-            referencedRelation: 'talhoes'
-            referencedColumns: ['id']
+            referencedRelation: "talhoes"
+            referencedColumns: ["id"]
           },
         ]
       }
@@ -1798,18 +1804,18 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: 'suporte_tickets_atendente_id_fkey'
-            columns: ['atendente_id']
+            foreignKeyName: "suporte_tickets_atendente_id_fkey"
+            columns: ["atendente_id"]
             isOneToOne: false
-            referencedRelation: 'usuarios'
-            referencedColumns: ['id']
+            referencedRelation: "usuarios"
+            referencedColumns: ["id"]
           },
           {
-            foreignKeyName: 'suporte_tickets_empresa_id_fkey'
-            columns: ['empresa_id']
+            foreignKeyName: "suporte_tickets_empresa_id_fkey"
+            columns: ["empresa_id"]
             isOneToOne: false
-            referencedRelation: 'empresas'
-            referencedColumns: ['id']
+            referencedRelation: "empresas"
+            referencedColumns: ["id"]
           },
         ]
       }
@@ -1852,18 +1858,18 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: 'talhoes_empresa_id_fkey'
-            columns: ['empresa_id']
+            foreignKeyName: "talhoes_empresa_id_fkey"
+            columns: ["empresa_id"]
             isOneToOne: false
-            referencedRelation: 'empresas'
-            referencedColumns: ['id']
+            referencedRelation: "empresas"
+            referencedColumns: ["id"]
           },
           {
-            foreignKeyName: 'talhoes_fazenda_id_fkey'
-            columns: ['fazenda_id']
+            foreignKeyName: "talhoes_fazenda_id_fkey"
+            columns: ["fazenda_id"]
             isOneToOne: false
-            referencedRelation: 'fazendas'
-            referencedColumns: ['id']
+            referencedRelation: "fazendas"
+            referencedColumns: ["id"]
           },
         ]
       }
@@ -1900,11 +1906,11 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: 'transportadoras_empresa_id_fkey'
-            columns: ['empresa_id']
+            foreignKeyName: "transportadoras_empresa_id_fkey"
+            columns: ["empresa_id"]
             isOneToOne: false
-            referencedRelation: 'empresas'
-            referencedColumns: ['id']
+            referencedRelation: "empresas"
+            referencedColumns: ["id"]
           },
         ]
       }
@@ -1935,11 +1941,11 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: 'user_2fa_codes_usuario_id_fkey'
-            columns: ['usuario_id']
+            foreignKeyName: "user_2fa_codes_usuario_id_fkey"
+            columns: ["usuario_id"]
             isOneToOne: false
-            referencedRelation: 'usuarios'
-            referencedColumns: ['id']
+            referencedRelation: "usuarios"
+            referencedColumns: ["id"]
           },
         ]
       }
@@ -1982,11 +1988,11 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: 'usuarios_empresa_id_fkey'
-            columns: ['empresa_id']
+            foreignKeyName: "usuarios_empresa_id_fkey"
+            columns: ["empresa_id"]
             isOneToOne: false
-            referencedRelation: 'empresas'
-            referencedColumns: ['id']
+            referencedRelation: "empresas"
+            referencedColumns: ["id"]
           },
         ]
       }
@@ -2023,11 +2029,11 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: 'vendedores_empresa_id_fkey'
-            columns: ['empresa_id']
+            foreignKeyName: "vendedores_empresa_id_fkey"
+            columns: ["empresa_id"]
             isOneToOne: false
-            referencedRelation: 'empresas'
-            referencedColumns: ['id']
+            referencedRelation: "empresas"
+            referencedColumns: ["id"]
           },
         ]
       }
@@ -2036,7 +2042,7 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      is_admin_saas: { Args: never; Returns: boolean }
     }
     Enums: {
       [_ in never]: never
@@ -2047,31 +2053,33 @@ export type Database = {
   }
 }
 
-type DatabaseWithoutInternals = Omit<Database, '__InternalSupabase'>
+type DatabaseWithoutInternals = Omit<Database, "__InternalSupabase">
 
-type DefaultSchema = DatabaseWithoutInternals[Extract<keyof Database, 'public'>]
+type DefaultSchema = DatabaseWithoutInternals[Extract<keyof Database, "public">]
 
 export type Tables<
   DefaultSchemaTableNameOrOptions extends
-    | keyof (DefaultSchema['Tables'] & DefaultSchema['Views'])
+    | keyof (DefaultSchema["Tables"] & DefaultSchema["Views"])
     | { schema: keyof DatabaseWithoutInternals },
   TableName extends DefaultSchemaTableNameOrOptions extends {
     schema: keyof DatabaseWithoutInternals
   }
-    ? keyof (DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions['schema']]['Tables'] &
-        DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions['schema']]['Views'])
+    ? keyof (DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"] &
+        DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Views"])
     : never = never,
 > = DefaultSchemaTableNameOrOptions extends {
   schema: keyof DatabaseWithoutInternals
 }
-  ? (DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions['schema']]['Tables'] &
-      DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions['schema']]['Views'])[TableName] extends {
+  ? (DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"] &
+      DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Views"])[TableName] extends {
       Row: infer R
     }
     ? R
     : never
-  : DefaultSchemaTableNameOrOptions extends keyof (DefaultSchema['Tables'] & DefaultSchema['Views'])
-    ? (DefaultSchema['Tables'] & DefaultSchema['Views'])[DefaultSchemaTableNameOrOptions] extends {
+  : DefaultSchemaTableNameOrOptions extends keyof (DefaultSchema["Tables"] &
+        DefaultSchema["Views"])
+    ? (DefaultSchema["Tables"] &
+        DefaultSchema["Views"])[DefaultSchemaTableNameOrOptions] extends {
         Row: infer R
       }
       ? R
@@ -2080,23 +2088,23 @@ export type Tables<
 
 export type TablesInsert<
   DefaultSchemaTableNameOrOptions extends
-    | keyof DefaultSchema['Tables']
+    | keyof DefaultSchema["Tables"]
     | { schema: keyof DatabaseWithoutInternals },
   TableName extends DefaultSchemaTableNameOrOptions extends {
     schema: keyof DatabaseWithoutInternals
   }
-    ? keyof DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions['schema']]['Tables']
+    ? keyof DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"]
     : never = never,
 > = DefaultSchemaTableNameOrOptions extends {
   schema: keyof DatabaseWithoutInternals
 }
-  ? DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions['schema']]['Tables'][TableName] extends {
+  ? DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"][TableName] extends {
       Insert: infer I
     }
     ? I
     : never
-  : DefaultSchemaTableNameOrOptions extends keyof DefaultSchema['Tables']
-    ? DefaultSchema['Tables'][DefaultSchemaTableNameOrOptions] extends {
+  : DefaultSchemaTableNameOrOptions extends keyof DefaultSchema["Tables"]
+    ? DefaultSchema["Tables"][DefaultSchemaTableNameOrOptions] extends {
         Insert: infer I
       }
       ? I
@@ -2105,23 +2113,23 @@ export type TablesInsert<
 
 export type TablesUpdate<
   DefaultSchemaTableNameOrOptions extends
-    | keyof DefaultSchema['Tables']
+    | keyof DefaultSchema["Tables"]
     | { schema: keyof DatabaseWithoutInternals },
   TableName extends DefaultSchemaTableNameOrOptions extends {
     schema: keyof DatabaseWithoutInternals
   }
-    ? keyof DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions['schema']]['Tables']
+    ? keyof DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"]
     : never = never,
 > = DefaultSchemaTableNameOrOptions extends {
   schema: keyof DatabaseWithoutInternals
 }
-  ? DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions['schema']]['Tables'][TableName] extends {
+  ? DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"][TableName] extends {
       Update: infer U
     }
     ? U
     : never
-  : DefaultSchemaTableNameOrOptions extends keyof DefaultSchema['Tables']
-    ? DefaultSchema['Tables'][DefaultSchemaTableNameOrOptions] extends {
+  : DefaultSchemaTableNameOrOptions extends keyof DefaultSchema["Tables"]
+    ? DefaultSchema["Tables"][DefaultSchemaTableNameOrOptions] extends {
         Update: infer U
       }
       ? U
@@ -2130,36 +2138,36 @@ export type TablesUpdate<
 
 export type Enums<
   DefaultSchemaEnumNameOrOptions extends
-    | keyof DefaultSchema['Enums']
+    | keyof DefaultSchema["Enums"]
     | { schema: keyof DatabaseWithoutInternals },
   EnumName extends DefaultSchemaEnumNameOrOptions extends {
     schema: keyof DatabaseWithoutInternals
   }
-    ? keyof DatabaseWithoutInternals[DefaultSchemaEnumNameOrOptions['schema']]['Enums']
+    ? keyof DatabaseWithoutInternals[DefaultSchemaEnumNameOrOptions["schema"]]["Enums"]
     : never = never,
 > = DefaultSchemaEnumNameOrOptions extends {
   schema: keyof DatabaseWithoutInternals
 }
-  ? DatabaseWithoutInternals[DefaultSchemaEnumNameOrOptions['schema']]['Enums'][EnumName]
-  : DefaultSchemaEnumNameOrOptions extends keyof DefaultSchema['Enums']
-    ? DefaultSchema['Enums'][DefaultSchemaEnumNameOrOptions]
+  ? DatabaseWithoutInternals[DefaultSchemaEnumNameOrOptions["schema"]]["Enums"][EnumName]
+  : DefaultSchemaEnumNameOrOptions extends keyof DefaultSchema["Enums"]
+    ? DefaultSchema["Enums"][DefaultSchemaEnumNameOrOptions]
     : never
 
 export type CompositeTypes<
   PublicCompositeTypeNameOrOptions extends
-    | keyof DefaultSchema['CompositeTypes']
+    | keyof DefaultSchema["CompositeTypes"]
     | { schema: keyof DatabaseWithoutInternals },
   CompositeTypeName extends PublicCompositeTypeNameOrOptions extends {
     schema: keyof DatabaseWithoutInternals
   }
-    ? keyof DatabaseWithoutInternals[PublicCompositeTypeNameOrOptions['schema']]['CompositeTypes']
+    ? keyof DatabaseWithoutInternals[PublicCompositeTypeNameOrOptions["schema"]]["CompositeTypes"]
     : never = never,
 > = PublicCompositeTypeNameOrOptions extends {
   schema: keyof DatabaseWithoutInternals
 }
-  ? DatabaseWithoutInternals[PublicCompositeTypeNameOrOptions['schema']]['CompositeTypes'][CompositeTypeName]
-  : PublicCompositeTypeNameOrOptions extends keyof DefaultSchema['CompositeTypes']
-    ? DefaultSchema['CompositeTypes'][PublicCompositeTypeNameOrOptions]
+  ? DatabaseWithoutInternals[PublicCompositeTypeNameOrOptions["schema"]]["CompositeTypes"][CompositeTypeName]
+  : PublicCompositeTypeNameOrOptions extends keyof DefaultSchema["CompositeTypes"]
+    ? DefaultSchema["CompositeTypes"][PublicCompositeTypeNameOrOptions]
     : never
 
 export const Constants = {
@@ -2167,6 +2175,7 @@ export const Constants = {
     Enums: {},
   },
 } as const
+
 
 // ====== DATABASE EXTENDED CONTEXT (auto-generated) ======
 // This section contains actual PostgreSQL column types, constraints, RLS policies,
@@ -2792,6 +2801,8 @@ export const Constants = {
 //   Policy "custos_talhao_empresa" (ALL, PERMISSIVE) roles={public}
 //     USING: (empresa_id = ( SELECT usuarios.empresa_id    FROM usuarios   WHERE (usuarios.id = auth.uid())))
 // Table: empresas
+//   Policy "empresas_admin_all" (ALL, PERMISSIVE) roles={authenticated}
+//     USING: is_admin_saas()
 //   Policy "empresas_read" (SELECT, PERMISSIVE) roles={public}
 //     USING: (deleted_at IS NULL)
 // Table: equipamentos
@@ -2831,6 +2842,8 @@ export const Constants = {
 //   Policy "planejamento_safra_empresa" (ALL, PERMISSIVE) roles={public}
 //     USING: (empresa_id = ( SELECT usuarios.empresa_id    FROM usuarios   WHERE (usuarios.id = auth.uid())))
 // Table: planos
+//   Policy "planos_admin_all" (ALL, PERMISSIVE) roles={authenticated}
+//     USING: is_admin_saas()
 //   Policy "planos_read" (SELECT, PERMISSIVE) roles={public}
 //     USING: (deleted_at IS NULL)
 // Table: pluviometria
@@ -2845,8 +2858,15 @@ export const Constants = {
 // Table: saas_faturas
 //   Policy "saas_faturas" (SELECT, PERMISSIVE) roles={public}
 //     USING: true
+//   Policy "saas_faturas_admin_all" (ALL, PERMISSIVE) roles={authenticated}
+//     USING: is_admin_saas()
 // Table: safras
 //   Policy "safras_empresa" (ALL, PERMISSIVE) roles={public}
+//     USING: (empresa_id = ( SELECT usuarios.empresa_id    FROM usuarios   WHERE (usuarios.id = auth.uid())))
+// Table: suporte_tickets
+//   Policy "suporte_tickets_admin_all" (ALL, PERMISSIVE) roles={authenticated}
+//     USING: is_admin_saas()
+//   Policy "suporte_tickets_empresa" (ALL, PERMISSIVE) roles={authenticated}
 //     USING: (empresa_id = ( SELECT usuarios.empresa_id    FROM usuarios   WHERE (usuarios.id = auth.uid())))
 // Table: talhoes
 //   Policy "talhoes_empresa" (ALL, PERMISSIVE) roles={public}
@@ -2854,20 +2874,19 @@ export const Constants = {
 // Table: transportadoras
 //   Policy "transportadoras_empresa" (ALL, PERMISSIVE) roles={public}
 //     USING: (empresa_id = ( SELECT usuarios.empresa_id    FROM usuarios   WHERE (usuarios.id = auth.uid())))
+// Table: user_2fa_codes
+//   Policy "user_2fa_codes_admin" (ALL, PERMISSIVE) roles={authenticated}
+//     USING: is_admin_saas()
+//   Policy "user_2fa_codes_own" (ALL, PERMISSIVE) roles={authenticated}
+//     USING: (usuario_id = auth.uid())
 // Table: usuarios
+//   Policy "usuarios_admin_all" (ALL, PERMISSIVE) roles={authenticated}
+//     USING: is_admin_saas()
 //   Policy "usuarios_own" (SELECT, PERMISSIVE) roles={public}
 //     USING: ((auth.uid() = id) OR ((auth.jwt() ->> 'role'::text) = 'admin_saas'::text))
 // Table: vendedores
 //   Policy "vendedores_empresa" (ALL, PERMISSIVE) roles={public}
 //     USING: (empresa_id = ( SELECT usuarios.empresa_id    FROM usuarios   WHERE (usuarios.id = auth.uid())))
-
-// --- WARNING: TABLES WITH RLS ENABLED BUT NO POLICIES ---
-// These tables have Row Level Security enabled but NO policies defined.
-// This means ALL queries (SELECT, INSERT, UPDATE, DELETE) will return ZERO rows
-// for non-superuser roles (including the anon and authenticated roles used by the app).
-// You MUST create RLS policies for these tables to allow data access.
-//   - suporte_tickets
-//   - user_2fa_codes
 
 // --- DATABASE FUNCTIONS ---
 // FUNCTION ao_encerrar_safra()
@@ -2882,7 +2901,21 @@ export const Constants = {
 //     RETURN NEW;
 //   END;
 //   $function$
-//
+//   
+// FUNCTION is_admin_saas()
+//   CREATE OR REPLACE FUNCTION public.is_admin_saas()
+//    RETURNS boolean
+//    LANGUAGE plpgsql
+//    SECURITY DEFINER
+//   AS $function$
+//   BEGIN
+//     RETURN EXISTS (
+//       SELECT 1 FROM public.usuarios
+//       WHERE id = auth.uid() AND perfil = 'admin_saas'
+//     );
+//   END;
+//   $function$
+//   
 // FUNCTION set_atualizado_em()
 //   CREATE OR REPLACE FUNCTION public.set_atualizado_em()
 //    RETURNS trigger
@@ -2893,7 +2926,7 @@ export const Constants = {
 //     RETURN NEW;
 //   END;
 //   $function$
-//
+//   
 
 // --- TRIGGERS ---
 // Table: empresas
@@ -2934,3 +2967,4 @@ export const Constants = {
 //   CREATE INDEX idx_safras_talhao ON public.safras USING btree (talhao_id) WHERE (deleted_at IS NULL)
 // Table: usuarios
 //   CREATE INDEX idx_usuarios_empresa ON public.usuarios USING btree (empresa_id) WHERE (deleted_at IS NULL)
+
