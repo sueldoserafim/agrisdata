@@ -24,6 +24,7 @@ import AdminEmpresasList from './pages/admin/AdminEmpresasList'
 import AdminEmpresasForm from './pages/admin/AdminEmpresasForm'
 import AdminEmpresasDetail from './pages/admin/AdminEmpresasDetail'
 import AdminPlanosList from './pages/admin/AdminPlanosList'
+import AdminPlanosForm from './pages/admin/AdminPlanosForm'
 import AdminFaturamentoList from './pages/admin/AdminFaturamentoList'
 import AdminSuporteList from './pages/admin/AdminSuporteList'
 import AdminConfiguracoes from './pages/admin/AdminConfiguracoes'
@@ -45,6 +46,8 @@ const App = () => (
               <Route path="empresas/:id" element={<AdminEmpresasDetail />} />
               <Route path="empresas/:id/edit" element={<AdminEmpresasForm />} />
               <Route path="planos" element={<AdminPlanosList />} />
+              <Route path="planos/new" element={<AdminPlanosForm />} />
+              <Route path="planos/:id/edit" element={<AdminPlanosForm />} />
               <Route path="faturamento" element={<AdminFaturamentoList />} />
               <Route path="suporte" element={<AdminSuporteList />} />
               <Route path="configuracoes" element={<AdminConfiguracoes />} />

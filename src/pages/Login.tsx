@@ -14,17 +14,22 @@ import {
   CardTitle,
 } from '@/components/ui/card'
 import { useToast } from '@/hooks/use-toast'
+import { Loader2 } from 'lucide-react'
 
 export default function Login() {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [isLoading, setIsLoading] = useState(false)
-  const { signIn, session } = useAuth()
+  const [checkingSession, setCheckingSession] = useState(true)
+  const { signIn, session, loading } = useAuth()
   const navigate = useNavigate()
   const { toast } = useToast()
 
   useEffect(() => {
+    if (loading) return
+
     if (session?.user) {
+      setCheckingSession(true)
       supabase
         .from('usuarios')
         .select('perfil')
@@ -37,8 +42,10 @@ export default function Login() {
             navigate('/', { replace: true })
           }
         })
+    } else {
+      setCheckingSession(false)
     }
-  }, [session, navigate])
+  }, [session, navigate, loading])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -54,6 +61,15 @@ export default function Login() {
       })
       setIsLoading(false)
     }
+  }
+
+  if (loading || checkingSession) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-muted/40">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+        <span className="ml-2 text-muted-foreground font-medium">Validando sessão...</span>
+      </div>
+    )
   }
 
   return (

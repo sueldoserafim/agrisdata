@@ -25,9 +25,13 @@ export default function AdminPlanosList() {
 
   const handleDelete = async (id: string) => {
     if (confirm('Excluir este plano?')) {
-      await deletePlano(id)
-      toast({ title: 'Plano excluído' })
-      loadData()
+      try {
+        await deletePlano(id)
+        toast({ title: 'Plano excluído' })
+        loadData()
+      } catch (error: any) {
+        toast({ title: 'Erro', description: error.message, variant: 'destructive' })
+      }
     }
   }
 
