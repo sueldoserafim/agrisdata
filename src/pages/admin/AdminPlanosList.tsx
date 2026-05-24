@@ -47,6 +47,7 @@ export default function AdminPlanosList() {
           <TableHeader>
             <TableRow>
               <TableHead>Nome</TableHead>
+              <TableHead>Descrição</TableHead>
               <TableHead>Preço Mensal</TableHead>
               <TableHead>Limite Usuários</TableHead>
               <TableHead>Status</TableHead>
@@ -57,6 +58,9 @@ export default function AdminPlanosList() {
             {planos.map((plano) => (
               <TableRow key={plano.id}>
                 <TableCell className="font-medium">{plano.nome}</TableCell>
+                <TableCell className="max-w-[200px] truncate" title={plano.descricao || ''}>
+                  {plano.descricao || '-'}
+                </TableCell>
                 <TableCell>
                   {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(
                     plano.preco_mensal,

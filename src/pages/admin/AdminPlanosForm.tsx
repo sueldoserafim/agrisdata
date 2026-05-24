@@ -8,6 +8,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Switch } from '@/components/ui/switch'
 import { Textarea } from '@/components/ui/textarea'
+import { Checkbox } from '@/components/ui/checkbox'
 import {
   Form,
   FormControl,
@@ -18,24 +19,22 @@ import {
 } from '@/components/ui/form'
 import { useToast } from '@/hooks/use-toast'
 
+const AVAILABLE_MODULES = [
+  { id: 'caderno_campo', label: 'Caderno de Campo' },
+  { id: 'estoque', label: 'Estoque' },
+  { id: 'financeiro', label: 'Financeiro' },
+  { id: 'qualidade', label: 'Qualidade' },
+  { id: 'rh', label: 'Recursos Humanos' },
+]
+
 const schema = z.object({
   id: z.string().optional(),
   nome: z.string().min(2, 'Nome obrigatório'),
   descricao: z.string().optional().nullable(),
-  preco_mensal: z.coerce.number().min(0),
-  limite_usuarios: z.coerce.number().min(1),
+  preco_mensal: z.coerce.number().min(0, 'Deve ser maior ou igual a zero'),
+  limite_usuarios: z.coerce.number().min(1, 'Deve ser pelo menos 1'),
   ativo: z.boolean().default(true),
-  modulos_habilitados: z
-    .string()
-    .transform((v) =>
-      v
-        .split(',')
-        .map((s) => s.trim())
-        .filter(Boolean),
-    )
-    .or(z.array(z.string()))
-    .optional()
-    .default([]),
+  modulos_habilitados: z.array(z.string()).default([]),
 })
 
 export default function AdminPlanosForm() {
@@ -60,7 +59,7 @@ export default function AdminPlanosForm() {
       getPlano(id).then((data) => {
         form.reset({
           ...data,
-          modulos_habilitados: (data.modulos_habilitados || []).join(', ') as any,
+          modulos_habilitados: data.modulos_habilitados || [],
         })
       })
     }
@@ -82,7 +81,7 @@ export default function AdminPlanosForm() {
       <Form {...form}>
         <form
           onSubmit={form.handleSubmit(onSubmit)}
-          className="space-y-4 bg-card p-6 rounded-lg border"
+          className="space-y-6 bg-card p-6 rounded-lg border"
         >
           <FormField
             control={form.control}
@@ -138,24 +137,58 @@ export default function AdminPlanosForm() {
               )}
             />
           </div>
+
           <FormField
             control={form.control}
             name="modulos_habilitados"
-            render={({ field }) => (
+            render={() => (
               <FormItem>
-                <FormLabel>Módulos (separados por vírgula)</FormLabel>
-                <FormControl>
-                  <Input {...field} />
-                </FormControl>
+                <div className="mb-4">
+                  <FormLabel className="text-base">Módulos Incluídos</FormLabel>
+                </div>
+                <div className="grid grid-cols-2 gap-3">
+                  {AVAILABLE_MODULES.map((item) => (
+                    <FormField
+                      key={item.id}
+                      control={form.control}
+                      name="modulos_habilitados"
+                      render={({ field }) => {
+                        return (
+                          <FormItem
+                            key={item.id}
+                            className="flex flex-row items-start space-x-3 space-y-0"
+                          >
+                            <FormControl>
+                              <Checkbox
+                                checked={field.value?.includes(item.id)}
+                                onCheckedChange={(checked) => {
+                                  return checked
+                                    ? field.onChange([...field.value, item.id])
+                                    : field.onChange(
+                                        field.value?.filter((value) => value !== item.id),
+                                      )
+                                }}
+                              />
+                            </FormControl>
+                            <FormLabel className="font-normal cursor-pointer leading-none">
+                              {item.label}
+                            </FormLabel>
+                          </FormItem>
+                        )
+                      }}
+                    />
+                  ))}
+                </div>
                 <FormMessage />
               </FormItem>
             )}
           />
+
           <FormField
             control={form.control}
             name="ativo"
             render={({ field }) => (
-              <FormItem className="flex items-center gap-2 space-y-0 pt-4">
+              <FormItem className="flex items-center gap-2 space-y-0 pt-4 border-t">
                 <FormControl>
                   <Switch checked={field.value} onCheckedChange={field.onChange} />
                 </FormControl>
