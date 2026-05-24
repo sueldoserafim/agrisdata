@@ -20,7 +20,7 @@ import {
 import { useToast } from '@/hooks/use-toast'
 
 const AVAILABLE_MODULES = [
-  { id: 'caderno_campo', label: 'Caderno de Campo' },
+  { id: 'producao', label: 'Produção' },
   { id: 'estoque', label: 'Estoque' },
   { id: 'financeiro', label: 'Financeiro' },
   { id: 'qualidade', label: 'Qualidade' },
