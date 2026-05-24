@@ -2950,6 +2950,8 @@ export const Constants = {
 // Table: usuarios
 //   Policy "usuarios_admin_all" (ALL, PERMISSIVE) roles={authenticated}
 //     USING: is_admin_saas()
+//   Policy "usuarios_admin_read" (SELECT, PERMISSIVE) roles={authenticated}
+//     USING: (is_admin_saas() OR (auth.uid() = id))
 //   Policy "usuarios_admin_saas" (ALL, PERMISSIVE) roles={authenticated}
 //     USING: is_admin_saas()
 //   Policy "usuarios_own" (SELECT, PERMISSIVE) roles={public}

@@ -21,8 +21,13 @@ export function AdminProtectedRoute() {
           if (!error && data?.perfil === 'admin_saas') {
             setIsAdmin(true)
           } else {
+            console.error('Error verifying admin profile or not admin:', error)
             setIsAdmin(false)
           }
+        })
+        .catch((err) => {
+          console.error('Unexpected error verifying admin profile:', err)
+          if (mounted) setIsAdmin(false)
         })
     } else if (!loading) {
       setIsAdmin(false)
