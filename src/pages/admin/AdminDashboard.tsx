@@ -38,10 +38,18 @@ export default function AdminDashboard() {
             <Building2 className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{stats.totalEmpresas}</div>
-            <p className="text-xs text-muted-foreground flex items-center mt-1 text-green-600">
-              <ArrowUpRight className="h-3 w-3 mr-1" /> Tendência de alta
-            </p>
+            <div className="text-2xl font-bold">
+              {stats.errors?.empresas ? (
+                <span className="text-destructive text-base font-normal">Erro ao carregar</span>
+              ) : (
+                stats.totalEmpresas
+              )}
+            </div>
+            {!stats.errors?.empresas && (
+              <p className="text-xs text-muted-foreground flex items-center mt-1 text-green-600">
+                <ArrowUpRight className="h-3 w-3 mr-1" /> Tendência de alta
+              </p>
+            )}
           </CardContent>
         </Card>
 
@@ -51,7 +59,13 @@ export default function AdminDashboard() {
             <Users className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{stats.totalUsuarios}</div>
+            <div className="text-2xl font-bold">
+              {stats.errors?.usuarios ? (
+                <span className="text-destructive text-base font-normal">Erro ao carregar</span>
+              ) : (
+                stats.totalUsuarios
+              )}
+            </div>
           </CardContent>
         </Card>
 
@@ -62,8 +76,12 @@ export default function AdminDashboard() {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">
-              {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(
-                stats.mrr,
+              {stats.errors?.faturas ? (
+                <span className="text-destructive text-base font-normal">Erro ao carregar</span>
+              ) : (
+                new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(
+                  stats.mrr,
+                )
               )}
             </div>
           </CardContent>
@@ -75,10 +93,18 @@ export default function AdminDashboard() {
             <TrendingUp className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{stats.novosEsteMes}</div>
-            <p className="text-xs text-green-600 flex items-center mt-1">
-              <ArrowUpRight className="h-3 w-3 mr-1" /> Crescimento constante
-            </p>
+            <div className="text-2xl font-bold">
+              {stats.errors?.empresas ? (
+                <span className="text-destructive text-base font-normal">Erro ao carregar</span>
+              ) : (
+                stats.novosEsteMes
+              )}
+            </div>
+            {!stats.errors?.empresas && (
+              <p className="text-xs text-green-600 flex items-center mt-1">
+                <ArrowUpRight className="h-3 w-3 mr-1" /> Crescimento constante
+              </p>
+            )}
           </CardContent>
         </Card>
       </div>

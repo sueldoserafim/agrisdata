@@ -1,19 +1,32 @@
 import { supabase } from '@/lib/supabase/client'
 
 export const getAdminDashboardStats = async () => {
-  const [empresasRes, usuariosRes, ticketsRes, faturasRes] = await Promise.all([
+  const [empresasRes, usuariosRes, ticketsRes, faturasRes] = await Promise.allSettled([
     supabase.from('empresas').select('id, created_at, plano_id, planos(nome)'),
-    supabase.from('usuarios').select('id', { count: 'exact', head: true }).eq('ativo', true),
+    supabase.from('usuarios').select('*', { count: 'exact', head: true }).eq('ativo', true),
     supabase.from('suporte_tickets').select('id, prioridade, status').neq('status', 'resolvido'),
     supabase.from('saas_faturas').select('valor_total, created_at').eq('status', 'pago'),
   ])
 
-  const empresas = empresasRes.data || []
-  const faturas = faturasRes.data || []
-  const tickets = ticketsRes.data || []
+  const checkError = (res: any) => res.status === 'rejected' || !!res.value?.error
+
+  const errors = {
+    empresas: checkError(empresasRes),
+    usuarios: checkError(usuariosRes),
+    tickets: checkError(ticketsRes),
+    faturas: checkError(faturasRes),
+  }
+
+  const empresas =
+    !errors.empresas && empresasRes.status === 'fulfilled' ? empresasRes.value.data || [] : []
+  const faturas =
+    !errors.faturas && faturasRes.status === 'fulfilled' ? faturasRes.value.data || [] : []
+  const tickets =
+    !errors.tickets && ticketsRes.status === 'fulfilled' ? ticketsRes.value.data || [] : []
 
   const totalEmpresas = empresas.length
-  const totalUsuarios = usuariosRes.count || 0
+  const totalUsuarios =
+    !errors.usuarios && usuariosRes.status === 'fulfilled' ? usuariosRes.value.count || 0 : 0
   const mrr = faturas.reduce((acc, curr) => acc + (curr.valor_total || 0), 0)
 
   const currentMonth = new Date().getMonth()
@@ -74,5 +87,6 @@ export const getAdminDashboardStats = async () => {
     empresasPorPlano,
     ticketsPorPrioridade,
     mrrGrowth,
+    errors,
   }
 }
