@@ -212,6 +212,34 @@ export const comprasService = {
     return data
   },
 
+  async getUsuarioFornecedor(fornecedorId: string) {
+    const { data, error } = await supabase
+      .from('usuarios')
+      .select('*')
+      .eq('fornecedor_id', fornecedorId)
+      .maybeSingle()
+    if (error) throw error
+    return data
+  },
+
+  async criarUsuarioPortal(payload: any) {
+    const { data, error } = await supabase.functions.invoke('admin-create-user', {
+      body: payload,
+    })
+    if (error) throw error
+    if (data?.error) throw new Error(data.error)
+    return data
+  },
+
+  async atualizarUsuarioPortal(payload: any) {
+    const { data, error } = await supabase.functions.invoke('admin-update-user', {
+      body: payload,
+    })
+    if (error) throw error
+    if (data?.error) throw new Error(data.error)
+    return data
+  },
+
   // --- Pedidos ---
   async getPedidos(empresaId: string) {
     const { data, error } = await supabase

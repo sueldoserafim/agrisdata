@@ -38,7 +38,7 @@ Deno.serve(async (req: Request) => {
     }
 
     if (profile.perfil !== 'admin' && profile.perfil !== 'admin_saas') {
-      throw new Error('Forbidden: Only admins can create new users.')
+      throw new Error('Forbidden: Only admins can update users.')
     }
 
     const supabaseAdmin = createClient(
@@ -48,41 +48,43 @@ Deno.serve(async (req: Request) => {
     )
 
     const payload = await req.json()
-    const { nome, email, password, perfil, fornecedor_id } = payload
+    const { id, email, password, nome } = payload
 
-    if (!nome || !email || !password || !perfil) {
-      throw new Error('Missing required fields')
+    if (!id) {
+      throw new Error('Missing required field: id')
     }
 
-    // Criar o usuário Auth
-    const { data: authData, error: authError } = await supabaseAdmin.auth.admin.createUser({
-      email,
-      password,
-      email_confirm: true,
-      user_metadata: { name: nome, role: perfil },
-    })
+    const updateData: any = {}
+    if (email) updateData.email = email
+    if (password) updateData.password = password
+    if (nome) updateData.user_metadata = { name: nome }
 
-    if (authError) {
-      throw new Error(`Error creating user in auth: ${authError.message}`)
+    if (Object.keys(updateData).length > 0) {
+      const { data: authData, error: authError } = await supabaseAdmin.auth.admin.updateUserById(
+        id,
+        updateData,
+      )
+      if (authError) {
+        throw new Error(`Error updating user in auth: ${authError.message}`)
+      }
     }
 
-    // Criar o Perfil do usuário vinculando à mesma empresa do admin
-    const { error: insertError } = await supabaseAdmin.from('usuarios').insert({
-      id: authData.user.id,
-      empresa_id: profile.empresa_id,
-      email,
-      nome,
-      perfil,
-      fornecedor_id: fornecedor_id || null,
-      ativo: true,
-    })
+    const dbUpdate: any = {}
+    if (email) dbUpdate.email = email
+    if (nome) dbUpdate.nome = nome
 
-    if (insertError) {
-      await supabaseAdmin.auth.admin.deleteUser(authData.user.id)
-      throw new Error(`Error creating user profile: ${insertError.message}`)
+    if (Object.keys(dbUpdate).length > 0) {
+      const { error: updateError } = await supabaseAdmin
+        .from('usuarios')
+        .update(dbUpdate)
+        .eq('id', id)
+
+      if (updateError) {
+        throw new Error(`Error updating user profile: ${updateError.message}`)
+      }
     }
 
-    return new Response(JSON.stringify({ success: true, user: authData.user }), {
+    return new Response(JSON.stringify({ success: true }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     })
   } catch (err: any) {
