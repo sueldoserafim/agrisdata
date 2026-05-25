@@ -52,8 +52,14 @@ export const allMenuItems: MenuItemRaw[] = [
     icon: Package,
     label: 'Suprimentos & Estoque',
     subItems: [
+      { label: 'Almoxarifado', path: '/app/estoque/almoxarifado', module: 'estoque' },
       { label: 'Produtos', path: '/app/produtos', module: 'estoque' },
       { label: 'Insumos', path: '/app/insumos', module: 'estoque' },
+      {
+        label: 'Requisições Internas',
+        path: '/app/estoque/requisicoes-internas',
+        module: 'estoque',
+      },
       {
         icon: ShoppingCart,
         label: 'Compras',

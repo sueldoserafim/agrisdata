@@ -35,6 +35,9 @@ import CultivarList from './pages/cultivares/CultivarList'
 import CultivarForm from './pages/cultivares/CultivarForm'
 import ProdutoList from './pages/produtos/ProdutoList'
 import ProdutoForm from './pages/produtos/ProdutoForm'
+import AlmoxarifadoDashboard from './pages/estoque/AlmoxarifadoDashboard'
+import RequisicoesInternasList from './pages/estoque/RequisicoesInternasList'
+import RequisicoesInternasForm from './pages/estoque/RequisicoesInternasForm'
 import RequisicaoList from './pages/compras/RequisicaoList'
 import RequisicaoForm from './pages/compras/RequisicaoForm'
 import AprovacoesList from './pages/compras/AprovacoesList'
@@ -105,6 +108,16 @@ const App = () => (
                 <Route path="/app/insumos" element={<ProdutoList />} />
                 <Route path="/app/insumos/new" element={<ProdutoForm />} />
                 <Route path="/app/insumos/:id" element={<ProdutoForm />} />
+
+                <Route path="/app/estoque/almoxarifado" element={<AlmoxarifadoDashboard />} />
+                <Route
+                  path="/app/estoque/requisicoes-internas"
+                  element={<RequisicoesInternasList />}
+                />
+                <Route
+                  path="/app/estoque/requisicoes-internas/nova"
+                  element={<RequisicoesInternasForm />}
+                />
 
                 <Route path="/app/compras/requisicoes" element={<RequisicaoList />} />
                 <Route path="/app/compras/requisicoes/new" element={<RequisicaoForm />} />
