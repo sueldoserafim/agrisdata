@@ -23,6 +23,7 @@ import AdminFaturamentoList from './pages/admin/AdminFaturamentoList'
 import AdminSuporteList from './pages/admin/AdminSuporteList'
 import AdminConfiguracoes from './pages/admin/AdminConfiguracoes'
 import Usuarios from './pages/app/Usuarios'
+import SettingsPage from './pages/Settings'
 
 import FazendaList from './pages/fazendas/FazendaList'
 import FazendaForm from './pages/fazendas/FazendaForm'
@@ -135,6 +136,7 @@ const App = () => (
                   element={<div className="p-8 font-semibold text-xl">BI</div>}
                 />
                 <Route path="/app/usuarios" element={<Usuarios />} />
+                <Route path="/app/configuracoes" element={<SettingsPage />} />
               </Route>
             </Route>
           </Route>

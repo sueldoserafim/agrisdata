@@ -20,6 +20,7 @@ import {
   LifeBuoy,
   UserCog,
   ShoppingCart,
+  Settings,
 } from 'lucide-react'
 import {
   Sidebar,
@@ -66,6 +67,13 @@ const allMenuItems = [
   { icon: LineChart, label: 'BI', path: '/app/bi', module: 'bi' },
   { icon: LifeBuoy, label: 'Suporte', path: '/app/suporte', module: 'suporte' },
   { icon: UserCog, label: 'Usuários', path: '/app/usuarios', module: null, adminOnly: true },
+  {
+    icon: Settings,
+    label: 'Configurações',
+    path: '/app/configuracoes',
+    module: null,
+    adminOnly: true,
+  },
 ]
 
 export function AppSidebar() {
