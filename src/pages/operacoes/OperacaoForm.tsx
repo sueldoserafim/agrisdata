@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { useNavigate, useParams } from 'react-router-dom'
+import { useNavigate, useParams, useLocation } from 'react-router-dom'
 import { useForm, FormProvider } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
@@ -86,6 +86,7 @@ const schema = z
 export default function OperacaoForm() {
   const { id } = useParams()
   const navigate = useNavigate()
+  const location = useLocation()
   const { empresa } = useEmpresa()
   const [loading, setLoading] = useState(false)
 
@@ -96,9 +97,17 @@ export default function OperacaoForm() {
   const [produtos, setProdutos] = useState<any[]>([])
   const [lotes, setLotes] = useState<any[]>([])
 
+  const { state } = location as any
   const form = useForm<z.infer<typeof schema>>({
     resolver: zodResolver(schema),
-    defaultValues: { fotos: [], insumos: [], status: 'pendente' },
+    defaultValues: {
+      tipo_operacao: state?.tipo_operacao || undefined,
+      safra_id: state?.safra_id || '',
+      observacoes: state?.observacoes || '',
+      fotos: [],
+      insumos: [],
+      status: 'pendente',
+    },
   })
 
   const watchTipo = form.watch('tipo_operacao')
@@ -155,6 +164,15 @@ export default function OperacaoForm() {
           }),
         })
       }
+    } else if (searchParams.toString()) {
+      form.reset({
+        tipo_operacao: (searchParams.get('tipo_operacao') as any) || 'outro',
+        safra_id: searchParams.get('safra_id') || '',
+        observacoes: searchParams.get('obs') || '',
+        status: 'pendente',
+        fotos: [],
+        insumos: [],
+      })
     }
   }
 

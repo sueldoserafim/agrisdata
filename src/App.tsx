@@ -54,8 +54,12 @@ import FornecedorForm from './pages/compras/FornecedorForm'
 import OperacaoList from './pages/operacoes/OperacaoList'
 import OperacaoForm from './pages/operacoes/OperacaoForm'
 import MinhasOperacoes from './pages/operacoes/MinhasOperacoes'
+import MonitoramentoList from './pages/producao/MonitoramentoList'
+import MonitoramentoForm from './pages/producao/MonitoramentoForm'
 import EquipePerformance from './pages/operacoes/EquipePerformance'
 import ProducaoDashboard from './pages/producao/ProducaoDashboard'
+import MonitoramentoPragasMap from './pages/producao/MonitoramentoPragasMap'
+import MonitoramentoPragasForm from './pages/producao/MonitoramentoPragasForm'
 import EquipamentoList from './pages/equipamentos/EquipamentoList'
 import EquipamentoForm from './pages/equipamentos/EquipamentoForm'
 import EquipamentoDetail from './pages/equipamentos/EquipamentoDetail'
@@ -158,6 +162,18 @@ const App = () => (
                   element={<div className="p-8 font-semibold text-xl">Suporte</div>}
                 />
                 <Route path="/app/producao" element={<ProducaoDashboard />} />
+                <Route path="/app/producao/monitoramento" element={<MonitoramentoList />} />
+                <Route path="/app/producao/monitoramento/novo" element={<MonitoramentoForm />} />
+                <Route path="/app/producao/monitoramento/:id" element={<MonitoramentoForm />} />
+                <Route path="/app/producao/monitoramento" element={<MonitoramentoPragasMap />} />
+                <Route
+                  path="/app/producao/monitoramento/novo"
+                  element={<MonitoramentoPragasForm />}
+                />
+                <Route
+                  path="/app/producao/monitoramento/:id"
+                  element={<MonitoramentoPragasForm />}
+                />
                 <Route path="/app/equipamentos" element={<EquipamentoList />} />
                 <Route path="/app/equipamentos/new" element={<EquipamentoForm />} />
                 <Route path="/app/equipamentos/:id" element={<EquipamentoDetail />} />

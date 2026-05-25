@@ -15,6 +15,7 @@ import {
   ShoppingCart,
   Settings,
   Database,
+  Bug,
   Briefcase,
   Warehouse,
   Boxes,
@@ -32,6 +33,7 @@ import {
   CircleDollarSign,
   UserPlus,
   Sliders,
+  ShieldAlert,
 } from 'lucide-react'
 
 export type MenuItemRaw = {
@@ -56,6 +58,12 @@ export const allMenuItems: MenuItemRaw[] = [
       { icon: Sprout, label: 'Culturas', path: '/app/culturas', module: 'cadastros' },
       { icon: Leaf, label: 'Cultivares/Variedades', path: '/app/cultivares', module: 'cadastros' },
       { icon: Tractor, label: 'Safras', path: '/app/safras', module: 'cadastros' },
+      {
+        icon: Bug,
+        label: 'Monitoramento (MIP)',
+        path: '/app/producao/monitoramento',
+        module: 'producao',
+      },
     ],
   },
   {
@@ -131,6 +139,12 @@ export const allMenuItems: MenuItemRaw[] = [
         module: 'operacoes',
       },
       { icon: Cog, label: 'Produção', path: '/app/producao', module: 'producao' },
+      {
+        icon: ShieldAlert,
+        label: 'Monitoramento (MIP)',
+        path: '/app/producao/monitoramento',
+        module: 'producao',
+      },
       { icon: Box, label: 'Packing', path: '/app/packing', module: 'packing' },
       { icon: Ship, label: 'Exportação', path: '/app/exportacao', module: 'exportacao' },
     ],
