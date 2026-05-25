@@ -333,6 +333,47 @@ export type Database = {
           },
         ]
       }
+      carregamentos: {
+        Row: {
+          created_at: string
+          data_carregamento: string | null
+          deleted_at: string | null
+          empresa_id: string
+          id: string
+          placa_veiculo: string | null
+          status: string | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          data_carregamento?: string | null
+          deleted_at?: string | null
+          empresa_id: string
+          id?: string
+          placa_veiculo?: string | null
+          status?: string | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          data_carregamento?: string | null
+          deleted_at?: string | null
+          empresa_id?: string
+          id?: string
+          placa_veiculo?: string | null
+          status?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: 'carregamentos_empresa_id_fkey'
+            columns: ['empresa_id']
+            isOneToOne: false
+            referencedRelation: 'empresas'
+            referencedColumns: ['id']
+          },
+        ]
+      }
       centros_custo: {
         Row: {
           codigo: string | null
@@ -594,35 +635,100 @@ export type Database = {
           },
         ]
       }
+      containers: {
+        Row: {
+          created_at: string
+          cut_off: string | null
+          data_embarque: string | null
+          deleted_at: string | null
+          destino: string | null
+          empresa_id: string
+          id: string
+          numero_container: string
+          status: string | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          cut_off?: string | null
+          data_embarque?: string | null
+          deleted_at?: string | null
+          destino?: string | null
+          empresa_id: string
+          id?: string
+          numero_container: string
+          status?: string | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          cut_off?: string | null
+          data_embarque?: string | null
+          deleted_at?: string | null
+          destino?: string | null
+          empresa_id?: string
+          id?: string
+          numero_container?: string
+          status?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: 'containers_empresa_id_fkey'
+            columns: ['empresa_id']
+            isOneToOne: false
+            referencedRelation: 'empresas'
+            referencedColumns: ['id']
+          },
+        ]
+      }
       cultivares: {
         Row: {
+          codigo_interno: string | null
           created_at: string | null
           cultura_id: string
           deleted_at: string | null
+          detentor_licenciador: string | null
           dias_para_colheita: number | null
           empresa_id: string
           id: string
           nome: string
+          pais_origem: string | null
+          produtividade_esperada_t_ha: number | null
+          shelf_life_ideal_dias: number | null
+          shelf_life_minimo_dias: number | null
           updated_at: string | null
         }
         Insert: {
+          codigo_interno?: string | null
           created_at?: string | null
           cultura_id: string
           deleted_at?: string | null
+          detentor_licenciador?: string | null
           dias_para_colheita?: number | null
           empresa_id: string
           id?: string
           nome: string
+          pais_origem?: string | null
+          produtividade_esperada_t_ha?: number | null
+          shelf_life_ideal_dias?: number | null
+          shelf_life_minimo_dias?: number | null
           updated_at?: string | null
         }
         Update: {
+          codigo_interno?: string | null
           created_at?: string | null
           cultura_id?: string
           deleted_at?: string | null
+          detentor_licenciador?: string | null
           dias_para_colheita?: number | null
           empresa_id?: string
           id?: string
           nome?: string
+          pais_origem?: string | null
+          produtividade_esperada_t_ha?: number | null
+          shelf_life_ideal_dias?: number | null
+          shelf_life_minimo_dias?: number | null
           updated_at?: string | null
         }
         Relationships: [
@@ -644,38 +750,119 @@ export type Database = {
       }
       culturas: {
         Row: {
+          brix_maximo_ideal: number | null
+          brix_minimo_ideal: number | null
           ciclo_dias: number | null
+          codigo_ncm: string | null
           created_at: string | null
           deleted_at: string | null
           empresa_id: string
           id: string
+          necessidade_hidrica_mm_dia: number | null
           nome: string
+          nome_cientifico: string | null
+          produtividade_media_t_ha: number | null
+          temp_maxima_ideal: number | null
+          temp_minima_ideal: number | null
+          temperatura_base_gda: number | null
           tipo: string | null
+          unidade_medida: string | null
           updated_at: string | null
         }
         Insert: {
+          brix_maximo_ideal?: number | null
+          brix_minimo_ideal?: number | null
           ciclo_dias?: number | null
+          codigo_ncm?: string | null
           created_at?: string | null
           deleted_at?: string | null
           empresa_id: string
           id?: string
+          necessidade_hidrica_mm_dia?: number | null
           nome: string
+          nome_cientifico?: string | null
+          produtividade_media_t_ha?: number | null
+          temp_maxima_ideal?: number | null
+          temp_minima_ideal?: number | null
+          temperatura_base_gda?: number | null
           tipo?: string | null
+          unidade_medida?: string | null
           updated_at?: string | null
         }
         Update: {
+          brix_maximo_ideal?: number | null
+          brix_minimo_ideal?: number | null
           ciclo_dias?: number | null
+          codigo_ncm?: string | null
           created_at?: string | null
           deleted_at?: string | null
           empresa_id?: string
           id?: string
+          necessidade_hidrica_mm_dia?: number | null
           nome?: string
+          nome_cientifico?: string | null
+          produtividade_media_t_ha?: number | null
+          temp_maxima_ideal?: number | null
+          temp_minima_ideal?: number | null
+          temperatura_base_gda?: number | null
           tipo?: string | null
+          unidade_medida?: string | null
           updated_at?: string | null
         }
         Relationships: [
           {
             foreignKeyName: 'culturas_empresa_id_fkey'
+            columns: ['empresa_id']
+            isOneToOne: false
+            referencedRelation: 'empresas'
+            referencedColumns: ['id']
+          },
+        ]
+      }
+      culturas_fenologia: {
+        Row: {
+          created_at: string
+          cultura_id: string
+          deleted_at: string | null
+          descricao: string | null
+          dias_desde_plantio: number
+          empresa_id: string
+          estagio: string
+          id: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          cultura_id: string
+          deleted_at?: string | null
+          descricao?: string | null
+          dias_desde_plantio: number
+          empresa_id: string
+          estagio: string
+          id?: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          cultura_id?: string
+          deleted_at?: string | null
+          descricao?: string | null
+          dias_desde_plantio?: number
+          empresa_id?: string
+          estagio?: string
+          id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: 'culturas_fenologia_cultura_id_fkey'
+            columns: ['cultura_id']
+            isOneToOne: false
+            referencedRelation: 'culturas'
+            referencedColumns: ['id']
+          },
+          {
+            foreignKeyName: 'culturas_fenologia_empresa_id_fkey'
             columns: ['empresa_id']
             isOneToOne: false
             referencedRelation: 'empresas'
@@ -758,6 +945,7 @@ export type Database = {
         Row: {
           ativo: boolean | null
           cnpj: string | null
+          configuracoes: Json | null
           created_at: string | null
           deleted_at: string | null
           email: string | null
@@ -773,6 +961,7 @@ export type Database = {
         Insert: {
           ativo?: boolean | null
           cnpj?: string | null
+          configuracoes?: Json | null
           created_at?: string | null
           deleted_at?: string | null
           email?: string | null
@@ -788,6 +977,7 @@ export type Database = {
         Update: {
           ativo?: boolean | null
           cnpj?: string | null
+          configuracoes?: Json | null
           created_at?: string | null
           deleted_at?: string | null
           email?: string | null
@@ -907,53 +1097,133 @@ export type Database = {
       }
       fazendas: {
         Row: {
+          area_produtiva_ha: number | null
           area_total_ha: number | null
+          ccir: string | null
           cnpj_imobiliario: string | null
           created_at: string | null
+          data_fundacao: string | null
           deleted_at: string | null
           empresa_id: string
           endereco: string | null
           estado: string | null
           id: string
+          inscricao_estadual: string | null
           latitude: number | null
           longitude: number | null
           municipio: string | null
+          nirf: string | null
           nome: string
+          numero_car: string | null
+          responsavel_cpf: string | null
+          responsavel_email: string | null
+          responsavel_nome: string | null
+          responsavel_telefone: string | null
+          tipo_producao: string | null
           updated_at: string | null
         }
         Insert: {
+          area_produtiva_ha?: number | null
           area_total_ha?: number | null
+          ccir?: string | null
           cnpj_imobiliario?: string | null
           created_at?: string | null
+          data_fundacao?: string | null
           deleted_at?: string | null
           empresa_id: string
           endereco?: string | null
           estado?: string | null
           id?: string
+          inscricao_estadual?: string | null
           latitude?: number | null
           longitude?: number | null
           municipio?: string | null
+          nirf?: string | null
           nome: string
+          numero_car?: string | null
+          responsavel_cpf?: string | null
+          responsavel_email?: string | null
+          responsavel_nome?: string | null
+          responsavel_telefone?: string | null
+          tipo_producao?: string | null
           updated_at?: string | null
         }
         Update: {
+          area_produtiva_ha?: number | null
           area_total_ha?: number | null
+          ccir?: string | null
           cnpj_imobiliario?: string | null
           created_at?: string | null
+          data_fundacao?: string | null
           deleted_at?: string | null
           empresa_id?: string
           endereco?: string | null
           estado?: string | null
           id?: string
+          inscricao_estadual?: string | null
           latitude?: number | null
           longitude?: number | null
           municipio?: string | null
+          nirf?: string | null
           nome?: string
+          numero_car?: string | null
+          responsavel_cpf?: string | null
+          responsavel_email?: string | null
+          responsavel_nome?: string | null
+          responsavel_telefone?: string | null
+          tipo_producao?: string | null
           updated_at?: string | null
         }
         Relationships: [
           {
             foreignKeyName: 'fazendas_empresa_id_fkey'
+            columns: ['empresa_id']
+            isOneToOne: false
+            referencedRelation: 'empresas'
+            referencedColumns: ['id']
+          },
+        ]
+      }
+      financeiro_lancamentos: {
+        Row: {
+          created_at: string
+          data_vencimento: string | null
+          deleted_at: string | null
+          descricao: string
+          empresa_id: string
+          id: string
+          status: string | null
+          tipo: string
+          updated_at: string
+          valor: number
+        }
+        Insert: {
+          created_at?: string
+          data_vencimento?: string | null
+          deleted_at?: string | null
+          descricao: string
+          empresa_id: string
+          id?: string
+          status?: string | null
+          tipo: string
+          updated_at?: string
+          valor: number
+        }
+        Update: {
+          created_at?: string
+          data_vencimento?: string | null
+          deleted_at?: string | null
+          descricao?: string
+          empresa_id?: string
+          id?: string
+          status?: string | null
+          tipo?: string
+          updated_at?: string
+          valor?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: 'financeiro_lancamentos_empresa_id_fkey'
             columns: ['empresa_id']
             isOneToOne: false
             referencedRelation: 'empresas'
@@ -1414,6 +1684,60 @@ export type Database = {
           },
         ]
       }
+      pallets: {
+        Row: {
+          codigo: string
+          conformidade_percentual: number | null
+          created_at: string
+          deleted_at: string | null
+          empresa_id: string
+          id: string
+          peso_kg: number | null
+          safra_id: string | null
+          status: string | null
+          updated_at: string
+        }
+        Insert: {
+          codigo: string
+          conformidade_percentual?: number | null
+          created_at?: string
+          deleted_at?: string | null
+          empresa_id: string
+          id?: string
+          peso_kg?: number | null
+          safra_id?: string | null
+          status?: string | null
+          updated_at?: string
+        }
+        Update: {
+          codigo?: string
+          conformidade_percentual?: number | null
+          created_at?: string
+          deleted_at?: string | null
+          empresa_id?: string
+          id?: string
+          peso_kg?: number | null
+          safra_id?: string | null
+          status?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: 'pallets_empresa_id_fkey'
+            columns: ['empresa_id']
+            isOneToOne: false
+            referencedRelation: 'empresas'
+            referencedColumns: ['id']
+          },
+          {
+            foreignKeyName: 'pallets_safra_id_fkey'
+            columns: ['safra_id']
+            isOneToOne: false
+            referencedRelation: 'safras'
+            referencedColumns: ['id']
+          },
+        ]
+      }
       planejamento_safra: {
         Row: {
           atividade: string | null
@@ -1564,37 +1888,82 @@ export type Database = {
       }
       produtos: {
         Row: {
+          carencia_dias: number | null
+          categoria: string | null
+          classe_risco: string | null
+          classe_toxicologica: string | null
+          codigo_interno: string | null
+          codigo_ncm: string | null
           created_at: string | null
           deleted_at: string | null
           empresa_id: string
+          estoque_minimo: number | null
+          exige_receituario: boolean | null
+          fabricante_marca: string | null
           id: string
+          ingrediente_ativo: string | null
           nome: string
+          prazo_validade_dias: number | null
           preco_unitario: number | null
+          recomendacao_uso: string | null
+          registro_mapa: string | null
+          status: string | null
           tipo: string | null
           unidade_medida: string | null
           updated_at: string | null
+          visivel_operadores: boolean | null
         }
         Insert: {
+          carencia_dias?: number | null
+          categoria?: string | null
+          classe_risco?: string | null
+          classe_toxicologica?: string | null
+          codigo_interno?: string | null
+          codigo_ncm?: string | null
           created_at?: string | null
           deleted_at?: string | null
           empresa_id: string
+          estoque_minimo?: number | null
+          exige_receituario?: boolean | null
+          fabricante_marca?: string | null
           id?: string
+          ingrediente_ativo?: string | null
           nome: string
+          prazo_validade_dias?: number | null
           preco_unitario?: number | null
+          recomendacao_uso?: string | null
+          registro_mapa?: string | null
+          status?: string | null
           tipo?: string | null
           unidade_medida?: string | null
           updated_at?: string | null
+          visivel_operadores?: boolean | null
         }
         Update: {
+          carencia_dias?: number | null
+          categoria?: string | null
+          classe_risco?: string | null
+          classe_toxicologica?: string | null
+          codigo_interno?: string | null
+          codigo_ncm?: string | null
           created_at?: string | null
           deleted_at?: string | null
           empresa_id?: string
+          estoque_minimo?: number | null
+          exige_receituario?: boolean | null
+          fabricante_marca?: string | null
           id?: string
+          ingrediente_ativo?: string | null
           nome?: string
+          prazo_validade_dias?: number | null
           preco_unitario?: number | null
+          recomendacao_uso?: string | null
+          registro_mapa?: string | null
+          status?: string | null
           tipo?: string | null
           unidade_medida?: string | null
           updated_at?: string | null
+          visivel_operadores?: boolean | null
         }
         Relationships: [
           {
@@ -1860,38 +2229,71 @@ export type Database = {
       }
       talhoes: {
         Row: {
+          altitude: number | null
           area_ha: number | null
+          area_plantavel_ha: number | null
+          codigo_talhao: string | null
           created_at: string | null
           declividade: number | null
           deleted_at: string | null
           empresa_id: string
           fazenda_id: string
           id: string
+          latitude: number | null
+          longitude: number | null
           nome: string
+          numero_globalgap: string | null
+          observacoes: string | null
+          referencia_car: string | null
+          status_atual: string | null
+          tem_irrigacao: boolean | null
+          tipo_irrigacao: string | null
           tipo_solo: string | null
           updated_at: string | null
         }
         Insert: {
+          altitude?: number | null
           area_ha?: number | null
+          area_plantavel_ha?: number | null
+          codigo_talhao?: string | null
           created_at?: string | null
           declividade?: number | null
           deleted_at?: string | null
           empresa_id: string
           fazenda_id: string
           id?: string
+          latitude?: number | null
+          longitude?: number | null
           nome: string
+          numero_globalgap?: string | null
+          observacoes?: string | null
+          referencia_car?: string | null
+          status_atual?: string | null
+          tem_irrigacao?: boolean | null
+          tipo_irrigacao?: string | null
           tipo_solo?: string | null
           updated_at?: string | null
         }
         Update: {
+          altitude?: number | null
           area_ha?: number | null
+          area_plantavel_ha?: number | null
+          codigo_talhao?: string | null
           created_at?: string | null
           declividade?: number | null
           deleted_at?: string | null
           empresa_id?: string
           fazenda_id?: string
           id?: string
+          latitude?: number | null
+          longitude?: number | null
           nome?: string
+          numero_globalgap?: string | null
+          observacoes?: string | null
+          referencia_car?: string | null
+          status_atual?: string | null
+          tem_irrigacao?: boolean | null
+          tipo_irrigacao?: string | null
           tipo_solo?: string | null
           updated_at?: string | null
         }
@@ -2081,6 +2483,8 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      get_user_empresa_id: { Args: never; Returns: string }
+      get_user_perfil: { Args: never; Returns: string }
       is_admin_saas: { Args: never; Returns: boolean }
     }
     Enums: {
@@ -2289,6 +2693,15 @@ export const Constants = {
 //   created_at: timestamp with time zone (nullable, default: now())
 //   updated_at: timestamp with time zone (nullable, default: now())
 //   deleted_at: timestamp with time zone (nullable)
+// Table: carregamentos
+//   id: uuid (not null, default: gen_random_uuid())
+//   empresa_id: uuid (not null)
+//   data_carregamento: date (nullable)
+//   placa_veiculo: character varying (nullable)
+//   status: character varying (nullable, default: 'pendente'::character varying)
+//   created_at: timestamp with time zone (not null, default: now())
+//   updated_at: timestamp with time zone (not null, default: now())
+//   deleted_at: timestamp with time zone (nullable)
 // Table: centros_custo
 //   id: uuid (not null, default: gen_random_uuid())
 //   empresa_id: uuid (not null)
@@ -2341,6 +2754,17 @@ export const Constants = {
 //   created_at: timestamp with time zone (nullable, default: now())
 //   updated_at: timestamp with time zone (nullable, default: now())
 //   deleted_at: timestamp with time zone (nullable)
+// Table: containers
+//   id: uuid (not null, default: gen_random_uuid())
+//   empresa_id: uuid (not null)
+//   numero_container: character varying (not null)
+//   destino: character varying (nullable)
+//   status: character varying (nullable, default: 'embarcado'::character varying)
+//   data_embarque: date (nullable)
+//   cut_off: date (nullable)
+//   created_at: timestamp with time zone (not null, default: now())
+//   updated_at: timestamp with time zone (not null, default: now())
+//   deleted_at: timestamp with time zone (nullable)
 // Table: cultivares
 //   id: uuid (not null, default: gen_random_uuid())
 //   empresa_id: uuid (not null)
@@ -2350,6 +2774,12 @@ export const Constants = {
 //   created_at: timestamp with time zone (nullable, default: now())
 //   updated_at: timestamp with time zone (nullable, default: now())
 //   deleted_at: timestamp with time zone (nullable)
+//   codigo_interno: text (nullable)
+//   pais_origem: text (nullable)
+//   detentor_licenciador: text (nullable)
+//   produtividade_esperada_t_ha: numeric (nullable)
+//   shelf_life_ideal_dias: integer (nullable)
+//   shelf_life_minimo_dias: integer (nullable)
 // Table: culturas
 //   id: uuid (not null, default: gen_random_uuid())
 //   empresa_id: uuid (not null)
@@ -2358,6 +2788,26 @@ export const Constants = {
 //   ciclo_dias: integer (nullable)
 //   created_at: timestamp with time zone (nullable, default: now())
 //   updated_at: timestamp with time zone (nullable, default: now())
+//   deleted_at: timestamp with time zone (nullable)
+//   nome_cientifico: text (nullable)
+//   codigo_ncm: text (nullable)
+//   unidade_medida: text (nullable)
+//   temperatura_base_gda: numeric (nullable)
+//   temp_minima_ideal: numeric (nullable)
+//   temp_maxima_ideal: numeric (nullable)
+//   necessidade_hidrica_mm_dia: numeric (nullable)
+//   brix_minimo_ideal: numeric (nullable)
+//   brix_maximo_ideal: numeric (nullable)
+//   produtividade_media_t_ha: numeric (nullable)
+// Table: culturas_fenologia
+//   id: uuid (not null, default: gen_random_uuid())
+//   cultura_id: uuid (not null)
+//   empresa_id: uuid (not null)
+//   estagio: text (not null)
+//   dias_desde_plantio: integer (not null)
+//   descricao: text (nullable)
+//   created_at: timestamp with time zone (not null, default: now())
+//   updated_at: timestamp with time zone (not null, default: now())
 //   deleted_at: timestamp with time zone (nullable)
 // Table: custos_talhao
 //   id: uuid (not null, default: gen_random_uuid())
@@ -2385,6 +2835,7 @@ export const Constants = {
 //   deleted_at: timestamp with time zone (nullable)
 //   modulos_habilitados: _text (nullable, default: '{}'::text[])
 //   limite_usuarios: integer (nullable, default: 5)
+//   configuracoes: jsonb (nullable, default: '{}'::jsonb)
 // Table: equipamentos
 //   id: uuid (not null, default: gen_random_uuid())
 //   empresa_id: uuid (not null)
@@ -2409,7 +2860,7 @@ export const Constants = {
 //   id: uuid (not null, default: gen_random_uuid())
 //   empresa_id: uuid (not null)
 //   nome: character varying (not null)
-//   cnpj_imobiliario: character varying (nullable)
+//   cnpj_imobiliario: text (nullable)
 //   endereco: text (nullable)
 //   municipio: character varying (nullable)
 //   estado: character varying (nullable)
@@ -2418,6 +2869,28 @@ export const Constants = {
 //   longitude: numeric (nullable)
 //   created_at: timestamp with time zone (nullable, default: now())
 //   updated_at: timestamp with time zone (nullable, default: now())
+//   deleted_at: timestamp with time zone (nullable)
+//   inscricao_estadual: text (nullable)
+//   numero_car: character varying (nullable)
+//   nirf: text (nullable)
+//   ccir: text (nullable)
+//   data_fundacao: date (nullable)
+//   area_produtiva_ha: numeric (nullable)
+//   tipo_producao: text (nullable)
+//   responsavel_nome: text (nullable)
+//   responsavel_cpf: text (nullable)
+//   responsavel_telefone: text (nullable)
+//   responsavel_email: text (nullable)
+// Table: financeiro_lancamentos
+//   id: uuid (not null, default: gen_random_uuid())
+//   empresa_id: uuid (not null)
+//   tipo: character varying (not null)
+//   descricao: character varying (not null)
+//   valor: numeric (not null)
+//   data_vencimento: date (nullable)
+//   status: character varying (nullable, default: 'pendente'::character varying)
+//   created_at: timestamp with time zone (not null, default: now())
+//   updated_at: timestamp with time zone (not null, default: now())
 //   deleted_at: timestamp with time zone (nullable)
 // Table: fornecedores
 //   id: uuid (not null, default: gen_random_uuid())
@@ -2507,6 +2980,17 @@ export const Constants = {
 //   created_at: timestamp with time zone (nullable, default: now())
 //   updated_at: timestamp with time zone (nullable, default: now())
 //   deleted_at: timestamp with time zone (nullable)
+// Table: pallets
+//   id: uuid (not null, default: gen_random_uuid())
+//   empresa_id: uuid (not null)
+//   codigo: character varying (not null)
+//   safra_id: uuid (nullable)
+//   peso_kg: numeric (nullable)
+//   status: character varying (nullable, default: 'em_estoque'::character varying)
+//   conformidade_percentual: numeric (nullable, default: 100)
+//   created_at: timestamp with time zone (not null, default: now())
+//   updated_at: timestamp with time zone (not null, default: now())
+//   deleted_at: timestamp with time zone (nullable)
 // Table: planejamento_safra
 //   id: uuid (not null, default: gen_random_uuid())
 //   empresa_id: uuid (not null)
@@ -2548,6 +3032,21 @@ export const Constants = {
 //   created_at: timestamp with time zone (nullable, default: now())
 //   updated_at: timestamp with time zone (nullable, default: now())
 //   deleted_at: timestamp with time zone (nullable)
+//   codigo_interno: text (nullable)
+//   categoria: text (nullable)
+//   fabricante_marca: text (nullable)
+//   estoque_minimo: integer (nullable)
+//   prazo_validade_dias: integer (nullable)
+//   codigo_ncm: text (nullable)
+//   classe_risco: text (nullable)
+//   status: text (nullable, default: 'ativo'::text)
+//   registro_mapa: text (nullable)
+//   classe_toxicologica: text (nullable)
+//   carencia_dias: integer (nullable)
+//   exige_receituario: boolean (nullable)
+//   ingrediente_ativo: text (nullable)
+//   recomendacao_uso: text (nullable)
+//   visivel_operadores: boolean (nullable, default: true)
 // Table: receituarios_agronomicos
 //   id: uuid (not null, default: gen_random_uuid())
 //   empresa_id: uuid (not null)
@@ -2608,6 +3107,17 @@ export const Constants = {
 //   created_at: timestamp with time zone (nullable, default: now())
 //   updated_at: timestamp with time zone (nullable, default: now())
 //   deleted_at: timestamp with time zone (nullable)
+//   codigo_talhao: character varying (nullable)
+//   area_plantavel_ha: numeric (nullable)
+//   altitude: integer (nullable)
+//   tem_irrigacao: boolean (nullable, default: false)
+//   tipo_irrigacao: character varying (nullable)
+//   latitude: numeric (nullable)
+//   longitude: numeric (nullable)
+//   numero_globalgap: character varying (nullable)
+//   referencia_car: character varying (nullable)
+//   status_atual: character varying (nullable, default: 'disponível'::character varying)
+//   observacoes: text (nullable)
 // Table: transportadoras
 //   id: uuid (not null, default: gen_random_uuid())
 //   empresa_id: uuid (not null)
@@ -2670,6 +3180,9 @@ export const Constants = {
 //   PRIMARY KEY caderno_campo_pkey: PRIMARY KEY (id)
 //   FOREIGN KEY caderno_campo_responsavel_id_fkey: FOREIGN KEY (responsavel_id) REFERENCES usuarios(id)
 //   FOREIGN KEY caderno_campo_talhao_id_fkey: FOREIGN KEY (talhao_id) REFERENCES talhoes(id) ON DELETE CASCADE
+// Table: carregamentos
+//   FOREIGN KEY carregamentos_empresa_id_fkey: FOREIGN KEY (empresa_id) REFERENCES empresas(id) ON DELETE CASCADE
+//   PRIMARY KEY carregamentos_pkey: PRIMARY KEY (id)
 // Table: centros_custo
 //   FOREIGN KEY centros_custo_empresa_id_fkey: FOREIGN KEY (empresa_id) REFERENCES empresas(id) ON DELETE CASCADE
 //   PRIMARY KEY centros_custo_pkey: PRIMARY KEY (id)
@@ -2690,6 +3203,9 @@ export const Constants = {
 //   FOREIGN KEY compras_requisicao_empresa_id_fkey: FOREIGN KEY (empresa_id) REFERENCES empresas(id) ON DELETE CASCADE
 //   PRIMARY KEY compras_requisicao_pkey: PRIMARY KEY (id)
 //   FOREIGN KEY compras_requisicao_solicitante_id_fkey: FOREIGN KEY (solicitante_id) REFERENCES usuarios(id)
+// Table: containers
+//   FOREIGN KEY containers_empresa_id_fkey: FOREIGN KEY (empresa_id) REFERENCES empresas(id) ON DELETE CASCADE
+//   PRIMARY KEY containers_pkey: PRIMARY KEY (id)
 // Table: cultivares
 //   FOREIGN KEY cultivares_cultura_id_fkey: FOREIGN KEY (cultura_id) REFERENCES culturas(id) ON DELETE CASCADE
 //   FOREIGN KEY cultivares_empresa_id_fkey: FOREIGN KEY (empresa_id) REFERENCES empresas(id) ON DELETE CASCADE
@@ -2697,6 +3213,10 @@ export const Constants = {
 // Table: culturas
 //   FOREIGN KEY culturas_empresa_id_fkey: FOREIGN KEY (empresa_id) REFERENCES empresas(id) ON DELETE CASCADE
 //   PRIMARY KEY culturas_pkey: PRIMARY KEY (id)
+// Table: culturas_fenologia
+//   FOREIGN KEY culturas_fenologia_cultura_id_fkey: FOREIGN KEY (cultura_id) REFERENCES culturas(id) ON DELETE CASCADE
+//   FOREIGN KEY culturas_fenologia_empresa_id_fkey: FOREIGN KEY (empresa_id) REFERENCES empresas(id) ON DELETE CASCADE
+//   PRIMARY KEY culturas_fenologia_pkey: PRIMARY KEY (id)
 // Table: custos_talhao
 //   FOREIGN KEY custos_talhao_centro_custo_id_fkey: FOREIGN KEY (centro_custo_id) REFERENCES centros_custo(id)
 //   FOREIGN KEY custos_talhao_empresa_id_fkey: FOREIGN KEY (empresa_id) REFERENCES empresas(id) ON DELETE CASCADE
@@ -2718,6 +3238,9 @@ export const Constants = {
 // Table: fazendas
 //   FOREIGN KEY fazendas_empresa_id_fkey: FOREIGN KEY (empresa_id) REFERENCES empresas(id) ON DELETE CASCADE
 //   PRIMARY KEY fazendas_pkey: PRIMARY KEY (id)
+// Table: financeiro_lancamentos
+//   FOREIGN KEY financeiro_lancamentos_empresa_id_fkey: FOREIGN KEY (empresa_id) REFERENCES empresas(id) ON DELETE CASCADE
+//   PRIMARY KEY financeiro_lancamentos_pkey: PRIMARY KEY (id)
 // Table: fornecedores
 //   FOREIGN KEY fornecedores_empresa_id_fkey: FOREIGN KEY (empresa_id) REFERENCES empresas(id) ON DELETE CASCADE
 //   PRIMARY KEY fornecedores_pkey: PRIMARY KEY (id)
@@ -2753,6 +3276,10 @@ export const Constants = {
 //   FOREIGN KEY operacoes_campo_receituario_id_fkey: FOREIGN KEY (receituario_id) REFERENCES receituarios_agronomicos(id)
 //   FOREIGN KEY operacoes_campo_responsavel_id_fkey: FOREIGN KEY (responsavel_id) REFERENCES usuarios(id)
 //   FOREIGN KEY operacoes_campo_safra_id_fkey: FOREIGN KEY (safra_id) REFERENCES safras(id) ON DELETE CASCADE
+// Table: pallets
+//   FOREIGN KEY pallets_empresa_id_fkey: FOREIGN KEY (empresa_id) REFERENCES empresas(id) ON DELETE CASCADE
+//   PRIMARY KEY pallets_pkey: PRIMARY KEY (id)
+//   FOREIGN KEY pallets_safra_id_fkey: FOREIGN KEY (safra_id) REFERENCES safras(id) ON DELETE SET NULL
 // Table: planejamento_safra
 //   FOREIGN KEY planejamento_safra_empresa_id_fkey: FOREIGN KEY (empresa_id) REFERENCES empresas(id) ON DELETE CASCADE
 //   PRIMARY KEY planejamento_safra_pkey: PRIMARY KEY (id)
@@ -2824,6 +3351,9 @@ export const Constants = {
 // Table: caderno_campo
 //   Policy "caderno_campo_empresa" (ALL, PERMISSIVE) roles={public}
 //     USING: (empresa_id = ( SELECT usuarios.empresa_id    FROM usuarios   WHERE (usuarios.id = auth.uid())))
+// Table: carregamentos
+//   Policy "carregamentos_empresa" (ALL, PERMISSIVE) roles={public}
+//     USING: (empresa_id = ( SELECT usuarios.empresa_id    FROM usuarios   WHERE (usuarios.id = auth.uid())))
 // Table: centros_custo
 //   Policy "centros_custo_empresa" (ALL, PERMISSIVE) roles={public}
 //     USING: (empresa_id = ( SELECT usuarios.empresa_id    FROM usuarios   WHERE (usuarios.id = auth.uid())))
@@ -2839,11 +3369,17 @@ export const Constants = {
 // Table: compras_requisicao
 //   Policy "compras_requisicao_empresa" (ALL, PERMISSIVE) roles={public}
 //     USING: (empresa_id = ( SELECT usuarios.empresa_id    FROM usuarios   WHERE (usuarios.id = auth.uid())))
+// Table: containers
+//   Policy "containers_empresa" (ALL, PERMISSIVE) roles={public}
+//     USING: (empresa_id = ( SELECT usuarios.empresa_id    FROM usuarios   WHERE (usuarios.id = auth.uid())))
 // Table: cultivares
 //   Policy "cultivares_empresa" (ALL, PERMISSIVE) roles={public}
 //     USING: (empresa_id = ( SELECT usuarios.empresa_id    FROM usuarios   WHERE (usuarios.id = auth.uid())))
 // Table: culturas
 //   Policy "culturas_empresa" (ALL, PERMISSIVE) roles={public}
+//     USING: (empresa_id = ( SELECT usuarios.empresa_id    FROM usuarios   WHERE (usuarios.id = auth.uid())))
+// Table: culturas_fenologia
+//   Policy "culturas_fenologia_empresa" (ALL, PERMISSIVE) roles={authenticated}
 //     USING: (empresa_id = ( SELECT usuarios.empresa_id    FROM usuarios   WHERE (usuarios.id = auth.uid())))
 // Table: custos_talhao
 //   Policy "custos_talhao_empresa" (ALL, PERMISSIVE) roles={public}
@@ -2863,6 +3399,9 @@ export const Constants = {
 //     USING: (empresa_id = ( SELECT usuarios.empresa_id    FROM usuarios   WHERE (usuarios.id = auth.uid())))
 // Table: fazendas
 //   Policy "fazendas_empresa" (ALL, PERMISSIVE) roles={public}
+//     USING: (empresa_id = ( SELECT usuarios.empresa_id    FROM usuarios   WHERE (usuarios.id = auth.uid())))
+// Table: financeiro_lancamentos
+//   Policy "financeiro_lancamentos_empresa" (ALL, PERMISSIVE) roles={public}
 //     USING: (empresa_id = ( SELECT usuarios.empresa_id    FROM usuarios   WHERE (usuarios.id = auth.uid())))
 // Table: fornecedores
 //   Policy "fornecedores_empresa" (ALL, PERMISSIVE) roles={public}
@@ -2887,6 +3426,9 @@ export const Constants = {
 //     USING: (empresa_id = ( SELECT usuarios.empresa_id    FROM usuarios   WHERE (usuarios.id = auth.uid())))
 // Table: operacoes_campo
 //   Policy "operacoes_campo_empresa" (ALL, PERMISSIVE) roles={public}
+//     USING: (empresa_id = ( SELECT usuarios.empresa_id    FROM usuarios   WHERE (usuarios.id = auth.uid())))
+// Table: pallets
+//   Policy "pallets_empresa" (ALL, PERMISSIVE) roles={public}
 //     USING: (empresa_id = ( SELECT usuarios.empresa_id    FROM usuarios   WHERE (usuarios.id = auth.uid())))
 // Table: planejamento_safra
 //   Policy "planejamento_safra_empresa" (ALL, PERMISSIVE) roles={public}
@@ -2928,8 +3470,9 @@ export const Constants = {
 //   Policy "suporte_tickets_empresa" (ALL, PERMISSIVE) roles={authenticated}
 //     USING: (empresa_id = ( SELECT usuarios.empresa_id    FROM usuarios   WHERE (usuarios.id = auth.uid())))
 // Table: talhoes
-//   Policy "talhoes_empresa" (ALL, PERMISSIVE) roles={public}
+//   Policy "talhoes_empresa" (ALL, PERMISSIVE) roles={authenticated}
 //     USING: (empresa_id = ( SELECT usuarios.empresa_id    FROM usuarios   WHERE (usuarios.id = auth.uid())))
+//     WITH CHECK: (empresa_id = ( SELECT usuarios.empresa_id    FROM usuarios   WHERE (usuarios.id = auth.uid())))
 // Table: transportadoras
 //   Policy "transportadoras_empresa" (ALL, PERMISSIVE) roles={public}
 //     USING: (empresa_id = ( SELECT usuarios.empresa_id    FROM usuarios   WHERE (usuarios.id = auth.uid())))
@@ -2945,6 +3488,13 @@ export const Constants = {
 //     USING: (is_admin_saas() OR (auth.uid() = id))
 //   Policy "usuarios_admin_saas" (ALL, PERMISSIVE) roles={authenticated}
 //     USING: is_admin_saas()
+//   Policy "usuarios_empresa_insert" (INSERT, PERMISSIVE) roles={authenticated}
+//     WITH CHECK: ((empresa_id = get_user_empresa_id()) AND (get_user_perfil() = ANY (ARRAY['admin'::text, 'admin_saas'::text])))
+//   Policy "usuarios_empresa_select" (SELECT, PERMISSIVE) roles={authenticated}
+//     USING: (empresa_id = get_user_empresa_id())
+//   Policy "usuarios_empresa_update" (UPDATE, PERMISSIVE) roles={authenticated}
+//     USING: ((empresa_id = get_user_empresa_id()) AND (get_user_perfil() = ANY (ARRAY['admin'::text, 'admin_saas'::text])))
+//     WITH CHECK: ((empresa_id = get_user_empresa_id()) AND (get_user_perfil() = ANY (ARRAY['admin'::text, 'admin_saas'::text])))
 //   Policy "usuarios_own" (SELECT, PERMISSIVE) roles={public}
 //     USING: ((auth.uid() = id) OR ((auth.jwt() ->> 'role'::text) = 'admin_saas'::text))
 // Table: vendedores
@@ -2962,6 +3512,36 @@ export const Constants = {
 //       UPDATE safras SET status = 'bloqueada' WHERE talhao_id = NEW.talhao_id AND id != NEW.id AND status != 'encerrada';
 //     END IF;
 //     RETURN NEW;
+//   END;
+//   $function$
+//
+// FUNCTION get_user_empresa_id()
+//   CREATE OR REPLACE FUNCTION public.get_user_empresa_id()
+//    RETURNS uuid
+//    LANGUAGE plpgsql
+//    SECURITY DEFINER
+//    SET search_path TO 'public'
+//   AS $function$
+//   DECLARE
+//     v_empresa_id uuid;
+//   BEGIN
+//     SELECT empresa_id INTO v_empresa_id FROM public.usuarios WHERE id = auth.uid();
+//     RETURN v_empresa_id;
+//   END;
+//   $function$
+//
+// FUNCTION get_user_perfil()
+//   CREATE OR REPLACE FUNCTION public.get_user_perfil()
+//    RETURNS text
+//    LANGUAGE plpgsql
+//    SECURITY DEFINER
+//    SET search_path TO 'public'
+//   AS $function$
+//   DECLARE
+//     v_perfil text;
+//   BEGIN
+//     SELECT perfil INTO v_perfil FROM public.usuarios WHERE id = auth.uid();
+//     RETURN v_perfil;
 //   END;
 //   $function$
 //
@@ -2992,6 +3572,8 @@ export const Constants = {
 //
 
 // --- TRIGGERS ---
+// Table: culturas_fenologia
+//   trigger_culturas_fenologia_updated_at: CREATE TRIGGER trigger_culturas_fenologia_updated_at BEFORE UPDATE ON public.culturas_fenologia FOR EACH ROW EXECUTE FUNCTION set_atualizado_em()
 // Table: empresas
 //   trigger_empresas_updated_at: CREATE TRIGGER trigger_empresas_updated_at BEFORE UPDATE ON public.empresas FOR EACH ROW EXECUTE FUNCTION set_atualizado_em()
 // Table: fazendas
@@ -3013,6 +3595,8 @@ export const Constants = {
 //   CREATE INDEX idx_audit_logs_empresa ON public.audit_logs USING btree (empresa_id)
 // Table: compras_requisicao
 //   CREATE INDEX idx_compras_requisicao_status ON public.compras_requisicao USING btree (status) WHERE (deleted_at IS NULL)
+// Table: culturas_fenologia
+//   CREATE INDEX idx_culturas_fenologia_cultura_id ON public.culturas_fenologia USING btree (cultura_id) WHERE (deleted_at IS NULL)
 // Table: empresas
 //   CREATE UNIQUE INDEX empresas_cnpj_key ON public.empresas USING btree (cnpj)
 //   CREATE UNIQUE INDEX empresas_slug_key ON public.empresas USING btree (slug)

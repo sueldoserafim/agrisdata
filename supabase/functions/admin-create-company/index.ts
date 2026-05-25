@@ -9,24 +9,40 @@ Deno.serve(async (req: Request) => {
 
   try {
     const authHeader = req.headers.get('Authorization')
+    if (!authHeader) {
+      throw new Error('Missing Authorization header')
+    }
+
+    // Usar o cliente Supabase autenticado para obter as credenciais do chamador
     const supabaseClient = createClient(
       Deno.env.get('SUPABASE_URL') ?? '',
       Deno.env.get('SUPABASE_ANON_KEY') ?? '',
-      { global: { headers: { Authorization: authHeader || '' } } },
+      { global: { headers: { Authorization: authHeader } } },
     )
 
     const {
       data: { user },
+      error: userError,
     } = await supabaseClient.auth.getUser()
-    if (!user) throw new Error('Unauthorized')
+    if (userError || !user) {
+      throw new Error(`Unauthorized: ${userError?.message || 'User not found'}`)
+    }
 
-    const { data: profile } = await supabaseClient
+    // Verificar se o usuário possui a role de admin_saas
+    const { data: profile, error: profileError } = await supabaseClient
       .from('usuarios')
       .select('perfil')
       .eq('id', user.id)
       .single()
-    if (profile?.perfil !== 'admin_saas') throw new Error('Forbidden')
 
+    if (profileError) {
+      throw new Error(`Forbidden: Falha ao carregar perfil do usuário (${profileError.message})`)
+    }
+    if (profile?.perfil !== 'admin_saas') {
+      throw new Error('Forbidden: Apenas usuários admin_saas podem criar novas empresas.')
+    }
+
+    // Criar um cliente com privilégios Service Role para realizar bypass no RLS e criar dados protegidos
     const supabaseAdmin = createClient(
       Deno.env.get('SUPABASE_URL') ?? '',
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? '',
@@ -48,14 +64,29 @@ Deno.serve(async (req: Request) => {
       admin_senha,
     } = payload
 
+    if (!nome || !slug || !admin_email || !admin_senha) {
+      throw new Error('Campos obrigatórios faltando: nome, slug, admin_email, ou admin_senha')
+    }
+
+    // Verificar unicidade do slug
+    const { data: existingEmpresa } = await supabaseAdmin
+      .from('empresas')
+      .select('id')
+      .eq('slug', slug)
+      .maybeSingle()
+    if (existingEmpresa) {
+      throw new Error(`O slug "${slug}" já está em uso por outra empresa.`)
+    }
+
+    // Criar a empresa
     const { data: empresa, error: empresaError } = await supabaseAdmin
       .from('empresas')
       .insert({
         nome,
-        cnpj,
-        email,
-        telefone,
-        plano_id,
+        cnpj: cnpj || null,
+        email: email || null,
+        telefone: telefone || null,
+        plano_id: plano_id || null,
         slug,
         ativo: true,
         modulos_habilitados: modulos_habilitados || [],
@@ -66,6 +97,7 @@ Deno.serve(async (req: Request) => {
 
     if (empresaError) throw new Error(`Erro ao criar empresa: ${empresaError.message}`)
 
+    // Criar o usuário Auth administrador do Tenant
     const { data: authData, error: authError } = await supabaseAdmin.auth.admin.createUser({
       email: admin_email,
       password: admin_senha,
@@ -74,11 +106,13 @@ Deno.serve(async (req: Request) => {
     })
 
     if (authError) {
+      // Reverter criação da empresa
       await supabaseAdmin.from('empresas').delete().eq('id', empresa.id)
-      throw new Error(`Erro ao criar usuário auth: ${authError.message}`)
+      throw new Error(`Erro ao criar usuário administrador no Auth: ${authError.message}`)
     }
 
-    const { error: userError } = await supabaseAdmin.from('usuarios').insert({
+    // Criar o Perfil do usuário vinculando à empresa recém criada
+    const { error: userErrorAdmin } = await supabaseAdmin.from('usuarios').insert({
       id: authData.user.id,
       empresa_id: empresa.id,
       email: admin_email,
@@ -87,7 +121,12 @@ Deno.serve(async (req: Request) => {
       ativo: true,
     })
 
-    if (userError) throw new Error(`Erro ao criar perfil de usuário: ${userError.message}`)
+    if (userErrorAdmin) {
+      // Reverter criação
+      await supabaseAdmin.auth.admin.deleteUser(authData.user.id)
+      await supabaseAdmin.from('empresas').delete().eq('id', empresa.id)
+      throw new Error(`Erro ao criar perfil de usuário: ${userErrorAdmin.message}`)
+    }
 
     return new Response(JSON.stringify({ success: true, empresa }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },

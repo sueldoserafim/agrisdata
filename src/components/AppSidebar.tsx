@@ -12,6 +12,13 @@ import {
   LogOut,
   Hexagon,
   Loader2,
+  Map,
+  MapPin,
+  Sprout,
+  Leaf,
+  Tractor,
+  LifeBuoy,
+  UserCog,
 } from 'lucide-react'
 import {
   Sidebar,
@@ -28,6 +35,12 @@ import { supabase } from '@/lib/supabase/client'
 
 const allMenuItems = [
   { icon: LayoutDashboard, label: 'Dashboard', path: '/app', module: null },
+  { icon: Map, label: 'Fazendas', path: '/app/fazendas', module: 'cadastros' },
+  { icon: MapPin, label: 'Talhões', path: '/app/talhoes', module: 'cadastros' },
+  { icon: Sprout, label: 'Culturas', path: '/app/culturas', module: 'cadastros' },
+  { icon: Leaf, label: 'Cultivares/Variedades', path: '/app/cultivares', module: 'cadastros' },
+  { icon: Package, label: 'Produtos e Insumos', path: '/app/produtos', module: 'estoque' },
+  { icon: Tractor, label: 'Operações de Campo', path: '/app/operacoes', module: 'operacoes' },
   { icon: Factory, label: 'Produção', path: '/app/producao', module: 'producao' },
   { icon: Package, label: 'Packing', path: '/app/packing', module: 'packing' },
   { icon: Plane, label: 'Exportação', path: '/app/exportacao', module: 'exportacao' },
@@ -35,24 +48,31 @@ const allMenuItems = [
   { icon: Users, label: 'RH', path: '/app/rh', module: 'rh' },
   { icon: Truck, label: 'Frota', path: '/app/frota', module: 'frota' },
   { icon: LineChart, label: 'BI', path: '/app/bi', module: 'bi' },
+  { icon: LifeBuoy, label: 'Suporte', path: '/app/suporte', module: 'suporte' },
+  { icon: UserCog, label: 'Usuários', path: '/app/usuarios', module: null, adminOnly: true },
 ]
 
 export function AppSidebar() {
   const location = useLocation()
   const { user, signOut } = useAuth()
   const [modulos, setModulos] = useState<string[]>([])
+  const [perfil, setPerfil] = useState<string | null>(null)
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
     let mounted = true
-    async function loadModulos() {
+    async function loadData() {
       if (!user) return
       try {
         const { data: profile } = await supabase
           .from('usuarios')
-          .select('empresa_id')
+          .select('empresa_id, perfil')
           .eq('id', user.id)
           .single()
+
+        if (mounted && profile) {
+          setPerfil(profile.perfil)
+        }
 
         if (profile?.empresa_id) {
           const { data: empresa } = await supabase
@@ -62,7 +82,8 @@ export function AppSidebar() {
             .single()
 
           if (mounted && empresa) {
-            setModulos(empresa.modulos_habilitados || [])
+            const loadedModulos = empresa.modulos_habilitados || []
+            setModulos(loadedModulos.length > 0 ? loadedModulos : ['dashboard'])
           }
         }
       } catch (e) {
@@ -71,15 +92,18 @@ export function AppSidebar() {
         if (mounted) setLoading(false)
       }
     }
-    loadModulos()
+    loadData()
     return () => {
       mounted = false
     }
   }, [user])
 
-  const visibleMenuItems = allMenuItems.filter(
-    (item) => item.module === null || modulos.includes(item.module),
-  )
+  const isAdmin = perfil === 'admin' || perfil === 'admin_saas'
+
+  const visibleMenuItems = allMenuItems.filter((item) => {
+    if (item.adminOnly && !isAdmin) return false
+    return isAdmin || item.module === null || modulos.includes(item.module)
+  })
 
   return (
     <Sidebar className="border-r border-sidebar-border bg-sidebar">

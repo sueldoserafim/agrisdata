@@ -12,6 +12,7 @@ import SignUp from './pages/SignUp'
 import { AuthProvider } from './hooks/use-auth'
 import { ProtectedRoute } from './components/ProtectedRoute'
 import { AdminProtectedRoute } from './components/AdminProtectedRoute'
+import { EmpresaProvider } from './hooks/use-empresa'
 import AdminLayout from './pages/admin/AdminLayout'
 import AdminDashboard from './pages/admin/AdminDashboard'
 import AdminEmpresasList from './pages/admin/AdminEmpresasList'
@@ -22,6 +23,18 @@ import AdminPlanosForm from './pages/admin/AdminPlanosForm'
 import AdminFaturamentoList from './pages/admin/AdminFaturamentoList'
 import AdminSuporteList from './pages/admin/AdminSuporteList'
 import AdminConfiguracoes from './pages/admin/AdminConfiguracoes'
+import Usuarios from './pages/app/Usuarios'
+
+import FazendaList from './pages/fazendas/FazendaList'
+import FazendaForm from './pages/fazendas/FazendaForm'
+import TalhaoList from './pages/talhoes/TalhaoList'
+import TalhaoForm from './pages/talhoes/TalhaoForm'
+import CulturaList from './pages/culturas/CulturaList'
+import CulturaForm from './pages/culturas/CulturaForm'
+import CultivarList from './pages/cultivares/CultivarList'
+import CultivarForm from './pages/cultivares/CultivarForm'
+import ProdutoList from './pages/produtos/ProdutoList'
+import ProdutoForm from './pages/produtos/ProdutoForm'
 
 const App = () => (
   <BrowserRouter future={{ v7_startTransition: false, v7_relativeSplatPath: false }}>
@@ -48,9 +61,42 @@ const App = () => (
             </Route>
           </Route>
           <Route element={<ProtectedRoute />}>
-            <Route element={<Layout />}>
+            <Route
+              element={
+                <EmpresaProvider>
+                  <Layout />
+                </EmpresaProvider>
+              }
+            >
               <Route path="/" element={<Navigate to="/app" replace />} />
               <Route path="/app" element={<Index />} />
+              <Route path="/app/fazendas" element={<FazendaList />} />
+              <Route path="/app/fazendas/new" element={<FazendaForm />} />
+              <Route path="/app/fazendas/:id" element={<FazendaForm />} />
+
+              <Route path="/app/talhoes" element={<TalhaoList />} />
+              <Route path="/app/talhoes/new" element={<TalhaoForm />} />
+              <Route path="/app/talhoes/:id" element={<TalhaoForm />} />
+
+              <Route path="/app/culturas" element={<CulturaList />} />
+              <Route path="/app/culturas/new" element={<CulturaForm />} />
+              <Route path="/app/culturas/:id" element={<CulturaForm />} />
+
+              <Route path="/app/cultivares" element={<CultivarList />} />
+              <Route path="/app/cultivares/new" element={<CultivarForm />} />
+              <Route path="/app/cultivares/:id" element={<CultivarForm />} />
+
+              <Route path="/app/produtos" element={<ProdutoList />} />
+              <Route path="/app/produtos/new" element={<ProdutoForm />} />
+              <Route path="/app/produtos/:id" element={<ProdutoForm />} />
+              <Route
+                path="/app/operacoes"
+                element={<div className="p-8 font-semibold text-xl">Operações de Campo</div>}
+              />
+              <Route
+                path="/app/suporte"
+                element={<div className="p-8 font-semibold text-xl">Suporte</div>}
+              />
               <Route
                 path="/app/producao"
                 element={<div className="p-8 font-semibold text-xl">Produção</div>}
@@ -73,6 +119,7 @@ const App = () => (
                 element={<div className="p-8 font-semibold text-xl">Frota</div>}
               />
               <Route path="/app/bi" element={<div className="p-8 font-semibold text-xl">BI</div>} />
+              <Route path="/app/usuarios" element={<Usuarios />} />
             </Route>
           </Route>
           <Route path="*" element={<NotFound />} />

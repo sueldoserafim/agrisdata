@@ -1,5 +1,6 @@
 {
   "_versions": {
-    "admin-create-company": 1
+    "admin-create-company": 2,
+    "admin-create-user": 1
   }
 }
