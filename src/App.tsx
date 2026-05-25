@@ -51,6 +51,8 @@ import PedidoForm from './pages/compras/PedidoForm'
 import RecebimentoForm from './pages/compras/RecebimentoForm'
 import FornecedorList from './pages/compras/FornecedorList'
 import FornecedorForm from './pages/compras/FornecedorForm'
+import OperacaoList from './pages/operacoes/OperacaoList'
+import OperacaoForm from './pages/operacoes/OperacaoForm'
 
 const App = () => (
   <BrowserRouter future={{ v7_startTransition: false, v7_relativeSplatPath: false }}>
@@ -140,10 +142,9 @@ const App = () => (
                 <Route path="/app/compras/fornecedores/new" element={<FornecedorForm />} />
                 <Route path="/app/compras/fornecedores/:id" element={<FornecedorForm />} />
 
-                <Route
-                  path="/app/operacoes"
-                  element={<div className="p-8 font-semibold text-xl">Operações de Campo</div>}
-                />
+                <Route path="/app/operacoes" element={<OperacaoList />} />
+                <Route path="/app/operacoes/nova" element={<OperacaoForm />} />
+                <Route path="/app/operacoes/:id" element={<OperacaoForm />} />
                 <Route
                   path="/app/suporte"
                   element={<div className="p-8 font-semibold text-xl">Suporte</div>}
