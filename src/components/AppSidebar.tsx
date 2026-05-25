@@ -164,7 +164,7 @@ export function AppSidebar() {
               </SidebarMenuButton>
             ) : (
               <SidebarMenuSubButton isActive={isActive && !openGroups[item.label]}>
-                {item.icon && <item.icon className="size-4" />}
+                {item.icon && <item.icon className="size-4 mr-2" />}
                 <span>{item.label}</span>
                 <ChevronRight className="ml-auto size-4 transition-transform group-data-[state=open]/collapsible-sub:rotate-90" />
               </SidebarMenuSubButton>
@@ -186,7 +186,7 @@ export function AppSidebar() {
 
     const LeafContent = (
       <Link to={item.path || '#'}>
-        {item.icon && <item.icon className={depth === 0 ? 'size-5 mr-3' : 'size-4'} />}
+        {item.icon && <item.icon className={depth === 0 ? 'size-5 mr-3' : 'size-4 mr-2'} />}
         <span>{item.label}</span>
         {item.badge === 'pendingApprovals' && pendingApprovals > 0 && (
           <div className="bg-destructive text-destructive-foreground text-[10px] font-bold px-2 py-0.5 rounded-full ml-auto animate-fade-in flex items-center justify-center">

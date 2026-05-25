@@ -2366,6 +2366,77 @@ export type Database = {
           },
         ]
       }
+      requisicoes_internas: {
+        Row: {
+          aprovador_id: string | null
+          created_at: string | null
+          data_aprovacao: string | null
+          empresa_id: string
+          id: string
+          justificativa: string | null
+          produto_id: string
+          quantidade: number
+          solicitante_id: string | null
+          status: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          aprovador_id?: string | null
+          created_at?: string | null
+          data_aprovacao?: string | null
+          empresa_id: string
+          id?: string
+          justificativa?: string | null
+          produto_id: string
+          quantidade: number
+          solicitante_id?: string | null
+          status?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          aprovador_id?: string | null
+          created_at?: string | null
+          data_aprovacao?: string | null
+          empresa_id?: string
+          id?: string
+          justificativa?: string | null
+          produto_id?: string
+          quantidade?: number
+          solicitante_id?: string | null
+          status?: string | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: 'requisicoes_internas_aprovador_id_fkey'
+            columns: ['aprovador_id']
+            isOneToOne: false
+            referencedRelation: 'usuarios'
+            referencedColumns: ['id']
+          },
+          {
+            foreignKeyName: 'requisicoes_internas_empresa_id_fkey'
+            columns: ['empresa_id']
+            isOneToOne: false
+            referencedRelation: 'empresas'
+            referencedColumns: ['id']
+          },
+          {
+            foreignKeyName: 'requisicoes_internas_produto_id_fkey'
+            columns: ['produto_id']
+            isOneToOne: false
+            referencedRelation: 'produtos'
+            referencedColumns: ['id']
+          },
+          {
+            foreignKeyName: 'requisicoes_internas_solicitante_id_fkey'
+            columns: ['solicitante_id']
+            isOneToOne: false
+            referencedRelation: 'usuarios'
+            referencedColumns: ['id']
+          },
+        ]
+      }
       saas_faturas: {
         Row: {
           created_at: string | null
@@ -3476,6 +3547,18 @@ export const Constants = {
 //   created_at: timestamp with time zone (nullable, default: now())
 //   updated_at: timestamp with time zone (nullable, default: now())
 //   deleted_at: timestamp with time zone (nullable)
+// Table: requisicoes_internas
+//   id: uuid (not null, default: gen_random_uuid())
+//   empresa_id: uuid (not null)
+//   solicitante_id: uuid (nullable)
+//   produto_id: uuid (not null)
+//   quantidade: numeric (not null)
+//   justificativa: text (nullable)
+//   status: character varying (nullable, default: 'pendente'::character varying)
+//   aprovador_id: uuid (nullable)
+//   data_aprovacao: timestamp with time zone (nullable)
+//   created_at: timestamp with time zone (nullable, default: now())
+//   updated_at: timestamp with time zone (nullable, default: now())
 // Table: saas_faturas
 //   id: uuid (not null, default: gen_random_uuid())
 //   empresa_id: uuid (not null)
@@ -3742,6 +3825,14 @@ export const Constants = {
 //   FOREIGN KEY receituarios_agronomicos_cultura_id_fkey: FOREIGN KEY (cultura_id) REFERENCES culturas(id)
 //   FOREIGN KEY receituarios_agronomicos_empresa_id_fkey: FOREIGN KEY (empresa_id) REFERENCES empresas(id) ON DELETE CASCADE
 //   PRIMARY KEY receituarios_agronomicos_pkey: PRIMARY KEY (id)
+// Table: requisicoes_internas
+//   FOREIGN KEY requisicoes_internas_aprovador_id_fkey: FOREIGN KEY (aprovador_id) REFERENCES usuarios(id) ON DELETE SET NULL
+//   FOREIGN KEY requisicoes_internas_empresa_id_fkey: FOREIGN KEY (empresa_id) REFERENCES empresas(id) ON DELETE CASCADE
+//   PRIMARY KEY requisicoes_internas_pkey: PRIMARY KEY (id)
+//   FOREIGN KEY requisicoes_internas_produto_id_fkey: FOREIGN KEY (produto_id) REFERENCES produtos(id) ON DELETE CASCADE
+//   CHECK requisicoes_internas_quantidade_check: CHECK ((quantidade > (0)::numeric))
+//   FOREIGN KEY requisicoes_internas_solicitante_id_fkey: FOREIGN KEY (solicitante_id) REFERENCES usuarios(id) ON DELETE SET NULL
+//   CHECK requisicoes_internas_status_check: CHECK (((status)::text = ANY ((ARRAY['pendente'::character varying, 'aprovado'::character varying, 'recusado'::character varying])::text[])))
 // Table: saas_faturas
 //   FOREIGN KEY saas_faturas_empresa_id_fkey: FOREIGN KEY (empresa_id) REFERENCES empresas(id)
 //   PRIMARY KEY saas_faturas_pkey: PRIMARY KEY (id)
@@ -3928,6 +4019,10 @@ export const Constants = {
 // Table: receituarios_agronomicos
 //   Policy "receituarios_empresa" (ALL, PERMISSIVE) roles={public}
 //     USING: (empresa_id = ( SELECT usuarios.empresa_id    FROM usuarios   WHERE (usuarios.id = auth.uid())))
+// Table: requisicoes_internas
+//   Policy "requisicoes_internas_empresa" (ALL, PERMISSIVE) roles={authenticated}
+//     USING: (empresa_id = ( SELECT usuarios.empresa_id    FROM usuarios   WHERE (usuarios.id = auth.uid())))
+//     WITH CHECK: (empresa_id = ( SELECT usuarios.empresa_id    FROM usuarios   WHERE (usuarios.id = auth.uid())))
 // Table: saas_faturas
 //   Policy "saas_faturas" (SELECT, PERMISSIVE) roles={public}
 //     USING: true
@@ -4036,6 +4131,73 @@ export const Constants = {
 //   END;
 //   $function$
 //
+// FUNCTION processa_aprovacao_requisicao_interna()
+//   CREATE OR REPLACE FUNCTION public.processa_aprovacao_requisicao_interna()
+//    RETURNS trigger
+//    LANGUAGE plpgsql
+//   AS $function$
+//   DECLARE
+//       v_lote RECORD;
+//       v_qtd_restante NUMERIC;
+//       v_qtd_deduzir NUMERIC;
+//       v_estoque_total NUMERIC;
+//   BEGIN
+//       IF NEW.status = 'aprovado' AND OLD.status = 'pendente' THEN
+//           v_qtd_restante := NEW.quantidade;
+//
+//           SELECT COALESCE(SUM(quantidade), 0) INTO v_estoque_total
+//           FROM public.lotes_estoque
+//           WHERE produto_id = NEW.produto_id
+//             AND empresa_id = NEW.empresa_id
+//             AND deleted_at IS NULL;
+//
+//           IF v_estoque_total < v_qtd_restante THEN
+//               RAISE EXCEPTION 'Estoque insuficiente para aprovar a requisição.';
+//           END IF;
+//
+//           FOR v_lote IN
+//               SELECT * FROM public.lotes_estoque
+//               WHERE produto_id = NEW.produto_id
+//                 AND empresa_id = NEW.empresa_id
+//                 AND quantidade > 0
+//                 AND deleted_at IS NULL
+//               ORDER BY data_validade ASC NULLS LAST, data_entrada ASC
+//           LOOP
+//               IF v_qtd_restante <= 0 THEN
+//                   EXIT;
+//               END IF;
+//
+//               IF v_lote.quantidade >= v_qtd_restante THEN
+//                   v_qtd_deduzir := v_qtd_restante;
+//               ELSE
+//                   v_qtd_deduzir := v_lote.quantidade;
+//               END IF;
+//
+//               UPDATE public.lotes_estoque
+//               SET quantidade = quantidade - v_qtd_deduzir,
+//                   updated_at = NOW()
+//               WHERE id = v_lote.id;
+//
+//               INSERT INTO public.estoque_movimento (
+//                   empresa_id, lote_id, tipo_movimento, quantidade, motivo, created_at
+//               ) VALUES (
+//                   NEW.empresa_id, v_lote.id, 'saída', v_qtd_deduzir, 'Requisição Interna: ' || NEW.id, NOW()
+//               );
+//
+//               v_qtd_restante := v_qtd_restante - v_qtd_deduzir;
+//           END LOOP;
+//
+//           IF v_qtd_restante > 0 THEN
+//               RAISE EXCEPTION 'Erro interno: Não foi possível deduzir os lotes.';
+//           END IF;
+//
+//           NEW.data_aprovacao := NOW();
+//       END IF;
+//
+//       RETURN NEW;
+//   END;
+//   $function$
+//
 // FUNCTION set_atualizado_em()
 //   CREATE OR REPLACE FUNCTION public.set_atualizado_em()
 //    RETURNS trigger
@@ -4063,6 +4225,9 @@ export const Constants = {
 //   trigger_operacoes_campo_updated_at: CREATE TRIGGER trigger_operacoes_campo_updated_at BEFORE UPDATE ON public.operacoes_campo FOR EACH ROW EXECUTE FUNCTION set_atualizado_em()
 // Table: planos
 //   trigger_planos_updated_at: CREATE TRIGGER trigger_planos_updated_at BEFORE UPDATE ON public.planos FOR EACH ROW EXECUTE FUNCTION set_atualizado_em()
+// Table: requisicoes_internas
+//   trigger_aprovar_requisicao_interna: CREATE TRIGGER trigger_aprovar_requisicao_interna BEFORE UPDATE ON public.requisicoes_internas FOR EACH ROW EXECUTE FUNCTION processa_aprovacao_requisicao_interna()
+//   trigger_requisicoes_internas_updated_at: CREATE TRIGGER trigger_requisicoes_internas_updated_at BEFORE UPDATE ON public.requisicoes_internas FOR EACH ROW EXECUTE FUNCTION set_atualizado_em()
 // Table: safras
 //   trigger_encerrar_safra: CREATE TRIGGER trigger_encerrar_safra AFTER UPDATE ON public.safras FOR EACH ROW EXECUTE FUNCTION ao_encerrar_safra()
 //   trigger_safras_updated_at: CREATE TRIGGER trigger_safras_updated_at BEFORE UPDATE ON public.safras FOR EACH ROW EXECUTE FUNCTION set_atualizado_em()
