@@ -2480,40 +2480,61 @@ export type Database = {
       }
       safras: {
         Row: {
+          area_planejada_ha: number | null
+          codigo_safra: string | null
           created_at: string | null
           cultivar_id: string
           data_colheita_prevista: string | null
           data_colheita_real: string | null
           data_plantio: string | null
           deleted_at: string | null
+          densidade_plantio: number | null
           empresa_id: string
           id: string
+          meta_producao_kg: number | null
+          nome_safra: string | null
+          orcamento_total: number | null
+          produtividade_planejada: number | null
           status: string | null
           talhao_id: string
           updated_at: string | null
         }
         Insert: {
+          area_planejada_ha?: number | null
+          codigo_safra?: string | null
           created_at?: string | null
           cultivar_id: string
           data_colheita_prevista?: string | null
           data_colheita_real?: string | null
           data_plantio?: string | null
           deleted_at?: string | null
+          densidade_plantio?: number | null
           empresa_id: string
           id?: string
+          meta_producao_kg?: number | null
+          nome_safra?: string | null
+          orcamento_total?: number | null
+          produtividade_planejada?: number | null
           status?: string | null
           talhao_id: string
           updated_at?: string | null
         }
         Update: {
+          area_planejada_ha?: number | null
+          codigo_safra?: string | null
           created_at?: string | null
           cultivar_id?: string
           data_colheita_prevista?: string | null
           data_colheita_real?: string | null
           data_plantio?: string | null
           deleted_at?: string | null
+          densidade_plantio?: number | null
           empresa_id?: string
           id?: string
+          meta_producao_kg?: number | null
+          nome_safra?: string | null
+          orcamento_total?: number | null
+          produtividade_planejada?: number | null
           status?: string | null
           talhao_id?: string
           updated_at?: string | null
@@ -3580,6 +3601,13 @@ export const Constants = {
 //   created_at: timestamp with time zone (nullable, default: now())
 //   updated_at: timestamp with time zone (nullable, default: now())
 //   deleted_at: timestamp with time zone (nullable)
+//   nome_safra: character varying (nullable)
+//   codigo_safra: character varying (nullable)
+//   area_planejada_ha: numeric (nullable)
+//   densidade_plantio: integer (nullable)
+//   produtividade_planejada: numeric (nullable)
+//   meta_producao_kg: numeric (nullable)
+//   orcamento_total: numeric (nullable)
 // Table: suporte_mensagens
 //   id: uuid (not null, default: gen_random_uuid())
 //   ticket_id: uuid (not null)

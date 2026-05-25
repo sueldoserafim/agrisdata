@@ -175,7 +175,16 @@ export default function SafraForm() {
           <CardContent className="space-y-4">
             <Input disabled {...register('codigo_safra')} placeholder="Código da Safra" />
             <Input {...register('nome_safra')} placeholder="Nome da Safra *" />
-            <Select value={wTalhaoId} onValueChange={(v) => setValue('talhao_id', v)}>
+            <Select
+              value={wTalhaoId}
+              onValueChange={(v) => {
+                setValue('talhao_id', v)
+                const talhao = dataSources.talhoes.find((t) => t.id === v)
+                setValue('area_planejada_ha', talhao?.area_plantavel_ha || ('' as any), {
+                  shouldValidate: true,
+                })
+              }}
+            >
               <SelectTrigger>
                 <SelectValue placeholder="Talhão *" />
               </SelectTrigger>
