@@ -1,27 +1,6 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useMemo } from 'react'
 import { Link, useLocation } from 'react-router-dom'
-import {
-  LayoutDashboard,
-  Factory,
-  Package,
-  Plane,
-  DollarSign,
-  Users,
-  Truck,
-  LineChart,
-  LogOut,
-  Hexagon,
-  Loader2,
-  Map,
-  MapPin,
-  Sprout,
-  Leaf,
-  Tractor,
-  LifeBuoy,
-  UserCog,
-  ShoppingCart,
-  Settings,
-} from 'lucide-react'
+import { LogOut, Hexagon, Loader2, ChevronRight } from 'lucide-react'
 import {
   Sidebar,
   SidebarContent,
@@ -30,78 +9,33 @@ import {
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
+  SidebarMenuSub,
+  SidebarMenuSubItem,
+  SidebarMenuSubButton,
 } from '@/components/ui/sidebar'
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible'
 import { cn } from '@/lib/utils'
 import { useAuth } from '@/hooks/use-auth'
 import { supabase } from '@/lib/supabase/client'
 import { useToast } from '@/hooks/use-toast'
-import { CheckCircle } from 'lucide-react'
-
-const allMenuItems = [
-  { icon: LayoutDashboard, label: 'Dashboard', path: '/app', module: null },
-  { icon: Map, label: 'Fazendas', path: '/app/fazendas', module: 'cadastros' },
-  { icon: MapPin, label: 'Talhões', path: '/app/talhoes', module: 'cadastros' },
-  { icon: Sprout, label: 'Culturas', path: '/app/culturas', module: 'cadastros' },
-  { icon: Leaf, label: 'Cultivares/Variedades', path: '/app/cultivares', module: 'cadastros' },
-  { icon: Package, label: 'Produtos e Insumos', path: '/app/produtos', module: 'estoque' },
-  {
-    icon: ShoppingCart,
-    label: 'Solicitações de Compra',
-    path: '/app/compras/requisicoes',
-    module: 'estoque',
-  },
-  {
-    icon: CheckCircle,
-    label: 'Aprovações',
-    path: '/app/compras/aprovacoes',
-    module: 'estoque',
-    managerOnly: true,
-  },
-  {
-    icon: DollarSign,
-    label: 'Cotações',
-    path: '/app/compras/cotacoes',
-    module: 'estoque',
-  },
-  {
-    icon: Package,
-    label: 'Pedidos',
-    path: '/app/compras/pedidos',
-    module: 'estoque',
-  },
-  {
-    icon: Users,
-    label: 'Fornecedores',
-    path: '/app/compras/fornecedores',
-    module: 'estoque',
-  },
-  { icon: Tractor, label: 'Operações de Campo', path: '/app/operacoes', module: 'operacoes' },
-  { icon: Factory, label: 'Produção', path: '/app/producao', module: 'producao' },
-  { icon: Package, label: 'Packing', path: '/app/packing', module: 'packing' },
-  { icon: Plane, label: 'Exportação', path: '/app/exportacao', module: 'exportacao' },
-  { icon: DollarSign, label: 'Financeiro', path: '/app/financeiro', module: 'financeiro' },
-  { icon: Users, label: 'RH', path: '/app/rh', module: 'rh' },
-  { icon: Truck, label: 'Frota', path: '/app/frota', module: 'frota' },
-  { icon: LineChart, label: 'BI', path: '/app/bi', module: 'bi' },
-  { icon: LifeBuoy, label: 'Suporte', path: '/app/suporte', module: 'suporte' },
-  { icon: UserCog, label: 'Usuários', path: '/app/usuarios', module: null, adminOnly: true },
-  {
-    icon: Settings,
-    label: 'Configurações',
-    path: '/app/configuracoes',
-    module: null,
-    adminOnly: true,
-  },
-]
+import {
+  allMenuItems,
+  filterMenu,
+  isItemActive,
+  isPathActive,
+  MenuItemRaw,
+} from '@/lib/menu-config'
 
 export function AppSidebar() {
   const location = useLocation()
   const { user, signOut } = useAuth()
   const { toast } = useToast()
+
   const [modulos, setModulos] = useState<string[]>([])
   const [perfil, setPerfil] = useState<string | null>(null)
   const [loading, setLoading] = useState(true)
   const [pendingApprovals, setPendingApprovals] = useState(0)
+  const [openGroups, setOpenGroups] = useState<Record<string, boolean>>({})
 
   useEffect(() => {
     let mounted = true
@@ -113,10 +47,7 @@ export function AppSidebar() {
           .select('empresa_id, perfil')
           .eq('id', user.id)
           .single()
-
-        if (mounted && profile) {
-          setPerfil(profile.perfil)
-        }
+        if (mounted && profile) setPerfil(profile.perfil)
 
         if (profile?.empresa_id) {
           const { data: empresa } = await supabase
@@ -124,24 +55,17 @@ export function AppSidebar() {
             .select('modulos_habilitados')
             .eq('id', profile.empresa_id)
             .single()
-
           if (mounted && empresa) {
             const loadedModulos = empresa.modulos_habilitados || []
             setModulos(loadedModulos.length > 0 ? loadedModulos : ['dashboard'])
           }
 
-          if (
-            mounted &&
-            (profile.perfil === 'admin' ||
-              profile.perfil === 'admin_saas' ||
-              profile.perfil === 'gerente')
-          ) {
+          if (mounted && ['admin', 'admin_saas', 'gerente'].includes(profile.perfil || '')) {
             const { count } = await supabase
               .from('compras_requisicao')
               .select('*', { count: 'exact', head: true })
               .eq('empresa_id', profile.empresa_id)
               .eq('status', 'pendente')
-
             if (count) setPendingApprovals(count)
 
             const channel = supabase
@@ -165,7 +89,6 @@ export function AppSidebar() {
                 },
               )
               .subscribe()
-
             return () => {
               supabase.removeChannel(channel)
             }
@@ -186,12 +109,121 @@ export function AppSidebar() {
 
   const isAdmin = perfil === 'admin' || perfil === 'admin_saas'
   const isManager = isAdmin || perfil === 'gerente'
+  const visibleMenuItems = useMemo(
+    () => filterMenu(allMenuItems, isAdmin, isManager, modulos),
+    [isAdmin, isManager, modulos],
+  )
 
-  const visibleMenuItems = allMenuItems.filter((item) => {
-    if (item.adminOnly && !isAdmin) return false
-    if (item.managerOnly && !isManager) return false
-    return isAdmin || item.module === null || modulos.includes(item.module)
-  })
+  useEffect(() => {
+    setOpenGroups((prev) => {
+      const next = { ...prev }
+      let changed = false
+      const checkGroups = (items: MenuItemRaw[]) => {
+        items.forEach((item) => {
+          if (item.subItems) {
+            if (isItemActive(item, location.pathname) && !next[item.label]) {
+              next[item.label] = true
+              changed = true
+            }
+            checkGroups(item.subItems)
+          }
+        })
+      }
+      checkGroups(visibleMenuItems)
+      return changed ? next : prev
+    })
+  }, [location.pathname, visibleMenuItems])
+
+  const renderMenuItem = (item: MenuItemRaw, depth = 0) => {
+    const isActive = isItemActive(item, location.pathname)
+    const isLeafActive = item.path ? isPathActive(item.path, location.pathname) : false
+
+    if (item.subItems) {
+      const InnerCollapsible = (
+        <Collapsible
+          key={item.label}
+          open={openGroups[item.label] || false}
+          onOpenChange={(open) => setOpenGroups((prev) => ({ ...prev, [item.label]: open }))}
+          className={cn(depth === 0 ? 'group/collapsible' : 'group/collapsible-sub')}
+        >
+          <CollapsibleTrigger asChild>
+            {depth === 0 ? (
+              <SidebarMenuButton
+                tooltip={item.label}
+                isActive={isActive && !openGroups[item.label]}
+                className={cn(
+                  'h-11 px-4 text-base font-medium rounded-xl transition-all',
+                  isActive && !openGroups[item.label]
+                    ? 'bg-primary/10 text-primary hover:bg-primary/10 hover:text-primary relative before:absolute before:left-0 before:top-1/2 before:-translate-y-1/2 before:h-8 before:w-1 before:bg-primary before:rounded-r-md'
+                    : 'text-muted-foreground hover:bg-muted hover:text-foreground',
+                )}
+              >
+                {item.icon && <item.icon className="size-5 mr-3" />}
+                <span>{item.label}</span>
+                <ChevronRight className="ml-auto transition-transform group-data-[state=open]/collapsible:rotate-90" />
+              </SidebarMenuButton>
+            ) : (
+              <SidebarMenuSubButton isActive={isActive && !openGroups[item.label]}>
+                {item.icon && <item.icon className="size-4" />}
+                <span>{item.label}</span>
+                <ChevronRight className="ml-auto size-4 transition-transform group-data-[state=open]/collapsible-sub:rotate-90" />
+              </SidebarMenuSubButton>
+            )}
+          </CollapsibleTrigger>
+          <CollapsibleContent>
+            <SidebarMenuSub>
+              {item.subItems.map((subItem) => renderMenuItem(subItem, depth + 1))}
+            </SidebarMenuSub>
+          </CollapsibleContent>
+        </Collapsible>
+      )
+      return depth === 0 ? (
+        <SidebarMenuItem key={item.label}>{InnerCollapsible}</SidebarMenuItem>
+      ) : (
+        <SidebarMenuSubItem key={item.label}>{InnerCollapsible}</SidebarMenuSubItem>
+      )
+    }
+
+    const LeafContent = (
+      <Link to={item.path || '#'}>
+        {item.icon && <item.icon className={depth === 0 ? 'size-5 mr-3' : 'size-4'} />}
+        <span>{item.label}</span>
+        {item.badge === 'pendingApprovals' && pendingApprovals > 0 && (
+          <div className="bg-destructive text-destructive-foreground text-[10px] font-bold px-2 py-0.5 rounded-full ml-auto animate-fade-in flex items-center justify-center">
+            {pendingApprovals}
+          </div>
+        )}
+      </Link>
+    )
+
+    if (depth === 0) {
+      return (
+        <SidebarMenuItem key={item.path || item.label}>
+          <SidebarMenuButton
+            asChild
+            isActive={isLeafActive}
+            tooltip={item.label}
+            className={cn(
+              'h-11 px-4 text-base font-medium rounded-xl transition-all',
+              isLeafActive
+                ? 'bg-primary/10 text-primary hover:bg-primary/10 hover:text-primary relative before:absolute before:left-0 before:top-1/2 before:-translate-y-1/2 before:h-8 before:w-1 before:bg-primary before:rounded-r-md'
+                : 'text-muted-foreground hover:bg-muted hover:text-foreground',
+            )}
+          >
+            {LeafContent}
+          </SidebarMenuButton>
+        </SidebarMenuItem>
+      )
+    }
+
+    return (
+      <SidebarMenuSubItem key={item.path || item.label}>
+        <SidebarMenuSubButton asChild isActive={isLeafActive}>
+          {LeafContent}
+        </SidebarMenuSubButton>
+      </SidebarMenuSubItem>
+    )
+  }
 
   return (
     <Sidebar className="border-r border-sidebar-border bg-sidebar">
@@ -209,37 +241,7 @@ export function AppSidebar() {
           </div>
         ) : (
           <SidebarMenu className="gap-2">
-            {visibleMenuItems.map((item) => {
-              const isActive =
-                location.pathname === item.path ||
-                (item.path !== '/app' && location.pathname.startsWith(item.path))
-              return (
-                <SidebarMenuItem key={item.path}>
-                  <SidebarMenuButton
-                    asChild
-                    isActive={isActive}
-                    className={cn(
-                      'h-11 px-4 text-base font-medium rounded-xl transition-all',
-                      isActive
-                        ? 'bg-primary/10 text-primary hover:bg-primary/10 hover:text-primary relative before:absolute before:left-0 before:top-1/2 before:-translate-y-1/2 before:h-8 before:w-1 before:bg-primary before:rounded-r-md'
-                        : 'text-muted-foreground hover:bg-muted hover:text-foreground',
-                    )}
-                  >
-                    <Link to={item.path} className="flex items-center w-full justify-between">
-                      <div className="flex items-center">
-                        <item.icon className={cn('size-5 mr-3', isActive ? 'text-primary' : '')} />
-                        <span>{item.label}</span>
-                      </div>
-                      {item.path === '/app/compras/aprovacoes' && pendingApprovals > 0 && (
-                        <div className="bg-destructive text-destructive-foreground text-[10px] font-bold px-2 py-0.5 rounded-full flex items-center justify-center animate-fade-in">
-                          {pendingApprovals}
-                        </div>
-                      )}
-                    </Link>
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
-              )
-            })}
+            {visibleMenuItems.map((item) => renderMenuItem(item))}
           </SidebarMenu>
         )}
       </SidebarContent>
