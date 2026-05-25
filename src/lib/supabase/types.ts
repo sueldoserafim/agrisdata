@@ -141,30 +141,51 @@ export type Database = {
           created_at: string | null
           deleted_at: string | null
           empresa_id: string
+          fazenda_id: string | null
           id: string
           localizacao: string | null
           nome: string
+          responsavel_id: string | null
+          temp_maxima: number | null
+          temp_minima: number | null
+          temperatura_controlada: boolean | null
+          tipo: string | null
           updated_at: string | null
+          usa_peps: boolean | null
         }
         Insert: {
           capacidade_toneladas?: number | null
           created_at?: string | null
           deleted_at?: string | null
           empresa_id: string
+          fazenda_id?: string | null
           id?: string
           localizacao?: string | null
           nome: string
+          responsavel_id?: string | null
+          temp_maxima?: number | null
+          temp_minima?: number | null
+          temperatura_controlada?: boolean | null
+          tipo?: string | null
           updated_at?: string | null
+          usa_peps?: boolean | null
         }
         Update: {
           capacidade_toneladas?: number | null
           created_at?: string | null
           deleted_at?: string | null
           empresa_id?: string
+          fazenda_id?: string | null
           id?: string
           localizacao?: string | null
           nome?: string
+          responsavel_id?: string | null
+          temp_maxima?: number | null
+          temp_minima?: number | null
+          temperatura_controlada?: boolean | null
+          tipo?: string | null
           updated_at?: string | null
+          usa_peps?: boolean | null
         }
         Relationships: [
           {
@@ -172,6 +193,20 @@ export type Database = {
             columns: ["empresa_id"]
             isOneToOne: false
             referencedRelation: "empresas"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "armazens_fazenda_id_fkey"
+            columns: ["fazenda_id"]
+            isOneToOne: false
+            referencedRelation: "fazendas"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "armazens_responsavel_id_fkey"
+            columns: ["responsavel_id"]
+            isOneToOne: false
+            referencedRelation: "usuarios"
             referencedColumns: ["id"]
           },
         ]
@@ -525,12 +560,14 @@ export type Database = {
           data_entrega_prevista: string | null
           deleted_at: string | null
           empresa_id: string
-          fornecedor_id: string
+          fornecedor_id: string | null
           id: string
+          numero_nota_fiscal: string | null
           preco_unitario: number | null
           produto_id: string
           quantidade: number | null
           requisicao_id: string
+          status: string | null
           updated_at: string | null
         }
         Insert: {
@@ -538,12 +575,14 @@ export type Database = {
           data_entrega_prevista?: string | null
           deleted_at?: string | null
           empresa_id: string
-          fornecedor_id: string
+          fornecedor_id?: string | null
           id?: string
+          numero_nota_fiscal?: string | null
           preco_unitario?: number | null
           produto_id: string
           quantidade?: number | null
           requisicao_id: string
+          status?: string | null
           updated_at?: string | null
         }
         Update: {
@@ -551,12 +590,14 @@ export type Database = {
           data_entrega_prevista?: string | null
           deleted_at?: string | null
           empresa_id?: string
-          fornecedor_id?: string
+          fornecedor_id?: string | null
           id?: string
+          numero_nota_fiscal?: string | null
           preco_unitario?: number | null
           produto_id?: string
           quantidade?: number | null
           requisicao_id?: string
+          status?: string | null
           updated_at?: string | null
         }
         Relationships: [
@@ -2671,6 +2712,13 @@ export const Constants = {
 //   created_at: timestamp with time zone (nullable, default: now())
 //   updated_at: timestamp with time zone (nullable, default: now())
 //   deleted_at: timestamp with time zone (nullable)
+//   fazenda_id: uuid (nullable)
+//   tipo: character varying (nullable)
+//   responsavel_id: uuid (nullable)
+//   usa_peps: boolean (nullable, default: false)
+//   temperatura_controlada: boolean (nullable, default: false)
+//   temp_minima: numeric (nullable)
+//   temp_maxima: numeric (nullable)
 // Table: audit_logs
 //   id: uuid (not null, default: gen_random_uuid())
 //   empresa_id: uuid (not null)
@@ -2746,13 +2794,15 @@ export const Constants = {
 //   empresa_id: uuid (not null)
 //   requisicao_id: uuid (not null)
 //   produto_id: uuid (not null)
-//   fornecedor_id: uuid (not null)
+//   fornecedor_id: uuid (nullable)
 //   quantidade: numeric (nullable)
 //   preco_unitario: numeric (nullable)
 //   data_entrega_prevista: date (nullable)
 //   created_at: timestamp with time zone (nullable, default: now())
 //   updated_at: timestamp with time zone (nullable, default: now())
 //   deleted_at: timestamp with time zone (nullable)
+//   status: character varying (nullable, default: 'pendente'::character varying)
+//   numero_nota_fiscal: character varying (nullable)
 // Table: compras_requisicao
 //   id: uuid (not null, default: gen_random_uuid())
 //   empresa_id: uuid (not null)
@@ -3175,7 +3225,9 @@ export const Constants = {
 //   FOREIGN KEY analises_solo_talhao_id_fkey: FOREIGN KEY (talhao_id) REFERENCES talhoes(id) ON DELETE CASCADE
 // Table: armazens
 //   FOREIGN KEY armazens_empresa_id_fkey: FOREIGN KEY (empresa_id) REFERENCES empresas(id) ON DELETE CASCADE
+//   FOREIGN KEY armazens_fazenda_id_fkey: FOREIGN KEY (fazenda_id) REFERENCES fazendas(id)
 //   PRIMARY KEY armazens_pkey: PRIMARY KEY (id)
+//   FOREIGN KEY armazens_responsavel_id_fkey: FOREIGN KEY (responsavel_id) REFERENCES usuarios(id)
 // Table: audit_logs
 //   FOREIGN KEY audit_logs_empresa_id_fkey: FOREIGN KEY (empresa_id) REFERENCES empresas(id)
 //   PRIMARY KEY audit_logs_pkey: PRIMARY KEY (id)
@@ -3349,8 +3401,9 @@ export const Constants = {
 //   Policy "analises_solo_empresa" (ALL, PERMISSIVE) roles={public}
 //     USING: (empresa_id = ( SELECT usuarios.empresa_id    FROM usuarios   WHERE (usuarios.id = auth.uid())))
 // Table: armazens
-//   Policy "armazens_empresa" (ALL, PERMISSIVE) roles={public}
+//   Policy "armazens_empresa" (ALL, PERMISSIVE) roles={authenticated}
 //     USING: (empresa_id = ( SELECT usuarios.empresa_id    FROM usuarios   WHERE (usuarios.id = auth.uid())))
+//     WITH CHECK: (empresa_id = ( SELECT usuarios.empresa_id    FROM usuarios   WHERE (usuarios.id = auth.uid())))
 // Table: audit_logs
 //   Policy "audit_logs_read" (SELECT, PERMISSIVE) roles={public}
 //     USING: (empresa_id = ( SELECT usuarios.empresa_id    FROM usuarios   WHERE (usuarios.id = auth.uid())))
@@ -3373,11 +3426,13 @@ export const Constants = {
 //   Policy "colheita_registros_empresa" (ALL, PERMISSIVE) roles={public}
 //     USING: (empresa_id = ( SELECT usuarios.empresa_id    FROM usuarios   WHERE (usuarios.id = auth.uid())))
 // Table: compras_pedido
-//   Policy "compras_pedido_empresa" (ALL, PERMISSIVE) roles={public}
+//   Policy "compras_pedido_empresa" (ALL, PERMISSIVE) roles={authenticated}
 //     USING: (empresa_id = ( SELECT usuarios.empresa_id    FROM usuarios   WHERE (usuarios.id = auth.uid())))
+//     WITH CHECK: (empresa_id = ( SELECT usuarios.empresa_id    FROM usuarios   WHERE (usuarios.id = auth.uid())))
 // Table: compras_requisicao
-//   Policy "compras_requisicao_empresa" (ALL, PERMISSIVE) roles={public}
+//   Policy "compras_requisicao_empresa" (ALL, PERMISSIVE) roles={authenticated}
 //     USING: (empresa_id = ( SELECT usuarios.empresa_id    FROM usuarios   WHERE (usuarios.id = auth.uid())))
+//     WITH CHECK: (empresa_id = ( SELECT usuarios.empresa_id    FROM usuarios   WHERE (usuarios.id = auth.uid())))
 // Table: containers
 //   Policy "containers_empresa" (ALL, PERMISSIVE) roles={public}
 //     USING: (empresa_id = ( SELECT usuarios.empresa_id    FROM usuarios   WHERE (usuarios.id = auth.uid())))
@@ -3406,8 +3461,9 @@ export const Constants = {
 //   Policy "equipamentos_empresa" (ALL, PERMISSIVE) roles={public}
 //     USING: (empresa_id = ( SELECT usuarios.empresa_id    FROM usuarios   WHERE (usuarios.id = auth.uid())))
 // Table: estoque_movimento
-//   Policy "estoque_movimento_empresa" (ALL, PERMISSIVE) roles={public}
+//   Policy "estoque_movimento_empresa" (ALL, PERMISSIVE) roles={authenticated}
 //     USING: (empresa_id = ( SELECT usuarios.empresa_id    FROM usuarios   WHERE (usuarios.id = auth.uid())))
+//     WITH CHECK: (empresa_id = ( SELECT usuarios.empresa_id    FROM usuarios   WHERE (usuarios.id = auth.uid())))
 // Table: fazendas
 //   Policy "fazendas_empresa" (ALL, PERMISSIVE) roles={authenticated}
 //     USING: (empresa_id = ( SELECT usuarios.empresa_id    FROM usuarios   WHERE (usuarios.id = auth.uid())))
@@ -3416,8 +3472,9 @@ export const Constants = {
 //   Policy "financeiro_lancamentos_empresa" (ALL, PERMISSIVE) roles={public}
 //     USING: (empresa_id = ( SELECT usuarios.empresa_id    FROM usuarios   WHERE (usuarios.id = auth.uid())))
 // Table: fornecedores
-//   Policy "fornecedores_empresa" (ALL, PERMISSIVE) roles={public}
+//   Policy "fornecedores_empresa" (ALL, PERMISSIVE) roles={authenticated}
 //     USING: (empresa_id = ( SELECT usuarios.empresa_id    FROM usuarios   WHERE (usuarios.id = auth.uid())))
+//     WITH CHECK: (empresa_id = ( SELECT usuarios.empresa_id    FROM usuarios   WHERE (usuarios.id = auth.uid())))
 // Table: funcionarios
 //   Policy "funcionarios_empresa" (ALL, PERMISSIVE) roles={public}
 //     USING: (empresa_id = ( SELECT usuarios.empresa_id    FROM usuarios   WHERE (usuarios.id = auth.uid())))
@@ -3428,8 +3485,9 @@ export const Constants = {
 //   Policy "historico_produtividade_empresa" (ALL, PERMISSIVE) roles={public}
 //     USING: (empresa_id = ( SELECT usuarios.empresa_id    FROM usuarios   WHERE (usuarios.id = auth.uid())))
 // Table: lotes_estoque
-//   Policy "lotes_estoque_empresa" (ALL, PERMISSIVE) roles={public}
+//   Policy "lotes_estoque_empresa" (ALL, PERMISSIVE) roles={authenticated}
 //     USING: (empresa_id = ( SELECT usuarios.empresa_id    FROM usuarios   WHERE (usuarios.id = auth.uid())))
+//     WITH CHECK: (empresa_id = ( SELECT usuarios.empresa_id    FROM usuarios   WHERE (usuarios.id = auth.uid())))
 // Table: monitoramento_pragas
 //   Policy "monitoramento_pragas_empresa" (ALL, PERMISSIVE) roles={public}
 //     USING: (empresa_id = ( SELECT usuarios.empresa_id    FROM usuarios   WHERE (usuarios.id = auth.uid())))
