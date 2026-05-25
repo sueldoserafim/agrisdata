@@ -19,6 +19,7 @@ import {
   Tractor,
   LifeBuoy,
   UserCog,
+  ShoppingCart,
 } from 'lucide-react'
 import {
   Sidebar,
@@ -40,6 +41,12 @@ const allMenuItems = [
   { icon: Sprout, label: 'Culturas', path: '/app/culturas', module: 'cadastros' },
   { icon: Leaf, label: 'Cultivares/Variedades', path: '/app/cultivares', module: 'cadastros' },
   { icon: Package, label: 'Produtos e Insumos', path: '/app/produtos', module: 'estoque' },
+  {
+    icon: ShoppingCart,
+    label: 'Solicitações de Compra',
+    path: '/app/compras/requisicoes',
+    module: 'estoque',
+  },
   { icon: Tractor, label: 'Operações de Campo', path: '/app/operacoes', module: 'operacoes' },
   { icon: Factory, label: 'Produção', path: '/app/producao', module: 'producao' },
   { icon: Package, label: 'Packing', path: '/app/packing', module: 'packing' },

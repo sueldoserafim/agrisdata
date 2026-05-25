@@ -34,6 +34,8 @@ import CultivarList from './pages/cultivares/CultivarList'
 import CultivarForm from './pages/cultivares/CultivarForm'
 import ProdutoList from './pages/produtos/ProdutoList'
 import ProdutoForm from './pages/produtos/ProdutoForm'
+import RequisicaoList from './pages/compras/RequisicaoList'
+import RequisicaoForm from './pages/compras/RequisicaoForm'
 
 const App = () => (
   <BrowserRouter future={{ v7_startTransition: false, v7_relativeSplatPath: false }}>
@@ -89,6 +91,11 @@ const App = () => (
                 <Route path="/app/produtos" element={<ProdutoList />} />
                 <Route path="/app/produtos/new" element={<ProdutoForm />} />
                 <Route path="/app/produtos/:id" element={<ProdutoForm />} />
+
+                <Route path="/app/compras/requisicoes" element={<RequisicaoList />} />
+                <Route path="/app/compras/requisicoes/new" element={<RequisicaoForm />} />
+                <Route path="/app/compras/requisicoes/:id" element={<RequisicaoForm />} />
+
                 <Route
                   path="/app/operacoes"
                   element={<div className="p-8 font-semibold text-xl">Operações de Campo</div>}
