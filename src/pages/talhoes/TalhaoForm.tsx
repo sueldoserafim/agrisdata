@@ -26,6 +26,7 @@ import { Textarea } from '@/components/ui/textarea'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
 import { ArrowLeft, Info, Save, Loader2 } from 'lucide-react'
 import { useToast } from '@/hooks/use-toast'
+import { useEmpresa } from '@/hooks/use-empresa'
 import { TalhaoInstructionsSheet } from './components/talhao-instructions-sheet'
 
 const formSchema = z
@@ -64,10 +65,10 @@ export default function TalhaoForm() {
   const { id } = useParams()
   const navigate = useNavigate()
   const { toast } = useToast()
+  const { empresa } = useEmpresa()
   const [isLoading, setIsLoading] = useState(true)
   const [isSaving, setIsSaving] = useState(false)
   const [fazendas, setFazendas] = useState<{ id: string; nome: string }[]>([])
-  const [empresaId, setEmpresaId] = useState('')
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -86,18 +87,14 @@ export default function TalhaoForm() {
 
   useEffect(() => {
     async function loadData() {
-      const {
-        data: { user },
-      } = await supabase.auth.getUser()
-      if (!user) return
-      const { data: profile } = await supabase
-        .from('usuarios')
-        .select('empresa_id')
-        .eq('id', user.id)
-        .single()
-      if (profile) setEmpresaId(profile.empresa_id)
+      if (!empresa?.id) return
 
-      const { data: fazs } = await supabase.from('fazendas').select('id, nome').order('nome')
+      const { data: fazs } = await supabase
+        .from('fazendas')
+        .select('id, nome')
+        .eq('empresa_id', empresa.id)
+        .is('deleted_at', null)
+        .order('nome')
       if (fazs) setFazendas(fazs)
 
       if (id) {
@@ -124,12 +121,13 @@ export default function TalhaoForm() {
       setIsLoading(false)
     }
     loadData()
-  }, [id, form])
+  }, [id, empresa?.id, form])
 
   const onSubmit = async (values: z.infer<typeof formSchema>) => {
+    if (!empresa?.id) return
     setIsSaving(true)
     try {
-      const payload = { ...values, empresa_id: empresaId }
+      const payload = { ...values, empresa_id: empresa.id }
       if (id) {
         const { error } = await supabase.from('talhoes').update(payload).eq('id', id)
         if (error) throw error

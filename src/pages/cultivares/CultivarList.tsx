@@ -1,7 +1,15 @@
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
-import { Plus, Leaf, Edit, Trash2 } from 'lucide-react'
+import { Plus, Leaf, Edit, Trash2, HelpCircle } from 'lucide-react'
 import { Button } from '@/components/ui/button'
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from '@/components/ui/dialog'
 import {
   Table,
   TableBody,
@@ -96,12 +104,72 @@ export default function CultivarList() {
             <p className="text-muted-foreground">Gerencie as variedades e suas características.</p>
           </div>
         </div>
-        <Button asChild>
-          <Link to="/app/cultivares/new">
-            <Plus className="size-4 mr-2" />
-            Nova Cultivar
-          </Link>
-        </Button>
+        <div className="flex items-center gap-2">
+          <Dialog>
+            <DialogTrigger asChild>
+              <Button variant="outline">
+                <HelpCircle className="size-4 mr-2" />
+                Ajuda
+              </Button>
+            </DialogTrigger>
+            <DialogContent className="max-w-md max-h-[90vh] overflow-y-auto">
+              <DialogHeader>
+                <DialogTitle>Como cadastrar uma Cultivar</DialogTitle>
+                <DialogDescription>
+                  Guia para preenchimento dos campos de Cultivar.
+                </DialogDescription>
+              </DialogHeader>
+              <div className="space-y-4 text-sm mt-2">
+                <div>
+                  <h4 className="font-semibold text-foreground">Nome</h4>
+                  <p className="text-muted-foreground">
+                    Obrigatório. O nome da cultivar (ex: BRS Vitória). Deve ser único na sua
+                    empresa.
+                  </p>
+                </div>
+                <div>
+                  <h4 className="font-semibold text-foreground">Cultura</h4>
+                  <p className="text-muted-foreground">
+                    Obrigatório. A cultivar precisa estar vinculada a uma cultura já previamente
+                    cadastrada no sistema.
+                  </p>
+                </div>
+                <div>
+                  <h4 className="font-semibold text-foreground">Dias para Colheita</h4>
+                  <p className="text-muted-foreground">
+                    A duração média do ciclo em dias, desde o plantio ou poda até a colheita.
+                  </p>
+                </div>
+                <div>
+                  <h4 className="font-semibold text-foreground">Produtividade Esperada (t/ha)</h4>
+                  <p className="text-muted-foreground">
+                    A expectativa de rendimento médio da variedade em toneladas por hectare.
+                  </p>
+                </div>
+                <div>
+                  <h4 className="font-semibold text-foreground">Shelf Life</h4>
+                  <p className="text-muted-foreground">
+                    O tempo de prateleira ou vida útil do produto. Defina os dias em condição ideal
+                    e o mínimo exigido.
+                  </p>
+                </div>
+                <div>
+                  <h4 className="font-semibold text-foreground">Código Interno / Detentor</h4>
+                  <p className="text-muted-foreground">
+                    Informações administrativas, como um código próprio da empresa e a
+                    empresa/instituição detentora da patente ou licenciamento.
+                  </p>
+                </div>
+              </div>
+            </DialogContent>
+          </Dialog>
+          <Button asChild>
+            <Link to="/app/cultivares/new">
+              <Plus className="size-4 mr-2" />
+              Nova Cultivar
+            </Link>
+          </Button>
+        </div>
       </div>
 
       <Card>
