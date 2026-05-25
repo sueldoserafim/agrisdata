@@ -332,6 +332,64 @@ export const comprasService = {
       if (prodError) throw prodError
     }
 
-    return true
+    const avaliacao =
+      item.qtd_pedida !== item.qtd_recebida || item.motivo_divergencia ? 'divergente' : 'conforme'
+    await supabase
+      .from('compras_pedido')
+      .update({ avaliacao_recebimento: avaliacao })
+      .eq('id', payload.pedido_id)
+
+    return { lote, pedido: { id: payload.pedido_id } }
+  },
+
+  async createDevolucao(payload: any) {
+    const { data: devolucao, error: devError } = await supabase
+      .from('devolucoes_compras' as any)
+      .insert([
+        {
+          empresa_id: payload.empresa_id,
+          pedido_id: payload.pedido_id,
+          fornecedor_id: payload.fornecedor_id,
+          produto_id: payload.produto_id,
+          lote_id: payload.lote_id,
+          quantidade: payload.quantidade,
+          motivo: payload.motivo,
+          status: 'pendente',
+        },
+      ])
+      .select()
+      .single()
+    if (devError) throw devError
+
+    const { error: movError } = await supabase.from('estoque_movimento').insert([
+      {
+        empresa_id: payload.empresa_id,
+        lote_id: payload.lote_id,
+        tipo_movimento: 'saida',
+        quantidade: payload.quantidade,
+        motivo: `Devolução: ${payload.motivo}`,
+      },
+    ])
+    if (movError) throw movError
+
+    await supabase
+      .from('compras_pedido')
+      .update({ status: 'aguardando_troca' })
+      .eq('id', payload.pedido_id)
+
+    return devolucao
+  },
+
+  async getDevolucoes(empresaId: string) {
+    const { data, error } = await supabase
+      .from('devolucoes_compras' as any)
+      .select(
+        '*, fornecedor:fornecedores(nome), produto:produtos(nome, unidade_medida), pedido:compras_pedido(numero_nota_fiscal)',
+      )
+      .eq('empresa_id', empresaId)
+      .is('deleted_at', null)
+      .order('created_at', { ascending: false })
+    if (error) throw error
+    return data
   },
 }

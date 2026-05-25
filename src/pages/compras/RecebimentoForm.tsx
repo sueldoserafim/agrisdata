@@ -113,13 +113,13 @@ export default function RecebimentoForm() {
   const item = itens[0]
 
   useEffect(() => {
-    if (!empresa?.id) return
-    supabase
-      .from('compras_pedido')
-      .select('*, produto:produtos(nome, unidade_medida)')
-      .eq('empresa_id', empresa.id)
-      .eq('status', 'pendente')
-      .then(({ data }) => setPedidos(data || []))
+    if (!empresa?.id)
+      return supabase
+        .from('compras_pedido')
+        .select('*, produto:produtos(nome, unidade_medida)')
+        .eq('empresa_id', empresa.id)
+        .eq('status', 'pendente')
+        .then(({ data }) => setPedidos(data || []))
     supabase
       .from('usuarios')
       .select('id, nome')
@@ -176,12 +176,54 @@ export default function RecebimentoForm() {
     }
   }
 
+  const [successData, setSuccessData] = useState<any>(null)
+  const [showDevolucaoDialog, setShowDevolucaoDialog] = useState(false)
+  const [devolucaoQtd, setDevolucaoQtd] = useState(0)
+  const [devolucaoMotivo, setDevolucaoMotivo] = useState('')
+
   const onSubmit = async (data: any) => {
     if (!empresa?.id) return
     setLoading(true)
     try {
-      await comprasService.receberPedido({ ...data, empresa_id: empresa.id })
+      const res = await comprasService.receberPedido({ ...data, empresa_id: empresa.id })
       toast({ title: 'Recebimento registrado com sucesso!' })
+
+      const pedidoInfo = pedidos.find((p) => p.id === data.pedido_id)
+      setSuccessData({
+        lote: res.lote,
+        pedido_id: data.pedido_id,
+        produto_id: item.produto_id,
+        nome_produto: item.nome_produto,
+        fornecedor_id: pedidoInfo?.fornecedor_id,
+        isDivergente: item.qtd_pedida !== item.qtd_recebida || !!item.motivo_divergencia,
+        armazem_nome: armazens.find((a) => a.id === item.armazem_id)?.nome,
+      })
+    } catch (error: any) {
+      toast({ title: 'Erro', description: error.message, variant: 'destructive' })
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const handleDevolucao = async () => {
+    if (!empresa?.id || !successData) return
+    if (devolucaoQtd <= 0) {
+      toast({ title: 'Quantidade inválida', variant: 'destructive' })
+      return
+    }
+    setLoading(true)
+    try {
+      await comprasService.createDevolucao({
+        empresa_id: empresa.id,
+        pedido_id: successData.pedido_id,
+        fornecedor_id: successData.fornecedor_id,
+        produto_id: successData.produto_id,
+        lote_id: successData.lote.id,
+        quantidade: devolucaoQtd,
+        motivo: devolucaoMotivo,
+      })
+      toast({ title: 'Devolução registrada com sucesso!' })
+      setShowDevolucaoDialog(false)
       navigate('/app/compras/pedidos')
     } catch (error: any) {
       toast({ title: 'Erro', description: error.message, variant: 'destructive' })
@@ -190,8 +232,110 @@ export default function RecebimentoForm() {
     }
   }
 
+  const handleImprimirEtiquetas = () => {
+    window.print()
+  }
+
   const divergencia = item ? item.qtd_pedida - item.qtd_recebida : 0
-  const isDivergente = divergencia !== 0
+  const isDivergente = divergencia !== 0 || !!item?.motivo_divergencia
+
+  if (successData) {
+    return (
+      <div className="p-6 max-w-2xl mx-auto space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
+        <Card className="border-border shadow-md">
+          <CardContent className="pt-10 pb-8 flex flex-col items-center text-center">
+            <div className="size-16 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center mb-4">
+              <CheckCircle2 className="size-8" />
+            </div>
+            <h2 className="text-2xl font-bold mb-2">Recebimento Confirmado!</h2>
+            <p className="text-muted-foreground mb-8">
+              O lote <strong>{successData.lote.numero_lote}</strong> do produto{' '}
+              <strong>{successData.nome_produto}</strong> foi registrado no estoque.
+            </p>
+
+            <div className="flex flex-col sm:flex-row gap-4 w-full justify-center">
+              <Button onClick={handleImprimirEtiquetas} className="print:hidden">
+                <UploadCloud className="size-4 mr-2" />
+                Imprimir Etiquetas
+              </Button>
+              {successData.isDivergente && (
+                <Button
+                  variant="destructive"
+                  onClick={() => setShowDevolucaoDialog(true)}
+                  className="print:hidden"
+                >
+                  <AlertTriangle className="size-4 mr-2" />
+                  Gerar Devolução
+                </Button>
+              )}
+              <Button
+                variant="outline"
+                onClick={() => navigate('/app/compras/pedidos')}
+                className="print:hidden"
+              >
+                Voltar aos Pedidos
+              </Button>
+            </div>
+
+            {/* Print Area - Label Template */}
+            <div className="mt-10 hidden print:flex print:m-0 flex-col items-center border-2 border-black p-4 w-[60mm] h-[40mm] bg-white text-black relative">
+              <div className="text-[12px] font-bold text-center leading-tight mb-1 truncate w-full">
+                {successData.nome_produto}
+              </div>
+              <div className="w-full flex justify-between text-[10px] mb-1">
+                <span>Lote: {successData.lote.numero_lote}</span>
+                <span>Qtd: {successData.lote.quantidade}</span>
+              </div>
+              <div className="w-full text-[9px] mb-1 text-left">
+                Validade: {new Date(successData.lote.data_validade).toLocaleDateString()}
+              </div>
+              <div className="w-full text-[9px] text-left truncate">
+                Local: {successData.armazem_nome || 'N/D'}
+              </div>
+              <div className="mt-auto w-full h-8 bg-[url('https://img.usecurling.com/p/200/50?q=barcode&color=black')] bg-cover opacity-80 mix-blend-multiply rounded-sm" />
+            </div>
+          </CardContent>
+        </Card>
+
+        {showDevolucaoDialog && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+            <Card className="w-full max-w-md shadow-xl animate-in zoom-in-95">
+              <CardHeader>
+                <CardTitle>Gerar Devolução (Saída de Estoque)</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="space-y-2">
+                  <Label>Quantidade a Devolver</Label>
+                  <Input
+                    type="number"
+                    value={devolucaoQtd}
+                    onChange={(e) => setDevolucaoQtd(parseFloat(e.target.value))}
+                    placeholder="Ex: 10"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label>Motivo da Devolução</Label>
+                  <Input
+                    value={devolucaoMotivo}
+                    onChange={(e) => setDevolucaoMotivo(e.target.value)}
+                    placeholder="Ex: Avariado durante o transporte"
+                  />
+                </div>
+                <div className="flex justify-end gap-2 pt-4">
+                  <Button variant="outline" onClick={() => setShowDevolucaoDialog(false)}>
+                    Cancelar
+                  </Button>
+                  <Button variant="destructive" onClick={handleDevolucao} disabled={loading}>
+                    Confirmar Devolução
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        )}
+      </div>
+    )
+  }
 
   return (
     <div className="p-6 max-w-5xl mx-auto space-y-6 animate-in fade-in duration-500">
