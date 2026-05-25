@@ -1,7 +1,7 @@
 {
   "_versions": {
     "admin-create-company": 2,
-    "admin-create-user": 1,
+    "admin-create-user": 2,
     "send-email": 1
   }
 }
