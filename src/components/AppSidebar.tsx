@@ -57,6 +57,18 @@ const allMenuItems = [
     module: 'estoque',
     managerOnly: true,
   },
+  {
+    icon: DollarSign,
+    label: 'Cotações',
+    path: '/app/compras/cotacoes',
+    module: 'estoque',
+  },
+  {
+    icon: Package,
+    label: 'Pedidos',
+    path: '/app/compras/pedidos',
+    module: 'estoque',
+  },
   { icon: Tractor, label: 'Operações de Campo', path: '/app/operacoes', module: 'operacoes' },
   { icon: Factory, label: 'Produção', path: '/app/producao', module: 'producao' },
   { icon: Package, label: 'Packing', path: '/app/packing', module: 'packing' },

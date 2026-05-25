@@ -29,6 +29,127 @@ export const comprasService = {
     if (error) throw error
   },
 
+  // --- Cotações ---
+  async getCotacoes(empresaId: string) {
+    const { data, error } = await supabase
+      .from('compras_cotacoes' as any)
+      .select('*, requisicao:compras_requisicao(numero_requisicao, justificativa)')
+      .eq('empresa_id', empresaId)
+      .is('deleted_at', null)
+      .order('created_at', { ascending: false })
+    if (error) throw error
+    return data
+  },
+
+  async getCotacao(id: string) {
+    const { data, error } = await supabase
+      .from('compras_cotacoes' as any)
+      .select('*, requisicao:compras_requisicao(*)')
+      .eq('id', id)
+      .single()
+    if (error) throw error
+    return data
+  },
+
+  async createCotacao(payload: any) {
+    const { data, error } = await supabase
+      .from('compras_cotacoes' as any)
+      .insert([payload])
+      .select()
+      .single()
+    if (error) throw error
+    return data
+  },
+
+  async updateCotacaoStatus(id: string, status: string) {
+    const { error } = await supabase
+      .from('compras_cotacoes' as any)
+      .update({ status })
+      .eq('id', id)
+    if (error) throw error
+  },
+
+  async getFornecedoresCotacao(cotacaoId: string) {
+    const { data, error } = await supabase
+      .from('compras_cotacao_fornecedores' as any)
+      .select('*, fornecedor:fornecedores(nome)')
+      .eq('cotacao_id', cotacaoId)
+      .is('deleted_at', null)
+    if (error) throw error
+    return data
+  },
+
+  async saveFornecedorCotacao(payload: any) {
+    if (payload.id) {
+      const { error } = await supabase
+        .from('compras_cotacao_fornecedores' as any)
+        .update(payload)
+        .eq('id', payload.id)
+      if (error) throw error
+    } else {
+      const { error } = await supabase.from('compras_cotacao_fornecedores' as any).insert([payload])
+      if (error) throw error
+    }
+  },
+
+  async deleteFornecedorCotacao(id: string) {
+    const { error } = await supabase
+      .from('compras_cotacao_fornecedores' as any)
+      .update({ deleted_at: new Date().toISOString() })
+      .eq('id', id)
+    if (error) throw error
+  },
+
+  async finalizarCotacao(
+    cotacaoId: string,
+    fornecedorVencedorId: string,
+    requisicaoId: string,
+    pedidoData: any,
+  ) {
+    await supabase
+      .from('compras_cotacao_fornecedores' as any)
+      .update({ vencedor: true })
+      .eq('id', fornecedorVencedorId)
+    await supabase
+      .from('compras_cotacoes' as any)
+      .update({ status: 'finalizada' })
+      .eq('id', cotacaoId)
+
+    const { data: requisicao } = await supabase
+      .from('compras_requisicao')
+      .select('itens')
+      .eq('id', requisicaoId)
+      .single()
+    const itens = (requisicao?.itens as any[]) || []
+
+    if (itens.length > 0) {
+      const pedidos = itens.map((item) => ({
+        empresa_id: pedidoData.empresa_id,
+        requisicao_id: requisicaoId,
+        produto_id: item.produto_id,
+        quantidade: item.quantidade,
+        fornecedor_id: pedidoData.fornecedor_id,
+        preco_unitario: pedidoData.preco_unitario,
+        data_entrega_prevista: pedidoData.data_entrega_prevista,
+      }))
+      await supabase.from('compras_pedido').insert(pedidos)
+    } else {
+      await supabase.from('compras_pedido').insert([
+        {
+          empresa_id: pedidoData.empresa_id,
+          requisicao_id: requisicaoId,
+          produto_id: '00000000-0000-0000-0000-000000000000',
+          quantidade: 1,
+          fornecedor_id: pedidoData.fornecedor_id,
+          preco_unitario: pedidoData.preco_unitario,
+          data_entrega_prevista: pedidoData.data_entrega_prevista,
+        },
+      ])
+    }
+
+    await supabase.from('compras_requisicao').update({ pedido_gerado: true }).eq('id', requisicaoId)
+  },
+
   // --- Pedidos ---
   async getPedidos(empresaId: string) {
     const { data, error } = await supabase

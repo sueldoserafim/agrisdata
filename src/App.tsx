@@ -38,6 +38,10 @@ import ProdutoForm from './pages/produtos/ProdutoForm'
 import RequisicaoList from './pages/compras/RequisicaoList'
 import RequisicaoForm from './pages/compras/RequisicaoForm'
 import AprovacoesList from './pages/compras/AprovacoesList'
+import CotacaoList from './pages/compras/CotacaoList'
+import CotacaoForm from './pages/compras/CotacaoForm'
+import CotacaoDetail from './pages/compras/CotacaoDetail'
+import PedidoList from './pages/compras/PedidoList'
 
 const App = () => (
   <BrowserRouter future={{ v7_startTransition: false, v7_relativeSplatPath: false }}>
@@ -98,6 +102,10 @@ const App = () => (
                 <Route path="/app/compras/requisicoes/new" element={<RequisicaoForm />} />
                 <Route path="/app/compras/requisicoes/:id" element={<RequisicaoForm />} />
                 <Route path="/app/compras/aprovacoes" element={<AprovacoesList />} />
+                <Route path="/app/compras/cotacoes" element={<CotacaoList />} />
+                <Route path="/app/compras/cotacoes/nova" element={<CotacaoForm />} />
+                <Route path="/app/compras/cotacoes/:id" element={<CotacaoDetail />} />
+                <Route path="/app/compras/pedidos" element={<PedidoList />} />
 
                 <Route
                   path="/app/operacoes"
