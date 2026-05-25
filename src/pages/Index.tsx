@@ -1,78 +1,98 @@
-import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs'
-import { KPICards } from '@/components/dashboard/KPICards'
-import { OverviewChart } from '@/components/dashboard/OverviewChart'
-import { DiagnosisChart } from '@/components/dashboard/DiagnosisChart'
-import { ScheduleTimeline } from '@/components/dashboard/ScheduleTimeline'
-import { LatestVisits } from '@/components/dashboard/LatestVisits'
-import { CheckCircle2, Stethoscope, Users, Activity } from 'lucide-react'
+import { useDashboard } from '@/hooks/use-dashboard'
+import { KPIRow } from '@/components/dashboard/KPIRow'
+import { DashboardCharts } from '@/components/dashboard/DashboardCharts'
+import { AlertsShortcuts } from '@/components/dashboard/AlertsShortcuts'
+import { Loader2 } from 'lucide-react'
 
 export default function Index() {
+  const { data, loading, modulos } = useDashboard()
+
+  if (loading) {
+    return (
+      <div className="flex h-64 items-center justify-center">
+        <Loader2 className="animate-spin size-8 text-primary" />
+      </div>
+    )
+  }
+
   return (
-    <div className="space-y-6 pb-10">
-      <Tabs defaultValue="overview" className="w-full">
-        <TabsList className="bg-transparent border-b border-border w-full justify-start rounded-none p-0 h-auto space-x-6">
-          <TabsTrigger
-            value="overview"
-            className="data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:border-b-2 data-[state=active]:border-primary data-[state=active]:text-primary rounded-none px-0 py-3 font-semibold"
-          >
-            <Activity className="size-4 mr-2" />
-            Overview
-          </TabsTrigger>
-          <TabsTrigger
-            value="reports"
-            className="data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:border-b-2 data-[state=active]:border-primary data-[state=active]:text-primary rounded-none px-0 py-3 text-muted-foreground"
-          >
-            <CheckCircle2 className="size-4 mr-2" />
-            Medical Reports
-          </TabsTrigger>
-          <TabsTrigger
-            value="patients"
-            className="data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:border-b-2 data-[state=active]:border-primary data-[state=active]:text-primary rounded-none px-0 py-3 text-muted-foreground"
-          >
-            <Users className="size-4 mr-2" />
-            Patients Overview
-          </TabsTrigger>
-          <TabsTrigger
-            value="diagnose"
-            className="data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:border-b-2 data-[state=active]:border-primary data-[state=active]:text-primary rounded-none px-0 py-3 text-muted-foreground"
-          >
-            <Stethoscope className="size-4 mr-2" />
-            Diagnose
-          </TabsTrigger>
-        </TabsList>
+    <div className="space-y-6 pb-10 max-w-7xl mx-auto animate-fade-in">
+      <div className="flex justify-between items-end">
+        <div>
+          <h1 className="text-3xl font-bold tracking-tight text-foreground">Dashboard Agrícola</h1>
+          <p className="text-muted-foreground mt-1">Visão geral e indicadores da sua operação.</p>
+        </div>
+      </div>
 
-        <TabsContent value="overview" className="mt-6 space-y-6 animate-fade-in-up">
-          <KPICards />
+      <div className="space-y-8 mt-6">
+        <KPIRow
+          title="Produção Agrícola"
+          items={[
+            { label: 'Safras Ativas', value: data?.kpis?.safrasAtivas },
+            { label: 'Talhões em Produção', value: data?.kpis?.talhoesAtivos },
+            { label: 'Área Plantada (ha)', value: data?.kpis?.areaPlantada?.toFixed(2) },
+            { label: 'OS Pendentes', value: data?.kpis?.osPendentes },
+          ]}
+        />
 
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            <OverviewChart />
-            <DiagnosisChart />
-          </div>
+        {modulos.includes('packing') && (
+          <KPIRow
+            title="Packing & Armazenagem"
+            items={[
+              { label: 'Pallets em Câmara Fria', value: data?.kpis?.palletsEmCamaraFria },
+              { label: 'Carregamentos Hoje', value: data?.kpis?.carregamentosHoje },
+              { label: 'Conformidade', value: `${data?.kpis?.conformidadeMedia?.toFixed(1)}%` },
+            ]}
+          />
+        )}
 
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            <ScheduleTimeline />
-            <LatestVisits />
-          </div>
-        </TabsContent>
+        {modulos.includes('exportacao') && (
+          <KPIRow
+            title="Exportação"
+            items={[
+              { label: 'Containers Embarcados', value: data?.kpis?.containersEmbarcados },
+              { label: 'Containers em Trânsito', value: data?.kpis?.containersEmTransito },
+              { label: 'Cut-offs Próximos', value: data?.kpis?.cutoffsProximos },
+            ]}
+          />
+        )}
 
-        <TabsContent value="reports" className="mt-6">
-          <div className="p-8 text-center text-muted-foreground bg-white rounded-2xl shadow-subtle">
-            Medical Reports content will appear here.
-          </div>
-        </TabsContent>
+        {modulos.includes('financeiro') && (
+          <KPIRow
+            title="Financeiro"
+            items={[
+              {
+                label: 'Contas a Receber (R$)',
+                value: data?.kpis?.contasAReceber?.toLocaleString('pt-BR', {
+                  style: 'currency',
+                  currency: 'BRL',
+                }),
+              },
+              {
+                label: 'Contas a Pagar (R$)',
+                value: data?.kpis?.contasAPagar?.toLocaleString('pt-BR', {
+                  style: 'currency',
+                  currency: 'BRL',
+                }),
+              },
+              {
+                label: 'Saldo Projetado (R$)',
+                value: data?.kpis?.saldoProjetado?.toLocaleString('pt-BR', {
+                  style: 'currency',
+                  currency: 'BRL',
+                }),
+              },
+            ]}
+          />
+        )}
+      </div>
 
-        <TabsContent value="patients" className="mt-6">
-          <div className="p-8 text-center text-muted-foreground bg-white rounded-2xl shadow-subtle">
-            Detailed Patients Overview content will appear here.
-          </div>
-        </TabsContent>
+      <DashboardCharts charts={data?.charts} />
 
-        <TabsContent value="diagnose" className="mt-6">
-          <div className="p-8 text-center text-muted-foreground bg-white rounded-2xl shadow-subtle">
-            Diagnose tools and metrics will appear here.
-          </div>
-        </TabsContent>
-      </Tabs>
+      <AlertsShortcuts
+        osPendentes={data?.kpis?.osPendentes}
+        cutoffsProximos={data?.kpis?.cutoffsProximos}
+      />
     </div>
   )
 }
