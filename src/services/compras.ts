@@ -16,21 +16,10 @@ export const comprasService = {
   async createRequisicao(requisicao: any, itens: any[]) {
     const { data: req, error } = await supabase
       .from('compras_requisicao')
-      .insert([requisicao])
+      .insert([{ ...requisicao, itens, pedido_gerado: false }] as any)
       .select()
       .single()
     if (error) throw error
-
-    const pedidos = itens.map((item) => ({
-      empresa_id: requisicao.empresa_id,
-      requisicao_id: req.id,
-      produto_id: item.produto_id,
-      quantidade: item.quantidade,
-      status: 'pendente',
-    }))
-
-    const { error: pedError } = await supabase.from('compras_pedido').insert(pedidos)
-    if (pedError) throw pedError
 
     return req
   },

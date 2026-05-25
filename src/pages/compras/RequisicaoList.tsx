@@ -1,6 +1,6 @@
 import { useEffect, useState, useCallback } from 'react'
 import { Link } from 'react-router-dom'
-import { Plus, HelpCircle, CheckCircle, XCircle, Search } from 'lucide-react'
+import { Plus, HelpCircle, CheckCircle, XCircle, Search, ShoppingCart } from 'lucide-react'
 import { supabase } from '@/lib/supabase/client'
 import { useAuth } from '@/hooks/use-auth'
 import { useEmpresa } from '@/hooks/use-empresa'
@@ -50,13 +50,13 @@ export default function RequisicaoList() {
   const [dateTo, setDateTo] = useState('')
 
   useEffect(() => {
-    if (!empresa || !user) return
-    supabase
-      .from('usuarios')
-      .select('perfil')
-      .eq('id', user.id)
-      .single()
-      .then(({ data }) => data && setPerfil(data.perfil))
+    if (!empresa || !user)
+      return supabase
+        .from('usuarios')
+        .select('perfil')
+        .eq('id', user.id)
+        .single()
+        .then(({ data }) => data && setPerfil(data.perfil))
     supabase
       .from('safras')
       .select('id, talhao:talhoes(nome), cultivar:cultivares(nome)')
@@ -89,19 +89,36 @@ export default function RequisicaoList() {
     loadData()
   }, [loadData])
 
-  const handleApprove = async (id: string, newStatus: string) => {
-    const { error } = await supabase
-      .from('compras_requisicao')
-      .update({ status: newStatus })
-      .eq('id', id)
-    if (error) toast({ title: 'Erro', description: error.message, variant: 'destructive' })
-    else {
-      toast({ title: 'Sucesso', description: `Status atualizado` })
+  const handleGerarPedido = async (req: any) => {
+    const itens = req.itens || []
+    if (itens.length === 0) {
+      toast({ title: 'Erro', description: 'Nenhum item na requisição.', variant: 'destructive' })
+      return
+    }
+
+    const pedidos = itens.map((i: any) => ({
+      empresa_id: empresa!.id,
+      requisicao_id: req.id,
+      produto_id: i.produto_id,
+      quantidade: i.quantidade,
+      preco_unitario: i.preco_estimado_unit,
+      status: 'pendente',
+    }))
+
+    const { error } = await supabase.from('compras_pedido').insert(pedidos)
+    if (error) {
+      toast({ title: 'Erro', description: error.message, variant: 'destructive' })
+    } else {
+      await supabase
+        .from('compras_requisicao')
+        .update({ pedido_gerado: true } as any)
+        .eq('id', req.id)
+      toast({ title: 'Sucesso', description: 'Pedido de compra gerado com sucesso!' })
       loadData()
     }
   }
 
-  const isManager = perfil === 'admin' || perfil === 'admin_saas'
+  const isManager = perfil === 'admin' || perfil === 'admin_saas' || perfil === 'gerente'
 
   return (
     <div className="p-8 max-w-7xl mx-auto space-y-6">
@@ -118,8 +135,9 @@ export default function RequisicaoList() {
               <DialogHeader>
                 <DialogTitle>Ajuda: Solicitações de Compra</DialogTitle>
                 <DialogDescription>
-                  Módulo para gerenciar pedidos de compra de insumos. Solicitações até R$ 500,00 são
-                  pré-aprovadas automaticamente. Valores superiores exigem aprovação de um gerente.
+                  Módulo para gerenciar pedidos de compra de insumos. Solicitações até o limite
+                  configurado são pré-aprovadas automaticamente. Valores superiores exigem aprovação
+                  de um gerente no menu Aprovações.
                 </DialogDescription>
               </DialogHeader>
             </DialogContent>
@@ -230,25 +248,20 @@ export default function RequisicaoList() {
                   </Badge>
                 </TableCell>
                 <TableCell className="text-right">
-                  {req.status === 'pendente' && req.valor_total_estimado > 500 && isManager && (
-                    <div className="flex justify-end gap-2">
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        className="text-green-600 hover:text-green-700 hover:bg-green-50"
-                        onClick={() => handleApprove(req.id, 'aprovada')}
-                      >
-                        <CheckCircle className="size-4 mr-1" /> Aprovar
-                      </Button>
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        className="text-red-600 hover:text-red-700 hover:bg-red-50"
-                        onClick={() => handleApprove(req.id, 'rejeitada')}
-                      >
-                        <XCircle className="size-4 mr-1" /> Rejeitar
-                      </Button>
-                    </div>
+                  {req.status === 'aprovada' && !req.pedido_gerado && (
+                    <Button size="sm" variant="default" onClick={() => handleGerarPedido(req)}>
+                      <ShoppingCart className="size-4 mr-1" /> Gerar Pedido
+                    </Button>
+                  )}
+                  {req.status === 'aprovada' && req.pedido_gerado && (
+                    <Badge variant="outline" className="text-green-600 border-green-200">
+                      Pedido Gerado
+                    </Badge>
+                  )}
+                  {req.status === 'pendente' && isManager && (
+                    <span className="text-sm text-muted-foreground italic">
+                      Pendente em Aprovações
+                    </span>
                   )}
                 </TableCell>
               </TableRow>

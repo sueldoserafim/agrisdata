@@ -82,12 +82,12 @@ export default function RequisicaoForm() {
   )
 
   useEffect(() => {
-    if (!empresa) return
-    supabase
-      .from('safras')
-      .select('id, talhao:talhoes(nome), cultivar:cultivares(nome)')
-      .eq('empresa_id', empresa.id)
-      .then(({ data }) => setSafras(data || []))
+    if (!empresa)
+      return supabase
+        .from('safras')
+        .select('id, talhao:talhoes(nome), cultivar:cultivares(nome)')
+        .eq('empresa_id', empresa.id)
+        .then(({ data }) => setSafras(data || []))
     supabase
       .from('produtos')
       .select('id, nome, unidade_medida')
@@ -105,7 +105,18 @@ export default function RequisicaoForm() {
     if (!empresa || !user) return
     setLoading(true)
     try {
-      const isAutoAprovada = totalEstimado <= 500
+      let limit = 500
+      const { data: configData } = await supabase
+        .from('empresas')
+        .select('configuracoes')
+        .eq('id', empresa.id)
+        .single()
+
+      if (configData?.configuracoes) {
+        limit = Number((configData.configuracoes as any).limite_aprovacao_automatica ?? 500)
+      }
+
+      const isAutoAprovada = totalEstimado <= limit
       const status = isAutoAprovada ? 'aprovada' : 'pendente'
       const numero = `REQ-${Date.now().toString().slice(-6)}`
 
@@ -122,29 +133,19 @@ export default function RequisicaoForm() {
           observacoes: data.observacoes,
           valor_total_estimado: totalEstimado,
           status,
-        })
+          itens: data.itens,
+          pedido_gerado: false,
+        } as any)
         .select()
         .single()
 
       if (error) throw error
 
-      const itens = data.itens.map((i) => ({
-        empresa_id: empresa.id,
-        requisicao_id: req.id,
-        produto_id: i.produto_id,
-        quantidade: i.quantidade,
-        preco_unitario: i.preco_estimado_unit,
-        status: 'pendente',
-      }))
-
-      const { error: errItens } = await supabase.from('compras_pedido').insert(itens)
-      if (errItens) throw errItens
-
       toast({
         title: 'Sucesso',
         description: isAutoAprovada
           ? 'Solicitação aprovada automaticamente!'
-          : 'Solicitação enviada para aprovação gerencial.',
+          : `Solicitação enviada para aprovação gerencial (limite: R$ ${limit.toFixed(2)}).`,
       })
       navigate('/app/compras/requisicoes')
     } catch (error: any) {
@@ -385,11 +386,9 @@ export default function RequisicaoForm() {
                   )}
                 </div>
               </div>
-              {totalEstimado > 500 && (
-                <p className="text-sm text-amber-600 mt-2 text-right">
-                  * Compras acima de R$ 500,00 exigem aprovação gerencial.
-                </p>
-              )}
+              <p className="text-sm text-muted-foreground mt-2 text-right">
+                * Compras acima do limite configurado pela empresa exigem aprovação gerencial.
+              </p>
             </CardContent>
           </Card>
 

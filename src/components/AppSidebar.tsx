@@ -33,6 +33,8 @@ import {
 import { cn } from '@/lib/utils'
 import { useAuth } from '@/hooks/use-auth'
 import { supabase } from '@/lib/supabase/client'
+import { useToast } from '@/hooks/use-toast'
+import { CheckCircle } from 'lucide-react'
 
 const allMenuItems = [
   { icon: LayoutDashboard, label: 'Dashboard', path: '/app', module: null },
@@ -46,6 +48,13 @@ const allMenuItems = [
     label: 'Solicitações de Compra',
     path: '/app/compras/requisicoes',
     module: 'estoque',
+  },
+  {
+    icon: CheckCircle,
+    label: 'Aprovações',
+    path: '/app/compras/aprovacoes',
+    module: 'estoque',
+    managerOnly: true,
   },
   { icon: Tractor, label: 'Operações de Campo', path: '/app/operacoes', module: 'operacoes' },
   { icon: Factory, label: 'Produção', path: '/app/producao', module: 'producao' },
@@ -62,9 +71,11 @@ const allMenuItems = [
 export function AppSidebar() {
   const location = useLocation()
   const { user, signOut } = useAuth()
+  const { toast } = useToast()
   const [modulos, setModulos] = useState<string[]>([])
   const [perfil, setPerfil] = useState<string | null>(null)
   const [loading, setLoading] = useState(true)
+  const [pendingApprovals, setPendingApprovals] = useState(0)
 
   useEffect(() => {
     let mounted = true
@@ -92,6 +103,47 @@ export function AppSidebar() {
             const loadedModulos = empresa.modulos_habilitados || []
             setModulos(loadedModulos.length > 0 ? loadedModulos : ['dashboard'])
           }
+
+          if (
+            mounted &&
+            (profile.perfil === 'admin' ||
+              profile.perfil === 'admin_saas' ||
+              profile.perfil === 'gerente')
+          ) {
+            const { count } = await supabase
+              .from('compras_requisicao')
+              .select('*', { count: 'exact', head: true })
+              .eq('empresa_id', profile.empresa_id)
+              .eq('status', 'pendente')
+
+            if (count) setPendingApprovals(count)
+
+            const channel = supabase
+              .channel('requisicoes_pendentes')
+              .on(
+                'postgres_changes',
+                {
+                  event: 'INSERT',
+                  schema: 'public',
+                  table: 'compras_requisicao',
+                  filter: `empresa_id=eq.${profile.empresa_id}`,
+                },
+                (payload) => {
+                  if (payload.new.status === 'pendente') {
+                    toast({
+                      title: 'Nova Aprovação Pendente',
+                      description: `A requisição ${payload.new.numero_requisicao} precisa de aprovação.`,
+                    })
+                    setPendingApprovals((prev) => prev + 1)
+                  }
+                },
+              )
+              .subscribe()
+
+            return () => {
+              supabase.removeChannel(channel)
+            }
+          }
         }
       } catch (e) {
         console.error(e)
@@ -99,16 +151,19 @@ export function AppSidebar() {
         if (mounted) setLoading(false)
       }
     }
-    loadData()
+    const cleanup = loadData()
     return () => {
       mounted = false
+      cleanup.then((fn) => fn && fn())
     }
-  }, [user])
+  }, [user, toast])
 
   const isAdmin = perfil === 'admin' || perfil === 'admin_saas'
+  const isManager = isAdmin || perfil === 'gerente'
 
   const visibleMenuItems = allMenuItems.filter((item) => {
     if (item.adminOnly && !isAdmin) return false
+    if (item.managerOnly && !isManager) return false
     return isAdmin || item.module === null || modulos.includes(item.module)
   })
 
@@ -144,9 +199,16 @@ export function AppSidebar() {
                         : 'text-muted-foreground hover:bg-muted hover:text-foreground',
                     )}
                   >
-                    <Link to={item.path} className="flex items-center w-full">
-                      <item.icon className={cn('size-5 mr-3', isActive ? 'text-primary' : '')} />
-                      <span>{item.label}</span>
+                    <Link to={item.path} className="flex items-center w-full justify-between">
+                      <div className="flex items-center">
+                        <item.icon className={cn('size-5 mr-3', isActive ? 'text-primary' : '')} />
+                        <span>{item.label}</span>
+                      </div>
+                      {item.path === '/app/compras/aprovacoes' && pendingApprovals > 0 && (
+                        <div className="bg-destructive text-destructive-foreground text-[10px] font-bold px-2 py-0.5 rounded-full flex items-center justify-center animate-fade-in">
+                          {pendingApprovals}
+                        </div>
+                      )}
                     </Link>
                   </SidebarMenuButton>
                 </SidebarMenuItem>
