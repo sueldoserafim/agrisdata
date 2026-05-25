@@ -1878,6 +1878,7 @@ export type Database = {
       }
       operacao_insumos: {
         Row: {
+          area_aplicada_ha: number | null
           created_at: string | null
           deleted_at: string | null
           empresa_id: string
@@ -1889,6 +1890,7 @@ export type Database = {
           updated_at: string | null
         }
         Insert: {
+          area_aplicada_ha?: number | null
           created_at?: string | null
           deleted_at?: string | null
           empresa_id: string
@@ -1900,6 +1902,7 @@ export type Database = {
           updated_at?: string | null
         }
         Update: {
+          area_aplicada_ha?: number | null
           created_at?: string | null
           deleted_at?: string | null
           empresa_id?: string
@@ -1943,15 +1946,20 @@ export type Database = {
       }
       operacoes_campo: {
         Row: {
+          clima_observacoes: string | null
+          consumo_agua_m3: number | null
           created_at: string | null
           data_conclusao: string | null
           data_inicio: string | null
           deleted_at: string | null
           empresa_id: string
+          equipamento_id: string | null
           foto_geolocalizada_url: string | null
           id: string
           latitude: number | null
           longitude: number | null
+          observacoes: string | null
+          ponto_captacao: string | null
           receituario_id: string | null
           responsavel_id: string | null
           safra_id: string
@@ -1960,15 +1968,20 @@ export type Database = {
           updated_at: string | null
         }
         Insert: {
+          clima_observacoes?: string | null
+          consumo_agua_m3?: number | null
           created_at?: string | null
           data_conclusao?: string | null
           data_inicio?: string | null
           deleted_at?: string | null
           empresa_id: string
+          equipamento_id?: string | null
           foto_geolocalizada_url?: string | null
           id?: string
           latitude?: number | null
           longitude?: number | null
+          observacoes?: string | null
+          ponto_captacao?: string | null
           receituario_id?: string | null
           responsavel_id?: string | null
           safra_id: string
@@ -1977,15 +1990,20 @@ export type Database = {
           updated_at?: string | null
         }
         Update: {
+          clima_observacoes?: string | null
+          consumo_agua_m3?: number | null
           created_at?: string | null
           data_conclusao?: string | null
           data_inicio?: string | null
           deleted_at?: string | null
           empresa_id?: string
+          equipamento_id?: string | null
           foto_geolocalizada_url?: string | null
           id?: string
           latitude?: number | null
           longitude?: number | null
+          observacoes?: string | null
+          ponto_captacao?: string | null
           receituario_id?: string | null
           responsavel_id?: string | null
           safra_id?: string
@@ -1999,6 +2017,13 @@ export type Database = {
             columns: ['empresa_id']
             isOneToOne: false
             referencedRelation: 'empresas'
+            referencedColumns: ['id']
+          },
+          {
+            foreignKeyName: 'operacoes_campo_equipamento_id_fkey'
+            columns: ['equipamento_id']
+            isOneToOne: false
+            referencedRelation: 'equipamentos'
             referencedColumns: ['id']
           },
           {
@@ -3475,6 +3500,7 @@ export const Constants = {
 //   created_at: timestamp with time zone (nullable, default: now())
 //   updated_at: timestamp with time zone (nullable, default: now())
 //   deleted_at: timestamp with time zone (nullable)
+//   area_aplicada_ha: numeric (nullable)
 // Table: operacoes_campo
 //   id: uuid (not null, default: gen_random_uuid())
 //   empresa_id: uuid (not null)
@@ -3491,6 +3517,11 @@ export const Constants = {
 //   created_at: timestamp with time zone (nullable, default: now())
 //   updated_at: timestamp with time zone (nullable, default: now())
 //   deleted_at: timestamp with time zone (nullable)
+//   ponto_captacao: text (nullable)
+//   consumo_agua_m3: numeric (nullable)
+//   equipamento_id: uuid (nullable)
+//   clima_observacoes: text (nullable)
+//   observacoes: text (nullable)
 // Table: pallets
 //   id: uuid (not null, default: gen_random_uuid())
 //   empresa_id: uuid (not null)
@@ -3826,6 +3857,7 @@ export const Constants = {
 //   FOREIGN KEY operacao_insumos_produto_id_fkey: FOREIGN KEY (produto_id) REFERENCES produtos(id)
 // Table: operacoes_campo
 //   FOREIGN KEY operacoes_campo_empresa_id_fkey: FOREIGN KEY (empresa_id) REFERENCES empresas(id) ON DELETE CASCADE
+//   FOREIGN KEY operacoes_campo_equipamento_id_fkey: FOREIGN KEY (equipamento_id) REFERENCES equipamentos(id)
 //   PRIMARY KEY operacoes_campo_pkey: PRIMARY KEY (id)
 //   FOREIGN KEY operacoes_campo_receituario_id_fkey: FOREIGN KEY (receituario_id) REFERENCES receituarios_agronomicos(id)
 //   FOREIGN KEY operacoes_campo_responsavel_id_fkey: FOREIGN KEY (responsavel_id) REFERENCES usuarios(id)
@@ -4226,6 +4258,70 @@ export const Constants = {
 //   END;
 //   $function$
 //
+// FUNCTION processa_conclusao_operacao()
+//   CREATE OR REPLACE FUNCTION public.processa_conclusao_operacao()
+//    RETURNS trigger
+//    LANGUAGE plpgsql
+//   AS $function$
+//   DECLARE
+//       v_insumo RECORD;
+//       v_talhao_id uuid;
+//       v_centro_custo_id uuid;
+//       v_observacoes text;
+//   BEGIN
+//       IF NEW.status = 'concluída' AND OLD.status != 'concluída' THEN
+//           IF NEW.data_conclusao IS NULL THEN
+//               NEW.data_conclusao := CURRENT_DATE;
+//           END IF;
+//
+//           SELECT talhao_id INTO v_talhao_id FROM public.safras WHERE id = NEW.safra_id;
+//
+//           SELECT id INTO v_centro_custo_id FROM public.centros_custo WHERE empresa_id = NEW.empresa_id AND nome = 'Operações de Campo' LIMIT 1;
+//           IF v_centro_custo_id IS NULL THEN
+//              INSERT INTO public.centros_custo (empresa_id, nome, codigo) VALUES (NEW.empresa_id, 'Operações de Campo', 'OPC') RETURNING id INTO v_centro_custo_id;
+//           END IF;
+//
+//           FOR v_insumo IN SELECT * FROM public.operacao_insumos WHERE operacao_id = NEW.id
+//           LOOP
+//               IF v_insumo.lote_id IS NOT NULL THEN
+//                   UPDATE public.lotes_estoque
+//                   SET quantidade = quantidade - v_insumo.quantidade_utilizada,
+//                       updated_at = NOW()
+//                   WHERE id = v_insumo.lote_id AND quantidade >= v_insumo.quantidade_utilizada;
+//
+//                   IF NOT FOUND THEN
+//                       RAISE EXCEPTION 'Estoque insuficiente no lote % para a operação', v_insumo.lote_id;
+//                   END IF;
+//
+//                   INSERT INTO public.estoque_movimento (
+//                       empresa_id, lote_id, tipo_movimento, quantidade, motivo, created_at
+//                   ) VALUES (
+//                       NEW.empresa_id, v_insumo.lote_id, 'saída', v_insumo.quantidade_utilizada, 'Operação de Campo: ' || NEW.id, NOW()
+//                   );
+//               END IF;
+//
+//               INSERT INTO public.custos_talhao (
+//                   empresa_id, talhao_id, safra_id, centro_custo_id, descricao, valor, data_lancamento
+//               )
+//               SELECT
+//                   NEW.empresa_id, v_talhao_id, NEW.safra_id, v_centro_custo_id,
+//                   'Insumo Operação: ' || p.nome,
+//                   (p.preco_unitario * v_insumo.quantidade_utilizada),
+//                   NEW.data_conclusao
+//               FROM public.produtos p WHERE p.id = v_insumo.produto_id;
+//           END LOOP;
+//
+//           v_observacoes := 'Operação: ' || NEW.tipo_operacao || COALESCE(' - ' || NEW.observacoes, '');
+//           INSERT INTO public.caderno_campo (
+//               empresa_id, talhao_id, data, observacoes, responsavel_id
+//           ) VALUES (
+//               NEW.empresa_id, v_talhao_id, NEW.data_conclusao, v_observacoes, NEW.responsavel_id
+//           );
+//       END IF;
+//       RETURN NEW;
+//   END;
+//   $function$
+//
 // FUNCTION set_atualizado_em()
 //   CREATE OR REPLACE FUNCTION public.set_atualizado_em()
 //    RETURNS trigger
@@ -4250,6 +4346,7 @@ export const Constants = {
 // Table: fazendas
 //   trigger_fazendas_updated_at: CREATE TRIGGER trigger_fazendas_updated_at BEFORE UPDATE ON public.fazendas FOR EACH ROW EXECUTE FUNCTION set_atualizado_em()
 // Table: operacoes_campo
+//   trigger_conclusao_operacao: CREATE TRIGGER trigger_conclusao_operacao BEFORE UPDATE ON public.operacoes_campo FOR EACH ROW EXECUTE FUNCTION processa_conclusao_operacao()
 //   trigger_operacoes_campo_updated_at: CREATE TRIGGER trigger_operacoes_campo_updated_at BEFORE UPDATE ON public.operacoes_campo FOR EACH ROW EXECUTE FUNCTION set_atualizado_em()
 // Table: planos
 //   trigger_planos_updated_at: CREATE TRIGGER trigger_planos_updated_at BEFORE UPDATE ON public.planos FOR EACH ROW EXECUTE FUNCTION set_atualizado_em()

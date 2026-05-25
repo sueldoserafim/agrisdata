@@ -53,6 +53,10 @@ import FornecedorList from './pages/compras/FornecedorList'
 import FornecedorForm from './pages/compras/FornecedorForm'
 import OperacaoList from './pages/operacoes/OperacaoList'
 import OperacaoForm from './pages/operacoes/OperacaoForm'
+import ProducaoDashboard from './pages/producao/ProducaoDashboard'
+import EquipamentoList from './pages/equipamentos/EquipamentoList'
+import EquipamentoForm from './pages/equipamentos/EquipamentoForm'
+import EquipamentoDetail from './pages/equipamentos/EquipamentoDetail'
 
 const App = () => (
   <BrowserRouter future={{ v7_startTransition: false, v7_relativeSplatPath: false }}>
@@ -149,10 +153,10 @@ const App = () => (
                   path="/app/suporte"
                   element={<div className="p-8 font-semibold text-xl">Suporte</div>}
                 />
-                <Route
-                  path="/app/producao"
-                  element={<div className="p-8 font-semibold text-xl">Produção</div>}
-                />
+                <Route path="/app/producao" element={<ProducaoDashboard />} />
+                <Route path="/app/equipamentos" element={<EquipamentoList />} />
+                <Route path="/app/equipamentos/new" element={<EquipamentoForm />} />
+                <Route path="/app/equipamentos/:id" element={<EquipamentoDetail />} />
                 <Route
                   path="/app/packing"
                   element={<div className="p-8 font-semibold text-xl">Packing</div>}
