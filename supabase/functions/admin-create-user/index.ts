@@ -16,17 +16,14 @@ Deno.serve(async (req: Request) => {
     const supabaseClient = createClient(
       Deno.env.get('SUPABASE_URL') ?? '',
       Deno.env.get('SUPABASE_ANON_KEY') ?? '',
-      { global: { headers: { Authorization: authHeader } } },
+      { global: { headers: { Authorization: authHeader } } }
     )
-
-    const {
-      data: { user },
-      error: userError,
-    } = await supabaseClient.auth.getUser()
+    
+    const { data: { user }, error: userError } = await supabaseClient.auth.getUser()
     if (userError || !user) {
       throw new Error(`Unauthorized: ${userError?.message || 'User not found'}`)
     }
-
+    
     const { data: profile, error: profileError } = await supabaseClient
       .from('usuarios')
       .select('perfil, empresa_id')
@@ -36,7 +33,7 @@ Deno.serve(async (req: Request) => {
     if (profileError || !profile) {
       throw new Error('Forbidden: Profile not found')
     }
-
+    
     if (profile.perfil !== 'admin' && profile.perfil !== 'admin_saas') {
       throw new Error('Forbidden: Only admins can create new users.')
     }
@@ -44,11 +41,11 @@ Deno.serve(async (req: Request) => {
     const supabaseAdmin = createClient(
       Deno.env.get('SUPABASE_URL') ?? '',
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? '',
-      { auth: { persistSession: false } },
+      { auth: { persistSession: false } }
     )
 
     const payload = await req.json()
-    const { nome, email, password, perfil } = payload
+    const { nome, email, password, perfil, fornecedor_id } = payload
 
     if (!nome || !email || !password || !perfil) {
       throw new Error('Missing required fields')
@@ -59,7 +56,7 @@ Deno.serve(async (req: Request) => {
       email,
       password,
       email_confirm: true,
-      user_metadata: { name: nome, role: perfil },
+      user_metadata: { name: nome, role: perfil }
     })
 
     if (authError) {
@@ -67,14 +64,17 @@ Deno.serve(async (req: Request) => {
     }
 
     // Criar o Perfil do usuário vinculando à mesma empresa do admin
-    const { error: insertError } = await supabaseAdmin.from('usuarios').insert({
-      id: authData.user.id,
-      empresa_id: profile.empresa_id,
-      email,
-      nome,
-      perfil,
-      ativo: true,
-    })
+    const { error: insertError } = await supabaseAdmin
+      .from('usuarios')
+      .insert({
+        id: authData.user.id,
+        empresa_id: profile.empresa_id,
+        email,
+        nome,
+        perfil,
+        fornecedor_id: fornecedor_id || null,
+        ativo: true
+      })
 
     if (insertError) {
       await supabaseAdmin.auth.admin.deleteUser(authData.user.id)
@@ -82,12 +82,12 @@ Deno.serve(async (req: Request) => {
     }
 
     return new Response(JSON.stringify({ success: true, user: authData.user }), {
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' }
     })
   } catch (err: any) {
     return new Response(JSON.stringify({ error: err.message }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      status: 400,
+      status: 400
     })
   }
 })
