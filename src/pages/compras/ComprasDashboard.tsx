@@ -95,7 +95,17 @@ export default function ComprasDashboard() {
   const cotacoes = pedidos.filter(
     (p) => p.requisicao.status === 'aprovada' && p.status === 'pendente',
   )
-  const pedidosAtivos = pedidos.filter((p) => p.status === 'ativo')
+  const pedidosAtivos = pedidos.filter((p) => p.status === 'ativo' || p.status === 'pendente')
+
+  const totalEstimado = requisicoes.reduce(
+    (acc, req) => acc + Number(req.valor_total_estimado || 0),
+    0,
+  )
+  const totalPedidos = pedidosAtivos.reduce(
+    (acc, ped) => acc + (ped.total_pedido || ped.quantidade * ped.preco_unitario || 0),
+    0,
+  )
+  const economiaGerada = totalEstimado > 0 ? totalEstimado - totalPedidos : 0
 
   return (
     <div className="p-6 space-y-6">
@@ -106,6 +116,27 @@ export default function ComprasDashboard() {
             <Plus className="size-4 mr-2" /> Nova Requisição
           </Link>
         </Button>
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+        <div className="bg-card border rounded-xl p-6 shadow-sm">
+          <p className="text-sm font-medium text-muted-foreground mb-1">
+            Economia Gerada (Estimativa vs Pedidos)
+          </p>
+          <p
+            className={`text-3xl font-bold ${economiaGerada > 0 ? 'text-green-600' : economiaGerada < 0 ? 'text-red-600' : ''}`}
+          >
+            R$ {economiaGerada.toFixed(2)}
+          </p>
+        </div>
+        <div className="bg-card border rounded-xl p-6 shadow-sm">
+          <p className="text-sm font-medium text-muted-foreground mb-1">Requisições Pendentes</p>
+          <p className="text-3xl font-bold text-yellow-600">{pendentesAprovacao.length}</p>
+        </div>
+        <div className="bg-card border rounded-xl p-6 shadow-sm">
+          <p className="text-sm font-medium text-muted-foreground mb-1">Pedidos Ativos</p>
+          <p className="text-3xl font-bold text-blue-600">{pedidosAtivos.length}</p>
+        </div>
       </div>
 
       <Tabs defaultValue="aprovacoes" className="w-full">
@@ -235,11 +266,16 @@ export default function ComprasDashboard() {
                       {ped.quantidade} {ped.produto?.unidade_medida}
                     </TableCell>
                     <TableCell className="text-right">
-                      <Button size="sm" asChild>
-                        <Link to={`/app/compras/recebimento/${ped.id}`}>
-                          <Truck className="size-4 mr-2" /> Receber NF-e
-                        </Link>
-                      </Button>
+                      <div className="flex gap-2 justify-end">
+                        <Button size="sm" variant="outline" asChild>
+                          <Link to={`/app/compras/pedidos/${ped.id}`}>Ver</Link>
+                        </Button>
+                        <Button size="sm" asChild>
+                          <Link to={`/app/compras/recebimento/${ped.id}`}>
+                            <Truck className="size-4 mr-2" /> Receber NF-e
+                          </Link>
+                        </Button>
+                      </div>
                     </TableCell>
                   </TableRow>
                 ))}

@@ -171,6 +171,7 @@ export default function CotacaoDetail() {
         empresa_id: empresa!.id,
         fornecedor_id: vendor.fornecedor_id,
         preco_unitario: vendor.preco_unitario,
+        condicoes_pagamento: vendor.condicao_pagamento,
         data_entrega_prevista: dataEntrega.toISOString().split('T')[0],
       })
       toast({ title: 'Pedido gerado com sucesso!' })
@@ -178,6 +179,26 @@ export default function CotacaoDetail() {
     } catch (err: any) {
       toast({ title: 'Erro ao gerar pedido', description: err.message, variant: 'destructive' })
     }
+  }
+
+  async function handleInviteSuppliers() {
+    const emails = prompt('Informe os e-mails dos fornecedores separados por vírgula:')
+    if (!emails) return
+
+    try {
+      await comprasService.enviarEmail({
+        to: emails,
+        subject: `Convite para Cotação - Requisicão ${cotacao.requisicao?.numero_requisicao}`,
+        body: `Você foi convidado para enviar uma cotação. Acesse o sistema e envie sua proposta.`,
+      })
+      toast({ title: 'Convites enviados com sucesso!' })
+    } catch (err: any) {
+      toast({ title: 'Erro', description: err.message, variant: 'destructive' })
+    }
+  }
+
+  const handleExport = () => {
+    window.print()
   }
 
   if (loading) return <div className="p-8">Carregando...</div>
@@ -188,12 +209,12 @@ export default function CotacaoDetail() {
   return (
     <div className="p-8 max-w-7xl mx-auto space-y-6 animate-fade-in-up">
       <div className="flex items-center gap-4 justify-between">
-        <div className="flex items-center gap-4">
+        <div className="flex items-center gap-4 print:hidden">
           <Button variant="ghost" size="icon" onClick={() => navigate('/app/compras/cotacoes')}>
             <ArrowLeft className="w-5 h-5" />
           </Button>
           <div>
-            <h1 className="text-3xl font-bold tracking-tight flex items-center gap-3">
+            <h1 className="text-3xl font-bold tracking-tight flex items-center gap-3 print:block">
               Cotação - Req. {cotacao.requisicao?.numero_requisicao}
               {isFinalizada ? (
                 <Badge className="bg-green-600">Finalizada</Badge>
@@ -210,90 +231,115 @@ export default function CotacaoDetail() {
           </div>
         </div>
 
-        {!isFinalizada && (
-          <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-            <DialogTrigger asChild>
-              <Button>
-                <Plus className="w-4 h-4 mr-2" />
-                Adicionar Oferta
-              </Button>
-            </DialogTrigger>
-            <DialogContent className="sm:max-w-[425px]">
-              <DialogHeader>
-                <DialogTitle>Nova Oferta de Fornecedor</DialogTitle>
-              </DialogHeader>
-              <div className="grid gap-4 py-4">
-                <div className="grid gap-2">
-                  <Label>Fornecedor</Label>
-                  <Select
-                    value={newVendorData.fornecedor_id}
-                    onValueChange={(v) => setNewVendorData({ ...newVendorData, fornecedor_id: v })}
-                  >
-                    <SelectTrigger>
-                      <SelectValue placeholder="Selecione..." />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {availableFornecedores.map((f) => (
-                        <SelectItem key={f.id} value={f.id}>
-                          {f.nome}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-                <div className="grid grid-cols-2 gap-4">
+        <div className="flex items-center gap-2 print:hidden">
+          <Button variant="outline" onClick={handleExport}>
+            Exportar Comparativo
+          </Button>
+          {!isFinalizada && (
+            <Button variant="outline" onClick={handleInviteSuppliers}>
+              Convidar Fornecedores
+            </Button>
+          )}
+          {!isFinalizada && (
+            <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+              <DialogTrigger asChild>
+                <Button>
+                  <Plus className="w-4 h-4 mr-2" />
+                  Adicionar Oferta
+                </Button>
+              </DialogTrigger>
+              <DialogContent className="sm:max-w-[425px]">
+                <DialogHeader>
+                  <DialogTitle>Nova Oferta de Fornecedor</DialogTitle>
+                </DialogHeader>
+                <div className="grid gap-4 py-4">
                   <div className="grid gap-2">
-                    <Label>Preço Unitário (R$)</Label>
+                    <Label>Fornecedor</Label>
+                    <Select
+                      value={newVendorData.fornecedor_id}
+                      onValueChange={(v) =>
+                        setNewVendorData({ ...newVendorData, fornecedor_id: v })
+                      }
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Selecione..." />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {availableFornecedores.map((f) => (
+                          <SelectItem key={f.id} value={f.id}>
+                            {f.nome}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="grid gap-2">
+                      <Label>Preço Unitário (R$)</Label>
+                      <Input
+                        type="number"
+                        step="0.01"
+                        value={newVendorData.preco_unitario}
+                        onChange={(e) =>
+                          setNewVendorData({ ...newVendorData, preco_unitario: e.target.value })
+                        }
+                      />
+                    </div>
+                    <div className="grid gap-2">
+                      <Label>Prazo Entrega (dias)</Label>
+                      <Input
+                        type="number"
+                        value={newVendorData.prazo_entrega_dias}
+                        onChange={(e) =>
+                          setNewVendorData({ ...newVendorData, prazo_entrega_dias: e.target.value })
+                        }
+                      />
+                    </div>
+                  </div>
+                  <div className="grid gap-2">
+                    <Label>Condição de Pagamento</Label>
                     <Input
-                      type="number"
-                      step="0.01"
-                      value={newVendorData.preco_unitario}
+                      placeholder="Ex: 30 dias"
+                      value={newVendorData.condicao_pagamento}
                       onChange={(e) =>
-                        setNewVendorData({ ...newVendorData, preco_unitario: e.target.value })
+                        setNewVendorData({ ...newVendorData, condicao_pagamento: e.target.value })
                       }
                     />
                   </div>
                   <div className="grid gap-2">
-                    <Label>Prazo Entrega (dias)</Label>
+                    <Label>Validade da Cotação</Label>
                     <Input
-                      type="number"
-                      value={newVendorData.prazo_entrega_dias}
+                      type="date"
+                      value={newVendorData.validade_cotacao}
                       onChange={(e) =>
-                        setNewVendorData({ ...newVendorData, prazo_entrega_dias: e.target.value })
+                        setNewVendorData({ ...newVendorData, validade_cotacao: e.target.value })
                       }
                     />
                   </div>
                 </div>
-                <div className="grid gap-2">
-                  <Label>Condição de Pagamento</Label>
-                  <Input
-                    placeholder="Ex: 30 dias"
-                    value={newVendorData.condicao_pagamento}
-                    onChange={(e) =>
-                      setNewVendorData({ ...newVendorData, condicao_pagamento: e.target.value })
-                    }
-                  />
+                <div className="flex justify-end">
+                  <Button onClick={handleAddVendor}>Salvar Oferta</Button>
                 </div>
-                <div className="grid gap-2">
-                  <Label>Validade da Cotação</Label>
-                  <Input
-                    type="date"
-                    value={newVendorData.validade_cotacao}
-                    onChange={(e) =>
-                      setNewVendorData({ ...newVendorData, validade_cotacao: e.target.value })
-                    }
-                  />
-                </div>
-              </div>
-              <div className="flex justify-end">
-                <Button onClick={handleAddVendor}>Salvar Oferta</Button>
-              </div>
-            </DialogContent>
-          </Dialog>
-        )}
+              </DialogContent>
+            </Dialog>
+          )}
+        </div>
       </div>
 
-      <div className="bg-card border rounded-xl overflow-hidden shadow-sm">
+      <div className="hidden print:block mb-8">
+        <h2 className="text-2xl font-bold border-b pb-2 mb-4">Comparativo de Cotação</h2>
+        <p className="text-sm">
+          <strong>Requisicão:</strong> {cotacao.requisicao?.numero_requisicao}
+        </p>
+        <p className="text-sm">
+          <strong>Data Limite:</strong> {format(new Date(cotacao.prazo_respostas), 'dd/MM/yyyy')}
+        </p>
+        <p className="text-sm">
+          <strong>Justificativa:</strong> {cotacao.requisicao?.justificativa}
+        </p>
+      </div>
+
+      <div className="bg-card border rounded-xl overflow-hidden shadow-sm print:border-none print:shadow-none">
         <Table>
           <TableHeader className="bg-muted/50">
             <TableRow>
@@ -334,11 +380,11 @@ export default function CotacaoDetail() {
                       P: {vendor.priceScore?.toFixed(1)} | D: {vendor.deadlineScore?.toFixed(1)} |
                       H: {vendor.historyScore}
                     </TableCell>
-                    <TableCell className="text-right">
+                    <TableCell className="text-right print:hidden">
                       {isFinalizada ? (
                         vendor.vencedor && <Badge className="bg-green-600">Vencedor</Badge>
                       ) : (
-                        <div className="flex justify-end gap-2">
+                        <div className="flex justify-end gap-2 print:hidden">
                           <Button
                             variant="outline"
                             size="sm"

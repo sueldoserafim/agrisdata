@@ -49,9 +49,19 @@ export default function PedidoList() {
             Recebido
           </Badge>
         )
+      case 'cancelado':
+        return (
+          <Badge variant="outline" className="bg-red-100 text-red-800">
+            Cancelado
+          </Badge>
+        )
       default:
         return <Badge variant="secondary">{status || 'Pendente'}</Badge>
     }
+  }
+
+  const navigate = (id: string) => {
+    window.location.href = `/app/compras/pedidos/${id}`
   }
 
   return (
@@ -92,7 +102,11 @@ export default function PedidoList() {
               </TableRow>
             ) : (
               pedidos.map((pedido) => (
-                <TableRow key={pedido.id}>
+                <TableRow
+                  key={pedido.id}
+                  className="cursor-pointer hover:bg-muted/50"
+                  onClick={() => navigate(pedido.id)}
+                >
                   <TableCell className="font-medium flex items-center gap-2">
                     <Package className="w-4 h-4 text-muted-foreground" />
                     {pedido.fornecedor?.nome || 'N/A'}
@@ -100,7 +114,10 @@ export default function PedidoList() {
                   <TableCell>{pedido.produto?.nome || 'Produto não encontrado'}</TableCell>
                   <TableCell className="text-right">{pedido.quantidade}</TableCell>
                   <TableCell className="text-right">
-                    R$ {pedido.preco_unitario?.toFixed(2)}
+                    R${' '}
+                    {pedido.total_pedido
+                      ? pedido.total_pedido.toFixed(2)
+                      : (pedido.preco_unitario * pedido.quantidade).toFixed(2)}
                   </TableCell>
                   <TableCell>
                     {pedido.data_entrega_prevista

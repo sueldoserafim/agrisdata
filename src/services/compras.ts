@@ -131,6 +131,9 @@ export const comprasService = {
         fornecedor_id: pedidoData.fornecedor_id,
         preco_unitario: pedidoData.preco_unitario,
         data_entrega_prevista: pedidoData.data_entrega_prevista,
+        condicoes_pagamento: pedidoData.condicoes_pagamento,
+        total_pedido: Number(pedidoData.preco_unitario) * Number(item.quantidade),
+        status: 'pendente',
       }))
       await supabase.from('compras_pedido').insert(pedidos)
     } else {
@@ -143,11 +146,70 @@ export const comprasService = {
           fornecedor_id: pedidoData.fornecedor_id,
           preco_unitario: pedidoData.preco_unitario,
           data_entrega_prevista: pedidoData.data_entrega_prevista,
+          condicoes_pagamento: pedidoData.condicoes_pagamento,
+          total_pedido: Number(pedidoData.preco_unitario) * 1,
+          status: 'pendente',
         },
       ])
     }
 
     await supabase.from('compras_requisicao').update({ pedido_gerado: true }).eq('id', requisicaoId)
+  },
+
+  // --- Fornecedores ---
+  async getFornecedores(empresaId: string) {
+    const { data, error } = await supabase
+      .from('fornecedores')
+      .select('*')
+      .eq('empresa_id', empresaId)
+      .is('deleted_at', null)
+      .order('nome')
+    if (error) throw error
+    return data
+  },
+
+  async getFornecedor(id: string) {
+    const { data, error } = await supabase.from('fornecedores').select('*').eq('id', id).single()
+    if (error) throw error
+    return data
+  },
+
+  async saveFornecedor(payload: any) {
+    if (payload.id) {
+      const { data, error } = await supabase
+        .from('fornecedores')
+        .update(payload)
+        .eq('id', payload.id)
+        .select()
+        .single()
+      if (error) throw error
+      return data
+    } else {
+      const { data, error } = await supabase
+        .from('fornecedores')
+        .insert([payload])
+        .select()
+        .single()
+      if (error) throw error
+      return data
+    }
+  },
+
+  async deleteFornecedor(id: string) {
+    const { error } = await supabase
+      .from('fornecedores')
+      .update({ deleted_at: new Date().toISOString() })
+      .eq('id', id)
+    if (error) throw error
+  },
+
+  // --- Edge Functions ---
+  async enviarEmail(payload: { to: string; subject: string; body: string }) {
+    const { data, error } = await supabase.functions.invoke('send-email', {
+      body: payload,
+    })
+    if (error) throw error
+    return data
   },
 
   // --- Pedidos ---

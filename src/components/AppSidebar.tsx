@@ -69,6 +69,12 @@ const allMenuItems = [
     path: '/app/compras/pedidos',
     module: 'estoque',
   },
+  {
+    icon: Users,
+    label: 'Fornecedores',
+    path: '/app/compras/fornecedores',
+    module: 'estoque',
+  },
   { icon: Tractor, label: 'Operações de Campo', path: '/app/operacoes', module: 'operacoes' },
   { icon: Factory, label: 'Produção', path: '/app/producao', module: 'producao' },
   { icon: Package, label: 'Packing', path: '/app/packing', module: 'packing' },
