@@ -21,11 +21,13 @@ import {
 import { AlertTriangle } from 'lucide-react'
 import { Badge } from '@/components/ui/badge'
 import { ScrollArea } from '@/components/ui/scroll-area'
+import { WeatherWidget } from '@/components/dashboard/WeatherWidget'
 
 export default function ProducaoDashboard() {
   const { empresa } = useEmpresa()
   const [safras, setSafras] = useState<any[]>([])
   const [alertas, setAlertas] = useState<any[]>([])
+  const [fazenda, setFazenda] = useState<any>(null)
 
   useEffect(() => {
     if (empresa?.id) {
@@ -35,6 +37,14 @@ export default function ProducaoDashboard() {
   }, [empresa?.id])
 
   const loadData = async () => {
+    const { data: fData } = await supabase
+      .from('fazendas')
+      .select('latitude, longitude')
+      .eq('empresa_id', empresa.id)
+      .limit(1)
+      .maybeSingle()
+    if (fData) setFazenda(fData)
+
     // Invoke fenology alerts generation
     await supabase.rpc('gerar_alertas_fenologia' as any, { p_empresa_id: empresa?.id } as any)
 
@@ -95,6 +105,10 @@ export default function ProducaoDashboard() {
         <p className="text-muted-foreground">
           Visão analítica de custos, produtividade e alertas de manejo.
         </p>
+      </div>
+
+      <div className="grid grid-cols-1 gap-6 mb-6">
+        <WeatherWidget latitude={fazenda?.latitude} longitude={fazenda?.longitude} />
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">

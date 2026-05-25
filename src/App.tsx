@@ -53,6 +53,8 @@ import FornecedorList from './pages/compras/FornecedorList'
 import FornecedorForm from './pages/compras/FornecedorForm'
 import OperacaoList from './pages/operacoes/OperacaoList'
 import OperacaoForm from './pages/operacoes/OperacaoForm'
+import MinhasOperacoes from './pages/operacoes/MinhasOperacoes'
+import EquipePerformance from './pages/operacoes/EquipePerformance'
 import ProducaoDashboard from './pages/producao/ProducaoDashboard'
 import EquipamentoList from './pages/equipamentos/EquipamentoList'
 import EquipamentoForm from './pages/equipamentos/EquipamentoForm'
@@ -147,6 +149,8 @@ const App = () => (
                 <Route path="/app/compras/fornecedores/:id" element={<FornecedorForm />} />
 
                 <Route path="/app/operacoes" element={<OperacaoList />} />
+                <Route path="/app/operacoes/minhas" element={<MinhasOperacoes />} />
+                <Route path="/app/operacoes/equipe" element={<EquipePerformance />} />
                 <Route path="/app/operacoes/nova" element={<OperacaoForm />} />
                 <Route path="/app/operacoes/:id" element={<OperacaoForm />} />
                 <Route

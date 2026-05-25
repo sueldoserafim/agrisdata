@@ -117,7 +117,19 @@ export const allMenuItems: MenuItemRaw[] = [
     icon: Factory,
     label: 'Operacional',
     subItems: [
-      { icon: Wrench, label: 'Operações de Campo', path: '/app/operacoes', module: 'operacoes' },
+      {
+        icon: CheckSquare,
+        label: 'Minhas Tarefas (Campo)',
+        path: '/app/operacoes/minhas',
+        module: 'operacoes',
+      },
+      { icon: Wrench, label: 'Painel de Operações', path: '/app/operacoes', module: 'operacoes' },
+      {
+        icon: Users,
+        label: 'Performance da Equipe',
+        path: '/app/operacoes/equipe',
+        module: 'operacoes',
+      },
       { icon: Cog, label: 'Produção', path: '/app/producao', module: 'producao' },
       { icon: Box, label: 'Packing', path: '/app/packing', module: 'packing' },
       { icon: Ship, label: 'Exportação', path: '/app/exportacao', module: 'exportacao' },
