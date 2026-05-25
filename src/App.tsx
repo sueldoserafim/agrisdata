@@ -43,6 +43,7 @@ import CotacaoForm from './pages/compras/CotacaoForm'
 import CotacaoDetail from './pages/compras/CotacaoDetail'
 import PedidoList from './pages/compras/PedidoList'
 import PedidoForm from './pages/compras/PedidoForm'
+import RecebimentoForm from './pages/compras/RecebimentoForm'
 import FornecedorList from './pages/compras/FornecedorList'
 import FornecedorForm from './pages/compras/FornecedorForm'
 
@@ -110,6 +111,8 @@ const App = () => (
                 <Route path="/app/compras/cotacoes/:id" element={<CotacaoDetail />} />
                 <Route path="/app/compras/pedidos" element={<PedidoList />} />
                 <Route path="/app/compras/pedidos/:id" element={<PedidoForm />} />
+                <Route path="/app/compras/recebimentos/novo" element={<RecebimentoForm />} />
+                <Route path="/app/compras/pedidos/:id/receber" element={<RecebimentoForm />} />
                 <Route path="/app/compras/fornecedores" element={<FornecedorList />} />
                 <Route path="/app/compras/fornecedores/new" element={<FornecedorForm />} />
                 <Route path="/app/compras/fornecedores/:id" element={<FornecedorForm />} />

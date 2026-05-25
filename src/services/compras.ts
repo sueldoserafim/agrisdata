@@ -270,18 +270,22 @@ export const comprasService = {
   },
 
   // --- Recebimento de Estoque ---
-  async receberPedido(pedidoId: string, recebimento: any) {
+  async receberPedido(payload: any) {
+    const item = payload.itens[0]
+
     const { data: lote, error: loteError } = await supabase
       .from('lotes_estoque')
       .insert([
         {
-          empresa_id: recebimento.empresa_id,
-          produto_id: recebimento.produto_id,
-          armazem_id: recebimento.armazem_id,
-          numero_lote: recebimento.numero_lote,
-          quantidade: recebimento.quantidade,
-          data_validade: recebimento.data_validade,
-          data_entrada: new Date().toISOString(),
+          empresa_id: payload.empresa_id,
+          produto_id: item.produto_id,
+          armazem_id: item.armazem_id,
+          numero_lote: item.numero_lote,
+          quantidade: item.qtd_recebida,
+          data_validade: item.data_validade,
+          data_fabricacao: item.data_fabricacao || null,
+          localizacao: item.localizacao || null,
+          data_entrada: payload.data_recebimento,
         },
       ])
       .select()
@@ -290,11 +294,11 @@ export const comprasService = {
 
     const { error: movError } = await supabase.from('estoque_movimento').insert([
       {
-        empresa_id: recebimento.empresa_id,
+        empresa_id: payload.empresa_id,
         lote_id: lote.id,
         tipo_movimento: 'entrada',
-        quantidade: recebimento.quantidade,
-        motivo: 'Recebimento de Pedido',
+        quantidade: item.qtd_recebida,
+        motivo: `Recebimento NF: ${payload.numero_nf}`,
       },
     ])
     if (movError) throw movError
@@ -303,10 +307,30 @@ export const comprasService = {
       .from('compras_pedido')
       .update({
         status: 'recebido',
-        numero_nota_fiscal: recebimento.numero_nota_fiscal,
+        numero_nota_fiscal: payload.numero_nf,
+        observacoes: item.motivo_divergencia ? `Divergência: ${item.motivo_divergencia}` : null,
       })
-      .eq('id', pedidoId)
+      .eq('id', payload.pedido_id)
     if (pedError) throw pedError
+
+    if (item.qtd_pedida !== item.qtd_recebida) {
+      await supabase.from('alertas' as any).insert([
+        {
+          empresa_id: payload.empresa_id,
+          titulo: 'Divergência no Recebimento',
+          descricao: `Pedido recebido com divergência. Pedido: ${item.qtd_pedida}, Recebido: ${item.qtd_recebida}. Motivo: ${item.motivo_divergencia}`,
+          tipo: 'warning',
+        },
+      ])
+    }
+
+    if (item.atualizar_estoque_minimo && item.novo_estoque_minimo) {
+      const { error: prodError } = await supabase
+        .from('produtos')
+        .update({ estoque_minimo: item.novo_estoque_minimo })
+        .eq('id', item.produto_id)
+      if (prodError) throw prodError
+    }
 
     return true
   },
