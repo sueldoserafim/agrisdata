@@ -144,7 +144,7 @@ export default function CulturaForm() {
   const { fields, append, remove } = useFieldArray({ control: form.control, name: 'fenologia' })
 
   useEffect(() => {
-    if (id && id !== 'new' && empresa?.id) {
+    if (id && empresa?.id) {
       getCulturaById(id, empresa.id)
         .then(({ cultura, fenologia }) => {
           form.reset({ ...cultura, fenologia: fenologia || [] })
@@ -158,8 +158,8 @@ export default function CulturaForm() {
     setLoading(true)
     try {
       const { fenologia, ...culturaData } = values
-      if (id === 'new') await createCultura(culturaData, fenologia || [], empresa.id)
-      else await updateCultura(id!, culturaData, fenologia || [], empresa.id)
+      if (id) await updateCultura(id, culturaData, fenologia || [], empresa.id)
+      else await createCultura(culturaData, fenologia || [], empresa.id)
       toast({ title: 'Sucesso', description: 'Cultura salva com sucesso.' })
       navigate('/app/culturas')
     } catch (err: any) {
@@ -240,7 +240,7 @@ export default function CulturaForm() {
             </Link>
           </Button>
           <h1 className="text-3xl font-bold tracking-tight">
-            {id === 'new' ? 'Nova Cultura' : 'Editar Cultura'}
+            {id ? 'Editar Cultura' : 'Nova Cultura'}
           </h1>
         </div>
         <Sheet>

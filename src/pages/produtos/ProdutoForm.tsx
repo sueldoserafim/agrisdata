@@ -73,7 +73,7 @@ export default function ProdutoForm() {
   })
 
   useEffect(() => {
-    if (id && id !== 'new') {
+    if (id) {
       setLoading(true)
       produtosService
         .getById(id)
@@ -95,7 +95,7 @@ export default function ProdutoForm() {
     try {
       setLoading(true)
       const payload = { ...values, empresa_id: empresa.id }
-      if (id && id !== 'new') {
+      if (id) {
         await produtosService.update(id, payload)
         toast({ title: 'Produto atualizado com sucesso' })
       } else {
@@ -188,7 +188,7 @@ export default function ProdutoForm() {
               <ArrowLeft className="size-4" />
             </Link>
           </Button>
-          <h1 className="text-2xl font-bold">{id === 'new' ? 'Novo Produto' : 'Editar Produto'}</h1>
+          <h1 className="text-2xl font-bold">{id ? 'Editar Produto' : 'Novo Produto'}</h1>
         </div>
         <Button onClick={form.handleSubmit(onSubmit)} disabled={loading}>
           <Save className="size-4 mr-2" /> Salvar

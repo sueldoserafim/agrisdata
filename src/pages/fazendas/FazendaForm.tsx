@@ -81,6 +81,7 @@ const maskCnpj = (v: string) =>
 const formSchema = z
   .object({
     nome: z.string().min(3).max(150),
+    endereco: z.string().optional(),
     municipio: z.string().min(1),
     estado: z.string().min(1),
     tipo_producao: z.string().min(1),
@@ -125,6 +126,7 @@ export default function FazendaForm() {
         if (data) {
           form.reset({
             ...data,
+            endereco: data.endereco || '',
             cnpj_imobiliario: data.cnpj_imobiliario ? maskCnpj(data.cnpj_imobiliario) : undefined,
             responsavel_cpf: data.responsavel_cpf ? maskCpf(data.responsavel_cpf) : undefined,
             responsavel_telefone: data.responsavel_telefone
@@ -206,6 +208,19 @@ export default function FazendaForm() {
                     <FormLabel>Empresa</FormLabel>
                     <Input disabled value={empresa?.nome || ''} />
                   </FormItem>
+                  <FormField
+                    control={form.control}
+                    name="endereco"
+                    render={({ field }) => (
+                      <FormItem className="col-span-2">
+                        <FormLabel>Endereço</FormLabel>
+                        <FormControl>
+                          <Input {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
                   <FormField
                     control={form.control}
                     name="municipio"

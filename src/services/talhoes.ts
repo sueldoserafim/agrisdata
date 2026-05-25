@@ -8,6 +8,7 @@ export const getTalhoes = async (empresaId: string) => {
       fazendas ( nome )
     `)
     .eq('empresa_id', empresaId)
+    .is('deleted_at', null)
     .order('nome', { ascending: true })
 
   if (error) throw error
@@ -45,6 +46,7 @@ export const getFazendas = async (empresaId: string) => {
     .from('fazendas')
     .select('id, nome')
     .eq('empresa_id', empresaId)
+    .is('deleted_at', null)
     .order('nome', { ascending: true })
 
   if (error) throw error
