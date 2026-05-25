@@ -33,6 +33,8 @@ import CulturaList from './pages/culturas/CulturaList'
 import CulturaForm from './pages/culturas/CulturaForm'
 import CultivarList from './pages/cultivares/CultivarList'
 import CultivarForm from './pages/cultivares/CultivarForm'
+import SafraDashboard from './pages/safras/SafraDashboard'
+import SafraForm from './pages/safras/SafraForm'
 import ProdutoList from './pages/produtos/ProdutoList'
 import ProdutoForm from './pages/produtos/ProdutoForm'
 import AlmoxarifadoDashboard from './pages/estoque/AlmoxarifadoDashboard'
@@ -100,6 +102,10 @@ const App = () => (
                 <Route path="/app/cultivares" element={<CultivarList />} />
                 <Route path="/app/cultivares/new" element={<CultivarForm />} />
                 <Route path="/app/cultivares/:id" element={<CultivarForm />} />
+
+                <Route path="/app/safras" element={<SafraDashboard />} />
+                <Route path="/app/safras/new" element={<SafraForm />} />
+                <Route path="/app/safras/:id" element={<SafraForm />} />
 
                 <Route path="/app/produtos" element={<ProdutoList />} />
                 <Route path="/app/produtos/new" element={<ProdutoForm />} />
