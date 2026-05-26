@@ -213,6 +213,7 @@ export const allMenuItems: MenuItemRaw[] = [
       },
       { icon: UserPlus, label: 'RH', path: '/app/rh', module: 'rh' },
       { icon: Truck, label: 'Frota', path: '/app/frota', module: 'frota' },
+      { icon: LineChart, label: 'Desempenho (Safras)', path: '/app/performance', module: 'bi' },
       { icon: LineChart, label: 'BI', path: '/app/bi', module: 'bi' },
       {
         icon: ClipboardList,

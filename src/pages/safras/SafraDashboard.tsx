@@ -32,6 +32,7 @@ import {
 } from '@/components/ui/select'
 import { Label } from '@/components/ui/label'
 import { useEmpresa } from '@/hooks/use-empresa'
+import { useAuth } from '@/hooks/use-auth'
 import { supabase } from '@/lib/supabase/client'
 import { useToast } from '@/hooks/use-toast'
 
@@ -39,12 +40,14 @@ export default function SafraDashboard() {
   const { empresa } = useEmpresa()
   const navigate = useNavigate()
   const { toast } = useToast()
+  const { user } = useAuth()
   const [safras, setSafras] = useState<any[]>([])
   const [usuarios, setUsuarios] = useState<any[]>([])
   const [safraToClose, setSafraToClose] = useState<any | null>(null)
   const [closureData, setClosureData] = useState<any>(null)
   const [loadingClosure, setLoadingClosure] = useState(false)
   const [selectedUser, setSelectedUser] = useState('')
+  const [acceptTerms, setAcceptTerms] = useState(false)
   const [searchTerm, setSearchTerm] = useState('')
   const [activeTab, setActiveTab] = useState('planejada')
 
@@ -121,7 +124,22 @@ export default function SafraDashboard() {
   }
 
   const handleCloseSafra = async () => {
-    if (!safraToClose || !selectedUser) return
+    if (!safraToClose || !selectedUser || !acceptTerms) return
+
+    const selectedUserObj = usuarios.find((u) => u.id === selectedUser)
+    const isCurrentUserAdmin =
+      usuarios.find((u) => u.id === user?.id)?.perfil === 'admin' ||
+      usuarios.find((u) => u.id === user?.id)?.perfil === 'admin_saas'
+
+    if (selectedUser !== user?.id && !isCurrentUserAdmin) {
+      toast({
+        title: 'Não Autorizado',
+        description:
+          'Você só pode assinar o encerramento em seu próprio nome, a menos que seja um administrador.',
+        variant: 'destructive',
+      })
+      return
+    }
 
     try {
       const { error } = await supabase
@@ -129,7 +147,8 @@ export default function SafraDashboard() {
         .update({
           status: 'encerrada',
           data_colheita_real: new Date().toISOString().split('T')[0],
-          responsavel_encerramento_id: selectedUser,
+          responsavel_encerramento_id: user?.id,
+          data_assinatura_tecnica: new Date().toISOString(),
         })
         .eq('id', safraToClose.id)
 
@@ -433,20 +452,41 @@ export default function SafraDashboard() {
                 </span>
               </div>
 
-              <div className="mt-4 pt-4 border-t space-y-2">
-                <Label>Aprovação Técnica (Responsável)</Label>
-                <Select value={selectedUser} onValueChange={setSelectedUser}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Selecione o responsável..." />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {usuarios.map((u) => (
-                      <SelectItem key={u.id} value={u.id}>
-                        {u.nome || u.email} ({u.perfil})
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+              <div className="mt-4 pt-4 border-t space-y-4">
+                <div className="space-y-2">
+                  <Label>Aprovação Técnica (Responsável Selecionado)</Label>
+                  <Select value={selectedUser} onValueChange={setSelectedUser}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Selecione o responsável..." />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {usuarios.map((u) => (
+                        <SelectItem key={u.id} value={u.id}>
+                          {u.nome || u.email} ({u.perfil})
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div className="flex items-start space-x-2 pt-2 border-t">
+                  <input
+                    type="checkbox"
+                    id="terms"
+                    className="mt-1 h-4 w-4 rounded border-gray-300 text-primary focus:ring-primary"
+                    checked={acceptTerms}
+                    onChange={(e) => setAcceptTerms(e.target.checked)}
+                  />
+                  <Label
+                    htmlFor="terms"
+                    className="text-sm font-normal leading-snug cursor-pointer"
+                  >
+                    Eu,{' '}
+                    <strong>{usuarios.find((u) => u.id === user?.id)?.nome || user?.email}</strong>,
+                    confirmo a integridade dos dados e aprovo o encerramento técnico desta safra.
+                    Assinatura Digital será registrada.
+                  </Label>
+                </div>
               </div>
             </div>
           ) : null}
@@ -460,7 +500,8 @@ export default function SafraDashboard() {
                 closureData.pendingOpsCount > 0 ||
                 !closureData.hasColheita ||
                 !closureData.isBalancoValid ||
-                !selectedUser
+                !selectedUser ||
+                !acceptTerms
               }
               className="bg-emerald-600 hover:bg-emerald-700 text-white disabled:opacity-50"
             >

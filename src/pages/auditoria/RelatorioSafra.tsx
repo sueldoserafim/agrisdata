@@ -18,14 +18,14 @@ export default function RelatorioSafra() {
       if (!empresa?.id || !id) return
       setLoading(true)
 
-      const [safraRes, opsRes, colheitasRes, balancoRes] = await Promise.all([
+      const [safraRes, opsRes, colheitasRes, balancoRes, custosRes] = await Promise.all([
         supabase
           .from('safras')
           .select(`
             *,
             cultivares(nome, culturas(nome)),
             fazendas(nome, endereco, municipio, estado, cnpj_imobiliario),
-            usuarios!safras_responsavel_encerramento_id_fkey(nome, email),
+            usuarios!safras_responsavel_encerramento_id_fkey(nome, email, perfil),
             historico_produtividade_talhao(produtividade_kg_ha)
           `)
           .eq('id', id)
@@ -38,6 +38,11 @@ export default function RelatorioSafra() {
           .is('deleted_at', null),
         supabase.from('colheita_registros').select('*').eq('safra_id', id).is('deleted_at', null),
         supabase.from('balanco_massas').select('*').eq('safra_id', id).maybeSingle(),
+        supabase
+          .from('custos_talhao')
+          .select('valor, descricao, centros_custo(nome)')
+          .eq('safra_id', id)
+          .is('deleted_at', null),
       ])
 
       if (safraRes.data) {
@@ -69,6 +74,21 @@ export default function RelatorioSafra() {
           }
         }
 
+        const custos = custosRes.data || []
+        const totalCustos = custos.reduce((acc, c) => acc + (Number(c.valor) || 0), 0)
+        const areaPlanejada = Number(safraRes.data.area_planejada_ha) || areaColhida || 1
+        const custoPorHa = totalCustos / areaPlanejada
+        const custoPorTon = totalTon > 0 ? totalCustos / totalTon : 0
+
+        const custosAgrupados = custos.reduce(
+          (acc, c) => {
+            const cat = c.centros_custo?.nome || 'Geral'
+            acc[cat] = (acc[cat] || 0) + (Number(c.valor) || 0)
+            return acc
+          },
+          {} as Record<string, number>,
+        )
+
         setData({
           safra: safraRes.data,
           checklist: {
@@ -82,6 +102,10 @@ export default function RelatorioSafra() {
             totalTon,
             areaColhida,
             avgProd,
+            totalCustos,
+            custoPorHa,
+            custoPorTon,
+            custosAgrupados,
           },
         })
       }
@@ -117,6 +141,8 @@ export default function RelatorioSafra() {
   }
 
   const { safra, checklist, metrics } = data
+  const formatCurrency = (val: number) =>
+    new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(val)
 
   return (
     <div className="p-8 w-full max-w-[1000px] mx-auto min-h-screen bg-muted/20 print:bg-white print:p-0">
@@ -235,6 +261,44 @@ export default function RelatorioSafra() {
         </div>
 
         <h3 className="font-semibold text-sm uppercase text-muted-foreground mb-4 border-b pb-2">
+          Rentabilidade Estimada & Custos
+        </h3>
+        <div className="grid grid-cols-3 gap-4 mb-8">
+          <div className="p-4 border rounded-md bg-muted/10 print:bg-transparent print:border-black/20">
+            <p className="text-xs text-muted-foreground print:text-black">Custo Total</p>
+            <p className="text-xl font-bold text-destructive">
+              {formatCurrency(metrics.totalCustos)}
+            </p>
+          </div>
+          <div className="p-4 border rounded-md bg-muted/10 print:bg-transparent print:border-black/20">
+            <p className="text-xs text-muted-foreground print:text-black">Custo por Hectare</p>
+            <p className="text-xl font-bold">{formatCurrency(metrics.custoPorHa)}</p>
+          </div>
+          <div className="p-4 border rounded-md bg-muted/10 print:bg-transparent print:border-black/20">
+            <p className="text-xs text-muted-foreground print:text-black">
+              Custo por Tonelada Produzida
+            </p>
+            <p className="text-xl font-bold">{formatCurrency(metrics.custoPorTon)}</p>
+          </div>
+        </div>
+
+        {Object.keys(metrics.custosAgrupados).length > 0 && (
+          <div className="mb-8">
+            <p className="text-xs font-semibold uppercase text-muted-foreground mb-2">
+              Desdobramento de Custos
+            </p>
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+              {Object.entries(metrics.custosAgrupados).map(([categoria, valor]) => (
+                <div key={categoria} className="text-sm border-b pb-1 print:border-black/20">
+                  <span className="text-muted-foreground block text-xs">{categoria}</span>
+                  <span className="font-medium">{formatCurrency(valor as number)}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        <h3 className="font-semibold text-sm uppercase text-muted-foreground mb-4 border-b pb-2">
           Checklist de Conformidade (Auditoria)
         </h3>
         <div className="space-y-4 mb-12">
@@ -284,15 +348,29 @@ export default function RelatorioSafra() {
 
         <div className="mt-20 pt-8 border-t grid grid-cols-2 gap-16 text-center">
           <div>
-            <div className="border-b border-black w-3/4 mx-auto mb-2"></div>
-            <p className="font-semibold text-sm">
+            {safra.data_assinatura_tecnica ? (
+              <div className="mb-2 flex flex-col items-center">
+                <p className="font-mono text-xs text-emerald-600 border border-emerald-200 bg-emerald-50 rounded-md py-2 px-4 inline-block print:border-black print:text-black print:bg-transparent">
+                  Assinado Digitalmente em
+                  <br />
+                  {format(new Date(safra.data_assinatura_tecnica), "dd/MM/yyyy 'às' HH:mm")}
+                </p>
+              </div>
+            ) : (
+              <div className="border-b border-black w-3/4 mx-auto mb-2 h-10"></div>
+            )}
+            <p className="font-semibold text-sm mt-2">
               {safra.usuarios?.nome || safra.usuarios?.email || 'Responsável Técnico'}
             </p>
-            <p className="text-xs text-muted-foreground">Responsável pelo Encerramento</p>
+            <p className="text-xs text-muted-foreground">
+              {safra.usuarios?.perfil === 'admin'
+                ? 'Administrador'
+                : 'Responsável pelo Encerramento'}
+            </p>
           </div>
           <div>
-            <div className="border-b border-black w-3/4 mx-auto mb-2"></div>
-            <p className="font-semibold text-sm">Diretoria / Gerência</p>
+            <div className="border-b border-black w-3/4 mx-auto mb-2 h-10"></div>
+            <p className="font-semibold text-sm mt-2">Diretoria / Gerência</p>
             <p className="text-xs text-muted-foreground">Aprovação Final</p>
           </div>
         </div>

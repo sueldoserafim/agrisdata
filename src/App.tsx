@@ -26,6 +26,7 @@ import Usuarios from './pages/app/Usuarios'
 import SettingsPage from './pages/Settings'
 import AuditoriaSafrasList from './pages/auditoria/AuditoriaSafrasList'
 import RelatorioSafra from './pages/auditoria/RelatorioSafra'
+import PerformanceDashboard from './pages/bi/PerformanceDashboard'
 
 import FazendaList from './pages/fazendas/FazendaList'
 import FazendaForm from './pages/fazendas/FazendaForm'
@@ -244,6 +245,7 @@ const App = () => (
                   path="/app/bi"
                   element={<div className="p-8 font-semibold text-xl">BI</div>}
                 />
+                <Route path="/app/performance" element={<PerformanceDashboard />} />
                 <Route path="/app/auditoria-safras" element={<AuditoriaSafrasList />} />
                 <Route path="/app/auditoria-safras/:id/relatorio" element={<RelatorioSafra />} />
                 <Route path="/app/usuarios" element={<Usuarios />} />
