@@ -1,6 +1,6 @@
 import { useEffect, useState, useMemo } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
-import { Plus, Search, Edit } from 'lucide-react'
+import { Plus, Search, Edit, CheckCircle } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
@@ -13,13 +13,26 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table'
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog'
 import { useEmpresa } from '@/hooks/use-empresa'
 import { supabase } from '@/lib/supabase/client'
+import { useToast } from '@/hooks/use-toast'
 
 export default function SafraDashboard() {
   const { empresa } = useEmpresa()
   const navigate = useNavigate()
+  const { toast } = useToast()
   const [safras, setSafras] = useState<any[]>([])
+  const [safraToClose, setSafraToClose] = useState<any | null>(null)
   const [searchTerm, setSearchTerm] = useState('')
   const [activeTab, setActiveTab] = useState('planejada')
 
@@ -38,6 +51,34 @@ export default function SafraDashboard() {
   useEffect(() => {
     loadSafras()
   }, [empresa?.id])
+
+  const handleCloseSafra = async () => {
+    if (!safraToClose) return
+
+    try {
+      const { error } = await supabase
+        .from('safras')
+        .update({ status: 'encerrada' })
+        .eq('id', safraToClose.id)
+
+      if (error) throw error
+
+      toast({
+        title: 'Safra encerrada',
+        description: 'A safra foi encerrada com sucesso.',
+      })
+
+      loadSafras()
+    } catch (error: any) {
+      toast({
+        title: 'Erro',
+        description: 'Não foi possível encerrar a safra: ' + error.message,
+        variant: 'destructive',
+      })
+    } finally {
+      setSafraToClose(null)
+    }
+  }
 
   const normalizeStatus = (status: string | null) => {
     if (!status) return 'planejada'
@@ -158,17 +199,30 @@ export default function SafraDashboard() {
                   </TableCell>
                   <TableCell className="text-center">{getStatusBadge(safra.status)}</TableCell>
                   <TableCell className="text-right">
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      className="h-8 w-8 opacity-0 group-hover:opacity-100 transition-opacity"
-                      asChild
-                    >
-                      <Link to={`/app/safras/${safra.id}`} onClick={(e) => e.stopPropagation()}>
-                        <Edit className="h-4 w-4" />
-                        <span className="sr-only">Editar</span>
-                      </Link>
-                    </Button>
+                    <div className="flex justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                      {(normalizeStatus(safra.status) === 'planejada' ||
+                        normalizeStatus(safra.status) === 'em_andamento') && (
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="h-8 w-8 text-emerald-600 hover:text-emerald-700 hover:bg-emerald-50"
+                          onClick={(e) => {
+                            e.stopPropagation()
+                            setSafraToClose(safra)
+                          }}
+                          title="Encerrar Safra"
+                        >
+                          <CheckCircle className="h-4 w-4" />
+                          <span className="sr-only">Encerrar</span>
+                        </Button>
+                      )}
+                      <Button variant="ghost" size="icon" className="h-8 w-8" asChild>
+                        <Link to={`/app/safras/${safra.id}`} onClick={(e) => e.stopPropagation()}>
+                          <Edit className="h-4 w-4" />
+                          <span className="sr-only">Editar</span>
+                        </Link>
+                      </Button>
+                    </div>
                   </TableCell>
                 </TableRow>
               ))
@@ -249,6 +303,27 @@ export default function SafraDashboard() {
           {renderTable()}
         </TabsContent>
       </Tabs>
+
+      <AlertDialog open={!!safraToClose} onOpenChange={(open) => !open && setSafraToClose(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Encerrar Safra</AlertDialogTitle>
+            <AlertDialogDescription>
+              Deseja realmente encerrar esta safra? Esta ação alterará o status para encerrada e
+              liberará os talhões vinculados para novos plantios.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancelar</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleCloseSafra}
+              className="bg-emerald-600 hover:bg-emerald-700 text-white"
+            >
+              Encerrar Safra
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   )
 }
