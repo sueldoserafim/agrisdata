@@ -55,6 +55,8 @@ import GrausDiaDashboard from './pages/agronomia/GrausDiaDashboard'
 import GrausDiaForm from './pages/agronomia/GrausDiaForm'
 import PluviometriaDashboard from './pages/agronomia/PluviometriaDashboard'
 import PluviometriaForm from './pages/agronomia/PluviometriaForm'
+import AnalisesSoloList from './pages/agronomia/AnalisesSoloList'
+import AnalisesSoloForm from './pages/agronomia/AnalisesSoloForm'
 import OperacaoList from './pages/operacoes/OperacaoList'
 import OperacaoForm from './pages/operacoes/OperacaoForm'
 import MinhasOperacoes from './pages/operacoes/MinhasOperacoes'
@@ -122,6 +124,10 @@ const App = () => (
                 <Route path="/app/agronomia/pluviometria" element={<PluviometriaDashboard />} />
                 <Route path="/app/agronomia/pluviometria/novo" element={<PluviometriaForm />} />
                 <Route path="/app/agronomia/pluviometria/:id" element={<PluviometriaForm />} />
+
+                <Route path="/app/agronomia/analises-solo" element={<AnalisesSoloList />} />
+                <Route path="/app/agronomia/analises-solo/novo" element={<AnalisesSoloForm />} />
+                <Route path="/app/agronomia/analises-solo/:id" element={<AnalisesSoloForm />} />
 
                 <Route path="/app/culturas" element={<CulturaList />} />
                 <Route path="/app/culturas/new" element={<CulturaForm />} />

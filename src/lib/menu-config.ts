@@ -67,6 +67,12 @@ export const allMenuItems: MenuItemRaw[] = [
         module: 'producao',
       },
       {
+        icon: FlaskConical,
+        label: 'Análises de Solo',
+        path: '/app/agronomia/analises-solo',
+        module: 'cadastros',
+      },
+      {
         icon: ThermometerSun,
         label: 'Graus-Dia (GDA)',
         path: '/app/agronomia/gda',
