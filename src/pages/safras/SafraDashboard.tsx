@@ -1,28 +1,33 @@
-import { useEffect, useState } from 'react'
-import { Link } from 'react-router-dom'
-import { Plus } from 'lucide-react'
+import { useEffect, useState, useMemo } from 'react'
+import { Link, useNavigate } from 'react-router-dom'
+import { Plus, Search, Edit } from 'lucide-react'
 import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import { Badge } from '@/components/ui/badge'
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table'
 import { useEmpresa } from '@/hooks/use-empresa'
 import { supabase } from '@/lib/supabase/client'
-import { SafraCard } from '@/components/safras/SafraCard'
-import { useToast } from '@/components/ui/use-toast'
-
-const COLUMNS = [
-  { id: 'Planejada', title: 'PLANEJADA' },
-  { id: 'Em Andamento', title: 'EM ANDAMENTO' },
-  { id: 'Finalizada', title: 'FINALIZADA' },
-]
 
 export default function SafraDashboard() {
   const { empresa } = useEmpresa()
-  const { toast } = useToast()
+  const navigate = useNavigate()
   const [safras, setSafras] = useState<any[]>([])
+  const [searchTerm, setSearchTerm] = useState('')
+  const [activeTab, setActiveTab] = useState('planejada')
 
   const loadSafras = async () => {
     if (!empresa?.id) return
     const { data } = await supabase
       .from('safras')
-      .select('*, cultivares(nome), fazendas(nome), safra_talhoes(talhoes(nome))')
+      .select('*, cultivares(nome, culturas(nome)), fazendas(nome)')
       .eq('empresa_id', empresa.id)
       .is('deleted_at', null)
       .order('created_at', { ascending: false })
@@ -34,30 +39,155 @@ export default function SafraDashboard() {
     loadSafras()
   }, [empresa?.id])
 
-  const handleDrop = async (e: React.DragEvent, newStatus: string) => {
-    const id = e.dataTransfer.getData('safraId')
-    if (!id || !newStatus) return
+  const normalizeStatus = (status: string | null) => {
+    if (!status) return 'planejada'
+    const s = status.toLowerCase()
+    if (s.includes('andamento') || s === 'em_andamento') return 'em_andamento'
+    if (s.includes('encerra') || s.includes('finaliza')) return 'finalizada'
+    return 'planejada'
+  }
 
-    setSafras((prev) => prev.map((s) => (s.id === id ? { ...s, status: newStatus } : s)))
+  const filteredSafras = useMemo(() => {
+    return safras.filter((safra) => {
+      const statusMatch = normalizeStatus(safra.status) === activeTab
 
-    const updates: any = { status: newStatus }
-    if (newStatus === 'Finalizada') {
-      updates.data_colheita_real = new Date().toISOString().split('T')[0]
-    }
+      const searchLower = searchTerm.toLowerCase()
+      const nameMatch =
+        (safra.nome_safra || '').toLowerCase().includes(searchLower) ||
+        (safra.codigo_safra || '').toLowerCase().includes(searchLower) ||
+        (safra.cultivares?.nome || '').toLowerCase().includes(searchLower) ||
+        (safra.cultivares?.culturas?.nome || '').toLowerCase().includes(searchLower) ||
+        (safra.fazendas?.nome || '').toLowerCase().includes(searchLower)
 
-    const { error } = await supabase.from('safras').update(updates).eq('id', id)
-    if (error) {
-      toast({ title: 'Erro', description: 'Erro ao atualizar status', variant: 'destructive' })
-      loadSafras()
+      return statusMatch && (searchTerm === '' || nameMatch)
+    })
+  }, [safras, activeTab, searchTerm])
+
+  const counts = useMemo(() => {
+    return safras.reduce(
+      (acc, safra) => {
+        const status = normalizeStatus(safra.status)
+        acc[status] = (acc[status] || 0) + 1
+        return acc
+      },
+      {} as Record<string, number>,
+    )
+  }, [safras])
+
+  const formatDate = (dateStr: string | null) => {
+    if (!dateStr) return '-'
+    const [year, month, day] = dateStr.split('-')
+    return `${day}/${month}/${year}`
+  }
+
+  const getStatusBadge = (status: string) => {
+    switch (normalizeStatus(status)) {
+      case 'planejada':
+        return (
+          <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200">
+            Planejada
+          </Badge>
+        )
+      case 'em_andamento':
+        return (
+          <Badge variant="outline" className="bg-amber-50 text-amber-700 border-amber-200">
+            Em Andamento
+          </Badge>
+        )
+      case 'finalizada':
+        return (
+          <Badge variant="outline" className="bg-emerald-50 text-emerald-700 border-emerald-200">
+            Finalizada
+          </Badge>
+        )
+      default:
+        return <Badge variant="outline">{status}</Badge>
     }
   }
 
-  const handleDragOver = (e: React.DragEvent) => e.preventDefault()
+  const renderTable = () => (
+    <div className="rounded-md border bg-card shadow-sm overflow-hidden">
+      <div className="overflow-x-auto">
+        <Table>
+          <TableHeader>
+            <TableRow className="bg-muted/50 hover:bg-muted/50">
+              <TableHead className="w-[250px] font-semibold">Nome da Safra</TableHead>
+              <TableHead className="font-semibold">Cultura / Cultivar</TableHead>
+              <TableHead className="font-semibold">Fazenda</TableHead>
+              <TableHead className="w-[100px] text-center font-semibold">Ano</TableHead>
+              <TableHead className="w-[120px] text-center font-semibold">Data Plantio</TableHead>
+              <TableHead className="w-[140px] text-center font-semibold">Status</TableHead>
+              <TableHead className="w-[80px] text-right font-semibold">Ações</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {filteredSafras.length === 0 ? (
+              <TableRow>
+                <TableCell colSpan={7} className="h-32 text-center text-muted-foreground">
+                  Nenhuma safra encontrada para este status.
+                </TableCell>
+              </TableRow>
+            ) : (
+              filteredSafras.map((safra) => (
+                <TableRow
+                  key={safra.id}
+                  className="cursor-pointer group hover:bg-muted/40 transition-colors"
+                  onClick={() => navigate(`/app/safras/${safra.id}`)}
+                >
+                  <TableCell className="font-medium text-foreground">
+                    {safra.nome_safra || safra.codigo_safra || '-'}
+                  </TableCell>
+                  <TableCell>
+                    <div className="flex flex-col">
+                      <span className="text-sm font-medium text-foreground">
+                        {safra.cultivares?.culturas?.nome || '-'}
+                      </span>
+                      <span className="text-xs text-muted-foreground">
+                        {safra.cultivares?.nome || '-'}
+                      </span>
+                    </div>
+                  </TableCell>
+                  <TableCell className="text-muted-foreground">
+                    {safra.fazendas?.nome || '-'}
+                  </TableCell>
+                  <TableCell className="text-center text-muted-foreground">
+                    {safra.ano_safra || '-'}
+                  </TableCell>
+                  <TableCell className="text-center text-muted-foreground">
+                    {formatDate(safra.data_plantio)}
+                  </TableCell>
+                  <TableCell className="text-center">{getStatusBadge(safra.status)}</TableCell>
+                  <TableCell className="text-right">
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="h-8 w-8 opacity-0 group-hover:opacity-100 transition-opacity"
+                      asChild
+                    >
+                      <Link to={`/app/safras/${safra.id}`} onClick={(e) => e.stopPropagation()}>
+                        <Edit className="h-4 w-4" />
+                        <span className="sr-only">Editar</span>
+                      </Link>
+                    </Button>
+                  </TableCell>
+                </TableRow>
+              ))
+            )}
+          </TableBody>
+        </Table>
+      </div>
+    </div>
+  )
 
   return (
-    <div className="p-8 w-full max-w-[1600px] mx-auto space-y-6">
-      <div className="flex justify-between items-center">
-        <h1 className="text-3xl font-bold">Quadro de Safras</h1>
+    <div className="p-8 w-full max-w-[1600px] mx-auto space-y-6 animate-fade-in-up">
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+        <div>
+          <h1 className="text-3xl font-bold tracking-tight">Safras</h1>
+          <p className="text-muted-foreground mt-1">
+            Gerencie e acompanhe o status de todas as safras.
+          </p>
+        </div>
         <Button asChild>
           <Link to="/app/safras/new">
             <Plus className="w-4 h-4 mr-2" /> Nova Safra
@@ -65,27 +195,60 @@ export default function SafraDashboard() {
         </Button>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-        {COLUMNS.map((col) => (
-          <div
-            key={col.id}
-            onDrop={(e) => handleDrop(e, col.id)}
-            onDragOver={handleDragOver}
-            className="bg-muted/30 p-4 rounded-lg min-h-[600px] border border-dashed flex flex-col"
-          >
-            <h2 className="font-semibold mb-4 text-sm text-muted-foreground tracking-widest">
-              {col.title}
-            </h2>
-            <div className="space-y-4 flex-1">
-              {safras
-                .filter((s) => s.status === col.id)
-                .map((safra) => (
-                  <SafraCard key={safra.id} safra={safra} onUpdate={loadSafras} />
-                ))}
-            </div>
-          </div>
-        ))}
+      <div className="flex flex-col sm:flex-row sm:items-center gap-4 pt-2">
+        <div className="relative w-full sm:max-w-md">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+          <Input
+            type="search"
+            placeholder="Buscar por nome, fazenda ou cultivar..."
+            className="pl-9 bg-background"
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+          />
+        </div>
       </div>
+
+      <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+        <TabsList className="mb-4 h-auto p-1 bg-muted/50 inline-flex rounded-lg">
+          <TabsTrigger value="planejada" className="flex items-center gap-2 py-2 rounded-md">
+            Planejadas
+            <Badge
+              variant="secondary"
+              className="px-1.5 py-0.5 text-xs font-semibold bg-primary/10 text-primary"
+            >
+              {counts['planejada'] || 0}
+            </Badge>
+          </TabsTrigger>
+          <TabsTrigger value="em_andamento" className="flex items-center gap-2 py-2 rounded-md">
+            Em Andamento
+            <Badge
+              variant="secondary"
+              className="px-1.5 py-0.5 text-xs font-semibold bg-primary/10 text-primary"
+            >
+              {counts['em_andamento'] || 0}
+            </Badge>
+          </TabsTrigger>
+          <TabsTrigger value="finalizada" className="flex items-center gap-2 py-2 rounded-md">
+            Finalizadas
+            <Badge
+              variant="secondary"
+              className="px-1.5 py-0.5 text-xs font-semibold bg-primary/10 text-primary"
+            >
+              {counts['finalizada'] || 0}
+            </Badge>
+          </TabsTrigger>
+        </TabsList>
+
+        <TabsContent value="planejada" className="m-0 focus-visible:outline-none">
+          {renderTable()}
+        </TabsContent>
+        <TabsContent value="em_andamento" className="m-0 focus-visible:outline-none">
+          {renderTable()}
+        </TabsContent>
+        <TabsContent value="finalizada" className="m-0 focus-visible:outline-none">
+          {renderTable()}
+        </TabsContent>
+      </Tabs>
     </div>
   )
 }
