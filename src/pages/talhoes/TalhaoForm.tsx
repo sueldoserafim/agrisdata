@@ -69,6 +69,9 @@ export default function TalhaoForm() {
   const [isLoading, setIsLoading] = useState(true)
   const [isSaving, setIsSaving] = useState(false)
   const [fazendas, setFazendas] = useState<{ id: string; nome: string }[]>([])
+  const [activeSafras, setActiveSafras] = useState<any[]>([])
+  const [currentSafraLinked, setCurrentSafraLinked] = useState<any | null>(null)
+  const [selectedSafraToLink, setSelectedSafraToLink] = useState<string>('')
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -99,6 +102,30 @@ export default function TalhaoForm() {
 
       if (id) {
         const { data: t } = await supabase.from('talhoes').select('*').eq('id', id).single()
+
+        // Load linked active safra if any
+        const { data: st } = await supabase
+          .from('safra_talhoes')
+          .select('id, safras(id, nome_safra, status)')
+          .eq('talhao_id', id)
+          .neq('safras.status', 'Finalizada')
+          .maybeSingle()
+
+        if (st && st.safras) {
+          setCurrentSafraLinked(st.safras)
+        }
+
+        // Load all active safras from this farm
+        if (t?.fazenda_id) {
+          const { data: safrasAtivas } = await supabase
+            .from('safras')
+            .select('id, nome_safra, status')
+            .eq('fazenda_id', t.fazenda_id)
+            .neq('status', 'Finalizada')
+
+          if (safrasAtivas) setActiveSafras(safrasAtivas)
+        }
+
         if (t) {
           form.reset({
             ...t,
@@ -378,6 +405,82 @@ export default function TalhaoForm() {
           </div>
         </form>
       </Form>
+
+      {id && (
+        <div className="mt-8 pt-8 border-t">
+          <h2 className="text-xl font-bold mb-4">Vincular a uma Safra Ativa</h2>
+          {currentSafraLinked ? (
+            <div className="p-4 bg-muted rounded-md flex items-center justify-between">
+              <div>
+                <p className="font-semibold text-sm">Vinculado à Safra:</p>
+                <p className="text-primary">
+                  {currentSafraLinked.nome_safra} ({currentSafraLinked.status})
+                </p>
+              </div>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={async () => {
+                  const { error } = await supabase
+                    .from('safra_talhoes')
+                    .delete()
+                    .eq('talhao_id', id)
+                    .eq('safra_id', currentSafraLinked.id)
+                  if (error) toast({ title: 'Erro ao desvincular', variant: 'destructive' })
+                  else {
+                    toast({ title: 'Desvinculado com sucesso' })
+                    setCurrentSafraLinked(null)
+                  }
+                }}
+              >
+                Desvincular
+              </Button>
+            </div>
+          ) : (
+            <div className="flex items-end gap-4">
+              <div className="flex-1 space-y-2">
+                <FormLabel>Safras Ativas na Fazenda</FormLabel>
+                <Select value={selectedSafraToLink} onValueChange={setSelectedSafraToLink}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Selecione uma safra ativa..." />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {activeSafras.map((s) => (
+                      <SelectItem key={s.id} value={s.id}>
+                        {s.nome_safra} ({s.status})
+                      </SelectItem>
+                    ))}
+                    {activeSafras.length === 0 && (
+                      <SelectItem value="none" disabled>
+                        Nenhuma safra ativa encontrada nesta fazenda.
+                      </SelectItem>
+                    )}
+                  </SelectContent>
+                </Select>
+              </div>
+              <Button
+                disabled={!selectedSafraToLink || selectedSafraToLink === 'none'}
+                onClick={async () => {
+                  if (!empresa?.id) return
+                  const { error } = await supabase.from('safra_talhoes').insert({
+                    empresa_id: empresa.id,
+                    talhao_id: id,
+                    safra_id: selectedSafraToLink,
+                  })
+                  if (error) toast({ title: 'Erro ao vincular', variant: 'destructive' })
+                  else {
+                    toast({ title: 'Vinculado com sucesso' })
+                    const s = activeSafras.find((x) => x.id === selectedSafraToLink)
+                    setCurrentSafraLinked(s)
+                  }
+                }}
+              >
+                Vincular
+              </Button>
+            </div>
+          )}
+        </div>
+      )}
     </div>
   )
 }

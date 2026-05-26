@@ -22,7 +22,7 @@ export function SafraCard({ safra, onUpdate }: { safra: any; onUpdate: () => voi
     if (!confirm('Deseja realmente encerrar esta safra?')) return
     const { error } = await supabase
       .from('safras')
-      .update({ status: 'encerrada', data_colheita_real: new Date().toISOString().split('T')[0] })
+      .update({ status: 'Finalizada', data_colheita_real: new Date().toISOString().split('T')[0] })
       .eq('id', safra.id)
     if (error) {
       toast({ title: 'Erro', description: error.message, variant: 'destructive' })
@@ -53,10 +53,15 @@ export function SafraCard({ safra, onUpdate }: { safra: any; onUpdate: () => voi
           </h3>
         </Link>
         <p className="text-xs text-muted-foreground mb-4 truncate">
-          {safra.cultivares?.nome || 'S/ Cultivar'} • {safra.talhoes?.nome || 'S/ Talhão'}
+          {safra.cultivares?.nome || 'S/ Cultivar'} • {safra.fazendas?.nome || 'S/ Fazenda'}
         </p>
+        {safra.safra_talhoes && safra.safra_talhoes.length > 0 && (
+          <p className="text-[10px] text-muted-foreground mb-2">
+            {safra.safra_talhoes.length} Talhão(ões) vinculado(s)
+          </p>
+        )}
 
-        {safra.status !== 'encerrada' && (
+        {safra.status !== 'Finalizada' && (
           <div className="grid grid-cols-2 gap-2 mt-4">
             <Button variant="secondary" size="sm" className="w-full text-[10px] h-8 px-2" asChild>
               <Link to={`/app/operacoes/new?safra_id=${safra.id}`}>

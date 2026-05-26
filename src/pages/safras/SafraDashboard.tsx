@@ -8,10 +8,9 @@ import { SafraCard } from '@/components/safras/SafraCard'
 import { useToast } from '@/components/ui/use-toast'
 
 const COLUMNS = [
-  { id: 'planejada', title: 'PLANEJADA' },
-  { id: 'em_plantio', title: 'EM PLANTIO' },
-  { id: 'em_producao', title: 'EM PRODUÇÃO' },
-  { id: 'encerrada', title: 'ENCERRADA' },
+  { id: 'Planejada', title: 'PLANEJADA' },
+  { id: 'Em Andamento', title: 'EM ANDAMENTO' },
+  { id: 'Finalizada', title: 'FINALIZADA' },
 ]
 
 export default function SafraDashboard() {
@@ -23,7 +22,7 @@ export default function SafraDashboard() {
     if (!empresa?.id) return
     const { data } = await supabase
       .from('safras')
-      .select('*, cultivares(nome), talhoes(nome)')
+      .select('*, cultivares(nome), fazendas(nome), safra_talhoes(talhoes(nome))')
       .eq('empresa_id', empresa.id)
       .is('deleted_at', null)
       .order('created_at', { ascending: false })
@@ -42,7 +41,7 @@ export default function SafraDashboard() {
     setSafras((prev) => prev.map((s) => (s.id === id ? { ...s, status: newStatus } : s)))
 
     const updates: any = { status: newStatus }
-    if (newStatus === 'encerrada') {
+    if (newStatus === 'Finalizada') {
       updates.data_colheita_real = new Date().toISOString().split('T')[0]
     }
 
