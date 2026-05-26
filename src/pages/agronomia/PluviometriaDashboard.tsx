@@ -1,0 +1,425 @@
+import { useEffect, useState, useMemo } from 'react'
+import { Link } from 'react-router-dom'
+import { Plus, CloudRain, Droplets, Calendar, Edit, Trash2, AlertTriangle } from 'lucide-react'
+import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Badge } from '@/components/ui/badge'
+import { cn } from '@/lib/utils'
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
+import { format, subDays, startOfMonth, parseISO } from 'date-fns'
+import { ptBR } from 'date-fns/locale'
+import { useToast } from '@/hooks/use-toast'
+import { supabase } from '@/lib/supabase/client'
+import { pluviometriaService, type Pluviometria } from '@/services/pluviometria'
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from '@/components/ui/alert-dialog'
+
+export default function PluviometriaDashboard() {
+  const [data, setData] = useState<Pluviometria[]>([])
+  const [talhoes, setTalhoes] = useState<{ id: string; nome: string }[]>([])
+  const [safras, setSafras] = useState<any[]>([])
+  const [loading, setLoading] = useState(true)
+  const [filtroTalhao, setFiltroTalhao] = useState('todos')
+  const [filtroDataInicio, setFiltroDataInicio] = useState('')
+  const [filtroDataFim, setFiltroDataFim] = useState('')
+  const { toast } = useToast()
+
+  useEffect(() => {
+    loadData()
+  }, [])
+
+  const loadData = async () => {
+    try {
+      setLoading(true)
+      const [pluvData, { data: talhoesData }, { data: safrasData }] = await Promise.all([
+        pluviometriaService.getAll(),
+        supabase.from('talhoes').select('id, nome').is('deleted_at', null).order('nome'),
+        supabase
+          .from('safras')
+          .select(`
+            talhao_id,
+            status,
+            cultivares (
+              culturas (
+                necessidade_hidrica_mm_dia
+              )
+            )
+          `)
+          .is('deleted_at', null),
+      ])
+      setData(pluvData)
+      if (talhoesData) setTalhoes(talhoesData)
+      if (safrasData) setSafras(safrasData)
+    } catch (error: any) {
+      toast({ title: 'Erro ao carregar dados', description: error.message, variant: 'destructive' })
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const handleDelete = async (id: string) => {
+    try {
+      await pluviometriaService.delete(id)
+      toast({ title: 'Sucesso', description: 'Registro excluído com sucesso.' })
+      loadData()
+    } catch (error: any) {
+      toast({ title: 'Erro ao excluir', description: error.message, variant: 'destructive' })
+    }
+  }
+
+  const filteredData = useMemo(() => {
+    return data.filter((item) => {
+      if (filtroTalhao !== 'todos' && item.talhao_id !== filtroTalhao) return false
+      if (filtroDataInicio && item.data && item.data < filtroDataInicio) return false
+      if (filtroDataFim && item.data && item.data > filtroDataFim) return false
+      return true
+    })
+  }, [data, filtroTalhao, filtroDataInicio, filtroDataFim])
+
+  const alertasPorTalhao = useMemo(() => {
+    const sevenDaysAgo = subDays(new Date(), 7)
+    sevenDaysAgo.setHours(0, 0, 0, 0)
+
+    return talhoes.map((talhao) => {
+      const safra = safras.find(
+        (s) => s.talhao_id === talhao.id && s.status !== 'encerrada' && s.status !== 'cancelada',
+      )
+
+      let necessidadeDiaria = null
+      if (safra && safra.cultivares) {
+        const cultivares = Array.isArray(safra.cultivares) ? safra.cultivares[0] : safra.cultivares
+        if (cultivares && cultivares.culturas) {
+          const culturas = Array.isArray(cultivares.culturas)
+            ? cultivares.culturas[0]
+            : cultivares.culturas
+          necessidadeDiaria = culturas?.necessidade_hidrica_mm_dia
+        }
+      }
+
+      const registrosTalhao = data.filter(
+        (d) => d.talhao_id === talhao.id && d.data && parseISO(d.data) >= sevenDaysAgo,
+      )
+
+      const total7Dias = registrosTalhao.reduce((acc, curr) => acc + (curr.precipitacao_mm || 0), 0)
+      const excessoChuva = registrosTalhao.some((d) => (d.precipitacao_mm || 0) > 60)
+      const deficitHidrico = necessidadeDiaria ? total7Dias < necessidadeDiaria * 7 : false
+
+      return {
+        talhao_id: talhao.id,
+        talhao_nome: talhao.nome,
+        total7Dias,
+        excessoChuva,
+        deficitHidrico,
+        necessidadeDiaria,
+      }
+    })
+  }, [talhoes, safras, data])
+
+  const talhoesComAlerta = alertasPorTalhao.filter((a) => a.excessoChuva || a.deficitHidrico)
+
+  const totalMensal = useMemo(() => {
+    const start = startOfMonth(new Date())
+    return data
+      .filter((d) => d.data && parseISO(d.data) >= start)
+      .reduce((acc, curr) => acc + (curr.precipitacao_mm || 0), 0)
+  }, [data])
+
+  const mediaSemanal = useMemo(() => {
+    const start = subDays(new Date(), 7)
+    const records = data.filter((d) => d.data && parseISO(d.data) >= start)
+    if (records.length === 0) return 0
+    const sum = records.reduce((acc, curr) => acc + (curr.precipitacao_mm || 0), 0)
+    return sum / 7
+  }, [data])
+
+  const ultimoRegistro = useMemo(() => {
+    if (data.length === 0) return null
+    return data[0]
+  }, [data])
+
+  return (
+    <div className="p-6 max-w-7xl mx-auto space-y-6">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+        <div>
+          <h1 className="text-3xl font-bold text-slate-900 tracking-tight">Pluviometria</h1>
+          <p className="text-slate-500 mt-1">
+            Monitore e registre os níveis de precipitação dos talhões.
+          </p>
+        </div>
+        <Link to="/app/agronomia/pluviometria/novo">
+          <Button className="gap-2">
+            <Plus className="h-4 w-4" />
+            Novo Registro
+          </Button>
+        </Link>
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between pb-2">
+            <CardTitle className="text-sm font-medium text-muted-foreground">
+              Precipitação Mensal
+            </CardTitle>
+            <CloudRain className="h-4 w-4 text-blue-500" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">
+              {totalMensal.toFixed(1)}{' '}
+              <span className="text-sm font-normal text-muted-foreground">mm</span>
+            </div>
+            <p className="text-xs text-muted-foreground mt-1">Total acumulado neste mês</p>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between pb-2">
+            <CardTitle className="text-sm font-medium text-muted-foreground">
+              Média Semanal
+            </CardTitle>
+            <Droplets className="h-4 w-4 text-cyan-500" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">
+              {mediaSemanal.toFixed(1)}{' '}
+              <span className="text-sm font-normal text-muted-foreground">mm/dia</span>
+            </div>
+            <p className="text-xs text-muted-foreground mt-1">Média diária nos últimos 7 dias</p>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between pb-2">
+            <CardTitle className="text-sm font-medium text-muted-foreground">
+              Último Registro
+            </CardTitle>
+            <Calendar className="h-4 w-4 text-slate-500" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">
+              {ultimoRegistro?.precipitacao_mm?.toFixed(1) || '0.0'}{' '}
+              <span className="text-sm font-normal text-muted-foreground">mm</span>
+            </div>
+            <p className="text-xs text-muted-foreground mt-1">
+              {ultimoRegistro?.data
+                ? format(parseISO(ultimoRegistro.data), 'dd/MM/yyyy', { locale: ptBR })
+                : 'Nenhum registro'}
+              {ultimoRegistro?.talhoes?.nome ? ` em ${ultimoRegistro.talhoes.nome}` : ''}
+            </p>
+          </CardContent>
+        </Card>
+      </div>
+
+      {talhoesComAlerta.length > 0 && (
+        <div className="space-y-4">
+          <div className="flex items-center gap-2">
+            <AlertTriangle className="h-5 w-5 text-amber-500" />
+            <h2 className="text-lg font-semibold text-slate-900 tracking-tight">
+              Alertas Hídricos (Últimos 7 dias)
+            </h2>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {talhoesComAlerta.map((alerta) => (
+              <Card
+                key={alerta.talhao_id}
+                className={cn(
+                  'border-l-4',
+                  alerta.excessoChuva ? 'border-l-red-500' : 'border-l-amber-500',
+                )}
+              >
+                <CardHeader className="pb-2 pt-4 px-4">
+                  <CardTitle className="text-sm font-medium flex items-center justify-between">
+                    <span className="truncate mr-2" title={alerta.talhao_nome}>
+                      {alerta.talhao_nome}
+                    </span>
+                    {alerta.excessoChuva ? (
+                      <Badge variant="destructive" className="bg-red-500 hover:bg-red-600">
+                        Excesso
+                      </Badge>
+                    ) : (
+                      <Badge
+                        variant="outline"
+                        className="text-amber-600 border-amber-500 bg-amber-50"
+                      >
+                        Déficit
+                      </Badge>
+                    )}
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="px-4 pb-4">
+                  <div className="text-sm text-muted-foreground flex justify-between items-center mb-1">
+                    <span>Precipitação (7d):</span>
+                    <span className="font-medium text-slate-900">
+                      {alerta.total7Dias.toFixed(1)} mm
+                    </span>
+                  </div>
+                  {alerta.necessidadeDiaria ? (
+                    <div className="text-sm text-muted-foreground flex justify-between items-center">
+                      <span>Necessidade (7d):</span>
+                      <span className="font-medium text-slate-900">
+                        {(alerta.necessidadeDiaria * 7).toFixed(1)} mm
+                      </span>
+                    </div>
+                  ) : (
+                    <div className="text-sm text-muted-foreground flex justify-between items-center">
+                      <span>Necessidade (7d):</span>
+                      <span className="font-medium text-slate-900">N/D</span>
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        </div>
+      )}
+
+      <Card>
+        <CardHeader>
+          <CardTitle>Histórico de Chuvas</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="flex flex-col md:flex-row gap-4 mb-6">
+            <div className="w-full md:w-1/3">
+              <Select value={filtroTalhao} onValueChange={setFiltroTalhao}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Todos os Talhões" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="todos">Todos os Talhões</SelectItem>
+                  {talhoes.map((t) => (
+                    <SelectItem key={t.id} value={t.id}>
+                      {t.nome}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="w-full md:w-1/3">
+              <Input
+                type="date"
+                value={filtroDataInicio}
+                onChange={(e) => setFiltroDataInicio(e.target.value)}
+                placeholder="Data Início"
+              />
+            </div>
+            <div className="w-full md:w-1/3">
+              <Input
+                type="date"
+                value={filtroDataFim}
+                onChange={(e) => setFiltroDataFim(e.target.value)}
+                placeholder="Data Fim"
+              />
+            </div>
+          </div>
+
+          <div className="rounded-md border overflow-x-auto">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Data</TableHead>
+                  <TableHead>Talhão</TableHead>
+                  <TableHead className="text-right">Precipitação (mm)</TableHead>
+                  <TableHead className="text-right">Ações</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {loading ? (
+                  <TableRow>
+                    <TableCell colSpan={4} className="text-center py-8 text-muted-foreground">
+                      Carregando...
+                    </TableCell>
+                  </TableRow>
+                ) : filteredData.length === 0 ? (
+                  <TableRow>
+                    <TableCell colSpan={4} className="text-center py-8 text-muted-foreground">
+                      Nenhum registro encontrado.
+                    </TableCell>
+                  </TableRow>
+                ) : (
+                  filteredData.map((item) => (
+                    <TableRow key={item.id}>
+                      <TableCell>
+                        {item.data
+                          ? format(parseISO(item.data), 'dd/MM/yyyy', { locale: ptBR })
+                          : '-'}
+                      </TableCell>
+                      <TableCell>{item.talhoes?.nome || '-'}</TableCell>
+                      <TableCell className="text-right font-medium">
+                        {item.precipitacao_mm?.toFixed(1)} mm
+                      </TableCell>
+                      <TableCell className="text-right">
+                        <div className="flex justify-end gap-2">
+                          <Link to={`/app/agronomia/pluviometria/${item.id}`}>
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              className="h-8 w-8 text-slate-500 hover:text-blue-600"
+                            >
+                              <Edit className="h-4 w-4" />
+                            </Button>
+                          </Link>
+                          <AlertDialog>
+                            <AlertDialogTrigger asChild>
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                className="h-8 w-8 text-slate-500 hover:text-red-600"
+                              >
+                                <Trash2 className="h-4 w-4" />
+                              </Button>
+                            </AlertDialogTrigger>
+                            <AlertDialogContent>
+                              <AlertDialogHeader>
+                                <AlertDialogTitle>Excluir registro?</AlertDialogTitle>
+                                <AlertDialogDescription>
+                                  Tem certeza que deseja excluir o registro de{' '}
+                                  {item.precipitacao_mm}mm do dia{' '}
+                                  {item.data ? format(parseISO(item.data), 'dd/MM/yyyy') : ''}? Esta
+                                  ação não pode ser desfeita.
+                                </AlertDialogDescription>
+                              </AlertDialogHeader>
+                              <AlertDialogFooter>
+                                <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                                <AlertDialogAction
+                                  onClick={() => handleDelete(item.id)}
+                                  className="bg-red-600 hover:bg-red-700"
+                                >
+                                  Excluir
+                                </AlertDialogAction>
+                              </AlertDialogFooter>
+                            </AlertDialogContent>
+                          </AlertDialog>
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  ))
+                )}
+              </TableBody>
+            </Table>
+          </div>
+        </CardContent>
+      </Card>
+    </div>
+  )
+}

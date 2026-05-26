@@ -52,6 +52,10 @@ const formSchema = z
       (v) => (v === '' || v === null ? null : v),
       z.coerce.number().int().positive('Deve ser maior que zero').nullable().optional(),
     ),
+    gda_objetivo_colheita: z.preprocess(
+      (v) => (v === '' || v === null ? null : v),
+      z.coerce.number().positive('Deve ser maior que zero').nullable().optional(),
+    ),
   })
   .refine(
     (data) => {
@@ -86,6 +90,7 @@ export default function CultivarForm() {
       produtividade_esperada_t_ha: null,
       shelf_life_ideal_dias: null,
       shelf_life_minimo_dias: null,
+      gda_objetivo_colheita: null,
     },
   })
 
@@ -131,6 +136,7 @@ export default function CultivarForm() {
         produtividade_esperada_t_ha: data.produtividade_esperada_t_ha,
         shelf_life_ideal_dias: data.shelf_life_ideal_dias,
         shelf_life_minimo_dias: data.shelf_life_minimo_dias,
+        gda_objetivo_colheita: data.gda_objetivo_colheita,
       })
     } catch (error: any) {
       toast({
@@ -360,6 +366,27 @@ export default function CultivarForm() {
                         type="number"
                         min={1}
                         placeholder="Ex: 15"
+                        {...field}
+                        value={field.value || ''}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="gda_objetivo_colheita"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>GDA Objetivo Colheita</FormLabel>
+                    <FormControl>
+                      <Input
+                        type="number"
+                        step="0.1"
+                        min={1}
+                        placeholder="Ex: 1500"
                         {...field}
                         value={field.value || ''}
                       />

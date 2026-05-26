@@ -51,6 +51,26 @@ import PedidoForm from './pages/compras/PedidoForm'
 import RecebimentoForm from './pages/compras/RecebimentoForm'
 import FornecedorList from './pages/compras/FornecedorList'
 import FornecedorForm from './pages/compras/FornecedorForm'
+import GrausDiaDashboard from './pages/agronomia/GrausDiaDashboard'
+import GrausDiaForm from './pages/agronomia/GrausDiaForm'
+import PluviometriaDashboard from './pages/agronomia/PluviometriaDashboard'
+import PluviometriaForm from './pages/agronomia/PluviometriaForm'
+import OperacaoList from './pages/operacoes/OperacaoList'
+import OperacaoForm from './pages/operacoes/OperacaoForm'
+import MinhasOperacoes from './pages/operacoes/MinhasOperacoes'
+import MonitoramentoList from './pages/producao/MonitoramentoList'
+import MonitoramentoForm from './pages/producao/MonitoramentoForm'
+import EquipePerformance from './pages/operacoes/EquipePerformance'
+import ProducaoDashboard from './pages/producao/ProducaoDashboard'
+import MonitoramentoPragasMap from './pages/producao/MonitoramentoPragasMap'
+import MonitoramentoPragasForm from './pages/producao/MonitoramentoPragasForm'
+import ColheitaForm from './pages/producao/colheita/ColheitaForm'
+import EquipamentoList from './pages/equipamentos/EquipamentoList'
+import EquipamentoForm from './pages/equipamentos/EquipamentoForm'
+import EquipamentoDetail from './pages/equipamentos/EquipamentoDetail'
+import RentabilidadeList from './pages/financeiro/RentabilidadeList'
+import RastreabilidadeDetail from './pages/producao/colheita/RastreabilidadeDetail'
+import PackingDashboard from './pages/packing/PackingDashboard'
 
 const App = () => (
   <BrowserRouter future={{ v7_startTransition: false, v7_relativeSplatPath: false }}>
@@ -94,6 +114,14 @@ const App = () => (
                 <Route path="/app/talhoes" element={<TalhaoList />} />
                 <Route path="/app/talhoes/new" element={<TalhaoForm />} />
                 <Route path="/app/talhoes/:id" element={<TalhaoForm />} />
+
+                <Route path="/app/agronomia/gda" element={<GrausDiaDashboard />} />
+                <Route path="/app/agronomia/gda/novo" element={<GrausDiaForm />} />
+                <Route path="/app/agronomia/gda/:id" element={<GrausDiaForm />} />
+
+                <Route path="/app/agronomia/pluviometria" element={<PluviometriaDashboard />} />
+                <Route path="/app/agronomia/pluviometria/novo" element={<PluviometriaForm />} />
+                <Route path="/app/agronomia/pluviometria/:id" element={<PluviometriaForm />} />
 
                 <Route path="/app/culturas" element={<CulturaList />} />
                 <Route path="/app/culturas/new" element={<CulturaForm />} />
@@ -140,22 +168,34 @@ const App = () => (
                 <Route path="/app/compras/fornecedores/new" element={<FornecedorForm />} />
                 <Route path="/app/compras/fornecedores/:id" element={<FornecedorForm />} />
 
-                <Route
-                  path="/app/operacoes"
-                  element={<div className="p-8 font-semibold text-xl">Operações de Campo</div>}
-                />
+                <Route path="/app/operacoes" element={<OperacaoList />} />
+                <Route path="/app/operacoes/minhas" element={<MinhasOperacoes />} />
+                <Route path="/app/operacoes/equipe" element={<EquipePerformance />} />
+                <Route path="/app/operacoes/nova" element={<OperacaoForm />} />
+                <Route path="/app/operacoes/:id" element={<OperacaoForm />} />
                 <Route
                   path="/app/suporte"
                   element={<div className="p-8 font-semibold text-xl">Suporte</div>}
                 />
+                <Route path="/app/producao" element={<ProducaoDashboard />} />
+                <Route path="/app/producao/monitoramento" element={<MonitoramentoList />} />
+                <Route path="/app/producao/monitoramento/novo" element={<MonitoramentoForm />} />
+                <Route path="/app/producao/monitoramento/:id" element={<MonitoramentoForm />} />
+                <Route path="/app/producao/monitoramento" element={<MonitoramentoPragasMap />} />
                 <Route
-                  path="/app/producao"
-                  element={<div className="p-8 font-semibold text-xl">Produção</div>}
+                  path="/app/producao/monitoramento/novo"
+                  element={<MonitoramentoPragasForm />}
                 />
                 <Route
-                  path="/app/packing"
-                  element={<div className="p-8 font-semibold text-xl">Packing</div>}
+                  path="/app/producao/monitoramento/:id"
+                  element={<MonitoramentoPragasForm />}
                 />
+                <Route path="/app/producao/colheita/novo" element={<ColheitaForm />} />
+                <Route path="/app/equipamentos" element={<EquipamentoList />} />
+                <Route path="/app/equipamentos/new" element={<EquipamentoForm />} />
+                <Route path="/app/equipamentos/:id" element={<EquipamentoDetail />} />
+                <Route path="/app/packing" element={<PackingDashboard />} />
+                <Route path="/app/packing/estoque" element={<PackingDashboard />} />
                 <Route
                   path="/app/exportacao"
                   element={<div className="p-8 font-semibold text-xl">Exportação</div>}
@@ -163,6 +203,11 @@ const App = () => (
                 <Route
                   path="/app/financeiro"
                   element={<div className="p-8 font-semibold text-xl">Financeiro</div>}
+                />
+                <Route path="/app/financeiro/rentabilidade" element={<RentabilidadeList />} />
+                <Route
+                  path="/app/producao/colheita/rastreabilidade/:id"
+                  element={<RastreabilidadeDetail />}
                 />
                 <Route
                   path="/app/rh"

@@ -1,6 +1,7 @@
 import {
   LayoutDashboard,
   Factory,
+  ThermometerSun,
   Package,
   Users,
   Truck,
@@ -15,6 +16,7 @@ import {
   ShoppingCart,
   Settings,
   Database,
+  Bug,
   Briefcase,
   Warehouse,
   Boxes,
@@ -32,6 +34,8 @@ import {
   CircleDollarSign,
   UserPlus,
   Sliders,
+  ShieldAlert,
+  CloudRain,
 } from 'lucide-react'
 
 export type MenuItemRaw = {
@@ -56,6 +60,24 @@ export const allMenuItems: MenuItemRaw[] = [
       { icon: Sprout, label: 'Culturas', path: '/app/culturas', module: 'cadastros' },
       { icon: Leaf, label: 'Cultivares/Variedades', path: '/app/cultivares', module: 'cadastros' },
       { icon: Tractor, label: 'Safras', path: '/app/safras', module: 'cadastros' },
+      {
+        icon: Bug,
+        label: 'Monitoramento (MIP)',
+        path: '/app/producao/monitoramento',
+        module: 'producao',
+      },
+      {
+        icon: ThermometerSun,
+        label: 'Graus-Dia (GDA)',
+        path: '/app/agronomia/gda',
+        module: 'cadastros',
+      },
+      {
+        icon: CloudRain,
+        label: 'Pluviometria',
+        path: '/app/agronomia/pluviometria',
+        module: 'cadastros',
+      },
     ],
   },
   {
@@ -117,9 +139,45 @@ export const allMenuItems: MenuItemRaw[] = [
     icon: Factory,
     label: 'Operacional',
     subItems: [
-      { icon: Wrench, label: 'Operações de Campo', path: '/app/operacoes', module: 'operacoes' },
+      {
+        icon: CheckSquare,
+        label: 'Minhas Tarefas (Campo)',
+        path: '/app/operacoes/minhas',
+        module: 'operacoes',
+      },
+      { icon: Wrench, label: 'Painel de Operações', path: '/app/operacoes', module: 'operacoes' },
+      {
+        icon: Users,
+        label: 'Performance da Equipe',
+        path: '/app/operacoes/equipe',
+        module: 'operacoes',
+      },
       { icon: Cog, label: 'Produção', path: '/app/producao', module: 'producao' },
-      { icon: Box, label: 'Packing', path: '/app/packing', module: 'packing' },
+      {
+        icon: ShieldAlert,
+        label: 'Monitoramento (MIP)',
+        path: '/app/producao/monitoramento',
+        module: 'producao',
+      },
+      {
+        icon: Tractor,
+        label: 'Registro de Colheita',
+        path: '/app/producao/colheita/novo',
+        module: 'producao',
+      },
+      {
+        icon: Box,
+        label: 'Packing',
+        subItems: [
+          {
+            icon: Box,
+            label: 'Dashboard de Estoque',
+            path: '/app/packing/estoque',
+            module: 'packing',
+          },
+        ],
+        module: 'packing',
+      },
       { icon: Ship, label: 'Exportação', path: '/app/exportacao', module: 'exportacao' },
     ],
   },
@@ -130,7 +188,15 @@ export const allMenuItems: MenuItemRaw[] = [
       {
         icon: CircleDollarSign,
         label: 'Financeiro',
-        path: '/app/financeiro',
+        subItems: [
+          { icon: CircleDollarSign, label: 'Geral', path: '/app/financeiro', module: 'financeiro' },
+          {
+            icon: LineChart,
+            label: 'Rentabilidade de Lotes',
+            path: '/app/financeiro/rentabilidade',
+            module: 'financeiro',
+          },
+        ],
         module: 'financeiro',
       },
       { icon: UserPlus, label: 'RH', path: '/app/rh', module: 'rh' },
