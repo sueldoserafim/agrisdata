@@ -19,14 +19,16 @@ import {
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { useToast } from '@/components/ui/use-toast'
 import { Badge } from '@/components/ui/badge'
+import { Skeleton } from '@/components/ui/skeleton'
 
 const schema = z
   .object({
     nome_safra: z.string().min(3).max(150),
     codigo_safra: z.string().optional(),
-    talhao_id: z.string().min(1),
-    cultura_id: z.string().min(1),
-    cultivar_id: z.string().min(1),
+    fazenda_id: z.string().min(1, 'Selecione uma fazenda'),
+    talhao_id: z.string().min(1, 'Selecione um talhão'),
+    cultura_id: z.string().min(1, 'Selecione uma cultura'),
+    cultivar_id: z.string().min(1, 'Selecione uma cultivar'),
     data_plantio: z.string().min(1),
     data_colheita_prevista: z.string().min(1),
     area_planejada_ha: z.coerce.number().positive(),
@@ -47,7 +49,10 @@ export default function SafraForm() {
   const { toast } = useToast()
 
   const [loading, setLoading] = useState(false)
+  const [loadingData, setLoadingData] = useState(true)
+  const [initialData, setInitialData] = useState<any>(null)
   const [dataSources, setSources] = useState({
+    fazendas: [] as any[],
     talhoes: [] as any[],
     culturas: [] as any[],
     cultivares: [] as any[],
@@ -67,7 +72,8 @@ export default function SafraForm() {
     },
   })
 
-  const [wTalhaoId, wCulturaId, wCultivarId, wArea, wProd] = watch([
+  const [wFazendaId, wTalhaoId, wCulturaId, wCultivarId, wArea, wProd] = watch([
+    'fazenda_id',
     'talhao_id',
     'cultura_id',
     'cultivar_id',
@@ -81,7 +87,9 @@ export default function SafraForm() {
 
   useEffect(() => {
     if (!empresa?.id) return
+    setLoadingData(true)
     Promise.all([
+      supabase.from('fazendas').select('*').eq('empresa_id', empresa.id).is('deleted_at', null),
       supabase
         .from('talhoes')
         .select('*, fazendas(nome)')
@@ -89,10 +97,20 @@ export default function SafraForm() {
         .is('deleted_at', null),
       supabase.from('culturas').select('*').eq('empresa_id', empresa.id).is('deleted_at', null),
       supabase.from('cultivares').select('*').eq('empresa_id', empresa.id).is('deleted_at', null),
-    ]).then(([t, c, cv]) =>
-      setSources({ talhoes: t.data || [], culturas: c.data || [], cultivares: cv.data || [] }),
-    )
-  }, [empresa?.id])
+      id
+        ? supabase.from('safras').select('*').eq('id', id).single()
+        : Promise.resolve({ data: null }),
+    ]).then(([f, t, c, cv, s]) => {
+      setSources({
+        fazendas: f.data || [],
+        talhoes: t.data || [],
+        culturas: c.data || [],
+        cultivares: cv.data || [],
+      })
+      if (s.data) setInitialData(s.data)
+      setLoadingData(false)
+    })
+  }, [empresa?.id, id])
 
   useEffect(() => {
     if (wTalhaoId)
@@ -108,19 +126,29 @@ export default function SafraForm() {
   }, [wTalhaoId])
 
   useEffect(() => {
-    if (id && empresa?.id)
-      supabase
-        .from('safras')
-        .select('*')
-        .eq('id', id)
-        .single()
-        .then(({ data }) => {
-          if (data)
-            Object.keys(data).forEach((k) => {
-              if (k in schema.shape) setValue(k as keyof z.infer<typeof schema>, data[k] || '')
-            })
-        })
-  }, [id, empresa?.id, setValue])
+    if (initialData && !loadingData) {
+      const cultivar = dataSources.cultivares.find((c) => c.id === initialData.cultivar_id)
+      const culturaId = cultivar?.cultura_id || ''
+
+      const talhao = dataSources.talhoes.find((t) => t.id === initialData.talhao_id)
+      const fazendaId = initialData.fazenda_id || talhao?.fazenda_id || ''
+
+      setValue('fazenda_id', fazendaId)
+      setValue('cultura_id', culturaId)
+      setValue('talhao_id', initialData.talhao_id || '')
+      setValue('cultivar_id', initialData.cultivar_id || '')
+
+      Object.keys(initialData).forEach((k) => {
+        if (['fazenda_id', 'talhao_id', 'cultivar_id', 'cultura_id'].includes(k)) return
+        if (k in schema.shape) {
+          const val = initialData[k]
+          setValue(k as keyof z.infer<typeof schema>, val === null ? '' : val)
+        }
+      })
+
+      setInitialData(null)
+    }
+  }, [initialData, loadingData, dataSources, setValue])
 
   const selectedT = dataSources.talhoes.find((t) => t.id === wTalhaoId)
   const selectedC = dataSources.culturas.find((c) => c.id === wCulturaId)
@@ -148,6 +176,8 @@ export default function SafraForm() {
       meta_producao_kg: data.meta_producao_kg || null,
       orcamento_total: data.orcamento_total || null,
     }
+    delete (payload as any).cultura_id
+
     const { error } = id
       ? await supabase.from('safras').update(payload).eq('id', id)
       : await supabase.from('safras').insert(payload)
@@ -175,64 +205,118 @@ export default function SafraForm() {
           <CardContent className="space-y-4">
             <Input disabled {...register('codigo_safra')} placeholder="Código da Safra" />
             <Input {...register('nome_safra')} placeholder="Nome da Safra *" />
-            <Select
-              value={wTalhaoId}
-              onValueChange={(v) => {
-                setValue('talhao_id', v)
-                const talhao = dataSources.talhoes.find((t) => t.id === v)
-                setValue('area_planejada_ha', talhao?.area_plantavel_ha || ('' as any), {
-                  shouldValidate: true,
-                })
-              }}
-            >
-              <SelectTrigger>
-                <SelectValue placeholder="Talhão *" />
-              </SelectTrigger>
-              <SelectContent>
-                {dataSources.talhoes.map((t) => (
-                  <SelectItem key={t.id} value={t.id}>
-                    {t.nome}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-            <Input disabled value={selectedT?.fazendas?.nome || 'Fazenda (Automático)'} />
-            <Select
-              value={wCulturaId}
-              onValueChange={(v) => {
-                setValue('cultura_id', v)
-                setValue('cultivar_id', '')
-              }}
-            >
-              <SelectTrigger>
-                <SelectValue placeholder="Cultura *" />
-              </SelectTrigger>
-              <SelectContent>
-                {dataSources.culturas.map((c) => (
-                  <SelectItem key={c.id} value={c.id}>
-                    {c.nome}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-            <Select
-              disabled={!wCulturaId}
-              value={wCultivarId}
-              onValueChange={(v) => setValue('cultivar_id', v)}
-            >
-              <SelectTrigger>
-                <SelectValue placeholder="Cultivar *" />
-              </SelectTrigger>
-              <SelectContent>
-                {dataSources.cultivares
-                  .filter((c) => c.cultura_id === wCulturaId)
-                  .map((c) => (
-                    <SelectItem key={c.id} value={c.id}>
-                      {c.nome}
-                    </SelectItem>
-                  ))}
-              </SelectContent>
-            </Select>
+
+            <div className="space-y-1">
+              <Label>Fazenda *</Label>
+              {loadingData ? (
+                <Skeleton className="h-10 w-full" />
+              ) : (
+                <Select
+                  value={wFazendaId}
+                  onValueChange={(v) => {
+                    setValue('fazenda_id', v)
+                    setValue('talhao_id', '')
+                  }}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Fazenda *" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {dataSources.fazendas.map((f) => (
+                      <SelectItem key={f.id} value={f.id}>
+                        {f.nome}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              )}
+            </div>
+
+            <div className="space-y-1">
+              <Label>Talhão *</Label>
+              {loadingData ? (
+                <Skeleton className="h-10 w-full" />
+              ) : (
+                <Select
+                  disabled={!wFazendaId}
+                  value={wTalhaoId}
+                  onValueChange={(v) => {
+                    setValue('talhao_id', v)
+                    const talhao = dataSources.talhoes.find((t) => t.id === v)
+                    if (talhao) {
+                      setValue('area_planejada_ha', talhao.area_plantavel_ha || ('' as any), {
+                        shouldValidate: true,
+                      })
+                    }
+                  }}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Talhão *" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {dataSources.talhoes
+                      .filter((t) => t.fazenda_id === wFazendaId)
+                      .map((t) => (
+                        <SelectItem key={t.id} value={t.id}>
+                          {t.nome}
+                        </SelectItem>
+                      ))}
+                  </SelectContent>
+                </Select>
+              )}
+            </div>
+
+            <div className="space-y-1">
+              <Label>Cultura *</Label>
+              {loadingData ? (
+                <Skeleton className="h-10 w-full" />
+              ) : (
+                <Select
+                  value={wCulturaId}
+                  onValueChange={(v) => {
+                    setValue('cultura_id', v)
+                    setValue('cultivar_id', '')
+                  }}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Cultura *" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {dataSources.culturas.map((c) => (
+                      <SelectItem key={c.id} value={c.id}>
+                        {c.nome}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              )}
+            </div>
+
+            <div className="space-y-1">
+              <Label>Cultivar *</Label>
+              {loadingData ? (
+                <Skeleton className="h-10 w-full" />
+              ) : (
+                <Select
+                  disabled={!wCulturaId}
+                  value={wCultivarId}
+                  onValueChange={(v) => setValue('cultivar_id', v)}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Cultivar *" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {dataSources.cultivares
+                      .filter((c) => c.cultura_id === wCulturaId)
+                      .map((c) => (
+                        <SelectItem key={c.id} value={c.id}>
+                          {c.nome}
+                        </SelectItem>
+                      ))}
+                  </SelectContent>
+                </Select>
+              )}
+            </div>
           </CardContent>
         </Card>
         <div className="space-y-6">
