@@ -302,12 +302,12 @@ export default function SafraForm() {
       </div>
 
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
-        <div className="grid md:grid-cols-2 gap-6">
-          <Card>
-            <CardHeader>
-              <CardTitle>Identificação</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
+        <Card>
+          <CardHeader>
+            <CardTitle>Identificação</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="grid sm:grid-cols-2 gap-4">
               <div className="space-y-1">
                 <Label>Nome da Safra *</Label>
                 <Input {...register('nome_safra')} placeholder="Ex: Safra 2024" />
@@ -316,159 +316,180 @@ export default function SafraForm() {
                 )}
               </div>
               <div className="space-y-1">
-                <Label>Fazenda *</Label>
-                <Select value={wFazendaId} onValueChange={(v) => setValue('fazenda_id', v)}>
+                <Label>Ano *</Label>
+                <Input type="number" {...register('ano_safra')} />
+                {errors.ano_safra && (
+                  <span className="text-destructive text-xs">{errors.ano_safra.message}</span>
+                )}
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle>Fazenda e Cultura</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="space-y-1">
+              <Label>Fazenda *</Label>
+              <Select value={wFazendaId} onValueChange={(v) => setValue('fazenda_id', v)}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Selecione..." />
+                </SelectTrigger>
+                <SelectContent>
+                  {dataSources.fazendas.map((f) => (
+                    <SelectItem key={f.id} value={f.id}>
+                      {f.nome}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              {errors.fazenda_id && (
+                <span className="text-destructive text-xs">{errors.fazenda_id.message}</span>
+              )}
+            </div>
+            <div className="grid sm:grid-cols-2 gap-4">
+              <div className="space-y-1">
+                <Label>Cultura *</Label>
+                <Select
+                  value={wCulturaId}
+                  onValueChange={(v) => {
+                    setValue('cultura_id', v)
+                    setValue('cultivar_id', '')
+                  }}
+                >
                   <SelectTrigger>
                     <SelectValue placeholder="Selecione..." />
                   </SelectTrigger>
                   <SelectContent>
-                    {dataSources.fazendas.map((f) => (
-                      <SelectItem key={f.id} value={f.id}>
-                        {f.nome}
+                    {dataSources.culturas.map((c) => (
+                      <SelectItem key={c.id} value={c.id}>
+                        {c.nome}
                       </SelectItem>
                     ))}
                   </SelectContent>
                 </Select>
-                {errors.fazenda_id && (
-                  <span className="text-destructive text-xs">{errors.fazenda_id.message}</span>
+                {errors.cultura_id && (
+                  <span className="text-destructive text-xs">{errors.cultura_id.message}</span>
                 )}
               </div>
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-1">
-                  <Label>Cultura *</Label>
-                  <Select
-                    value={wCulturaId}
-                    onValueChange={(v) => {
-                      setValue('cultura_id', v)
-                      setValue('cultivar_id', '')
-                    }}
-                  >
-                    <SelectTrigger>
-                      <SelectValue placeholder="Selecione..." />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {dataSources.culturas.map((c) => (
+              <div className="space-y-1">
+                <Label>Cultivar *</Label>
+                <Select
+                  value={watch('cultivar_id')}
+                  onValueChange={(v) => setValue('cultivar_id', v)}
+                  disabled={!wCulturaId}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Selecione..." />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {dataSources.cultivares
+                      .filter((c) => c.cultura_id === wCulturaId)
+                      .map((c) => (
                         <SelectItem key={c.id} value={c.id}>
                           {c.nome}
                         </SelectItem>
                       ))}
-                    </SelectContent>
-                  </Select>
-                  {errors.cultura_id && (
-                    <span className="text-destructive text-xs">{errors.cultura_id.message}</span>
-                  )}
-                </div>
-                <div className="space-y-1">
-                  <Label>Cultivar *</Label>
-                  <Select
-                    value={watch('cultivar_id')}
-                    onValueChange={(v) => setValue('cultivar_id', v)}
-                    disabled={!wCulturaId}
-                  >
-                    <SelectTrigger>
-                      <SelectValue placeholder="Selecione..." />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {dataSources.cultivares
-                        .filter((c) => c.cultura_id === wCulturaId)
-                        .map((c) => (
-                          <SelectItem key={c.id} value={c.id}>
-                            {c.nome}
-                          </SelectItem>
-                        ))}
-                    </SelectContent>
-                  </Select>
-                  {errors.cultivar_id && (
-                    <span className="text-destructive text-xs">{errors.cultivar_id.message}</span>
-                  )}
-                </div>
+                  </SelectContent>
+                </Select>
+                {errors.cultivar_id && (
+                  <span className="text-destructive text-xs">{errors.cultivar_id.message}</span>
+                )}
               </div>
-            </CardContent>
-          </Card>
+            </div>
+          </CardContent>
+        </Card>
 
-          <div className="space-y-6">
-            <Card>
-              <CardHeader>
-                <CardTitle>Período e Status</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="grid grid-cols-3 gap-4">
-                  <div className="space-y-1">
-                    <Label>Ano *</Label>
-                    <Input type="number" {...register('ano_safra')} />
-                  </div>
-                  <div className="space-y-1">
-                    <Label>Data Início *</Label>
-                    <Input type="date" {...register('data_plantio')} />
-                  </div>
-                  <div className="space-y-1">
-                    <Label>Data Fim *</Label>
-                    <Input type="date" {...register('data_colheita_prevista')} />
-                  </div>
-                </div>
+        <Card>
+          <CardHeader>
+            <CardTitle>Período e Status</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="grid sm:grid-cols-3 gap-4">
+              <div className="space-y-1">
+                <Label>Data Início *</Label>
+                <Input type="date" {...register('data_plantio')} />
+                {errors.data_plantio && (
+                  <span className="text-destructive text-xs">{errors.data_plantio.message}</span>
+                )}
+              </div>
+              <div className="space-y-1">
+                <Label>Data Fim *</Label>
+                <Input type="date" {...register('data_colheita_prevista')} />
+                {errors.data_colheita_prevista && (
+                  <span className="text-destructive text-xs">
+                    {errors.data_colheita_prevista.message}
+                  </span>
+                )}
+              </div>
+              <div className="space-y-1">
+                <Label>Status</Label>
+                <Select value={watch('status')} onValueChange={(v) => setValue('status', v as any)}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Status" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="Planejada">Planejada</SelectItem>
+                    <SelectItem value="Em Andamento">Em Andamento</SelectItem>
+                    <SelectItem value="Finalizada">Finalizada</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
 
-                <div className="grid grid-cols-2 gap-4 pt-2">
-                  <div className="space-y-1">
-                    <Label>Status</Label>
-                    <Select
-                      value={watch('status')}
-                      onValueChange={(v) => setValue('status', v as any)}
+        <Card>
+          <CardHeader>
+            <CardTitle>Imagem (Opcional)</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-4">
+              <div className="flex items-center gap-4">
+                <Input
+                  type="file"
+                  accept="image/*"
+                  className="hidden"
+                  ref={fileInputRef}
+                  onChange={handleImageChange}
+                />
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => fileInputRef.current?.click()}
+                >
+                  <Upload className="w-4 h-4 mr-2" /> Upload de Imagem
+                </Button>
+                {imagePreview && (
+                  <div className="relative w-16 h-16 rounded border shrink-0">
+                    <img
+                      src={imagePreview}
+                      className="w-full h-full object-cover rounded"
+                      alt="Preview"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setImageFile(null)
+                        setImagePreview('')
+                      }}
+                      className="absolute -top-2 -right-2 bg-destructive text-white rounded-full p-1 shadow-sm transition-transform hover:scale-110"
                     >
-                      <SelectTrigger>
-                        <SelectValue placeholder="Status" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="Planejada">Planejada</SelectItem>
-                        <SelectItem value="Em Andamento">Em Andamento</SelectItem>
-                        <SelectItem value="Finalizada">Finalizada</SelectItem>
-                      </SelectContent>
-                    </Select>
+                      <X className="w-3 h-3" />
+                    </button>
                   </div>
-
-                  <div className="space-y-1">
-                    <Label>Imagem (Opcional)</Label>
-                    <div className="flex items-center gap-2">
-                      <Input
-                        type="file"
-                        accept="image/*"
-                        className="hidden"
-                        ref={fileInputRef}
-                        onChange={handleImageChange}
-                      />
-                      <Button
-                        type="button"
-                        variant="outline"
-                        className="w-full"
-                        onClick={() => fileInputRef.current?.click()}
-                      >
-                        <Upload className="w-4 h-4 mr-2" /> Upload
-                      </Button>
-                      {imagePreview && (
-                        <div className="relative w-10 h-10 rounded border shrink-0">
-                          <img
-                            src={imagePreview}
-                            className="w-full h-full object-cover rounded"
-                            alt="Preview"
-                          />
-                          <button
-                            type="button"
-                            onClick={() => {
-                              setImageFile(null)
-                              setImagePreview('')
-                            }}
-                            className="absolute -top-2 -right-2 bg-destructive text-white rounded-full p-0.5"
-                          >
-                            <X className="w-3 h-3" />
-                          </button>
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          </div>
-        </div>
+                )}
+              </div>
+              {!imagePreview && (
+                <p className="text-sm text-muted-foreground">
+                  Nenhuma imagem selecionada. Adicione uma imagem para ilustrar a safra.
+                </p>
+              )}
+            </div>
+          </CardContent>
+        </Card>
 
         {wFazendaId && (
           <Card className="animate-fade-in">

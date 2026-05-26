@@ -2795,8 +2795,55 @@ export type Database = {
           },
         ]
       }
+      safra_talhoes: {
+        Row: {
+          created_at: string
+          empresa_id: string
+          id: string
+          safra_id: string
+          talhao_id: string
+        }
+        Insert: {
+          created_at?: string
+          empresa_id: string
+          id?: string
+          safra_id: string
+          talhao_id: string
+        }
+        Update: {
+          created_at?: string
+          empresa_id?: string
+          id?: string
+          safra_id?: string
+          talhao_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: 'safra_talhoes_empresa_id_fkey'
+            columns: ['empresa_id']
+            isOneToOne: false
+            referencedRelation: 'empresas'
+            referencedColumns: ['id']
+          },
+          {
+            foreignKeyName: 'safra_talhoes_safra_id_fkey'
+            columns: ['safra_id']
+            isOneToOne: false
+            referencedRelation: 'safras'
+            referencedColumns: ['id']
+          },
+          {
+            foreignKeyName: 'safra_talhoes_talhao_id_fkey'
+            columns: ['talhao_id']
+            isOneToOne: false
+            referencedRelation: 'talhoes'
+            referencedColumns: ['id']
+          },
+        ]
+      }
       safras: {
         Row: {
+          ano_safra: number | null
           area_planejada_ha: number | null
           codigo_safra: string | null
           created_at: string | null
@@ -2807,16 +2854,19 @@ export type Database = {
           deleted_at: string | null
           densidade_plantio: number | null
           empresa_id: string
+          fazenda_id: string | null
           id: string
+          imagem_url: string | null
           meta_producao_kg: number | null
           nome_safra: string | null
           orcamento_total: number | null
           produtividade_planejada: number | null
           status: string | null
-          talhao_id: string
+          talhao_id: string | null
           updated_at: string | null
         }
         Insert: {
+          ano_safra?: number | null
           area_planejada_ha?: number | null
           codigo_safra?: string | null
           created_at?: string | null
@@ -2827,16 +2877,19 @@ export type Database = {
           deleted_at?: string | null
           densidade_plantio?: number | null
           empresa_id: string
+          fazenda_id?: string | null
           id?: string
+          imagem_url?: string | null
           meta_producao_kg?: number | null
           nome_safra?: string | null
           orcamento_total?: number | null
           produtividade_planejada?: number | null
           status?: string | null
-          talhao_id: string
+          talhao_id?: string | null
           updated_at?: string | null
         }
         Update: {
+          ano_safra?: number | null
           area_planejada_ha?: number | null
           codigo_safra?: string | null
           created_at?: string | null
@@ -2847,13 +2900,15 @@ export type Database = {
           deleted_at?: string | null
           densidade_plantio?: number | null
           empresa_id?: string
+          fazenda_id?: string | null
           id?: string
+          imagem_url?: string | null
           meta_producao_kg?: number | null
           nome_safra?: string | null
           orcamento_total?: number | null
           produtividade_planejada?: number | null
           status?: string | null
-          talhao_id?: string
+          talhao_id?: string | null
           updated_at?: string | null
         }
         Relationships: [
@@ -2869,6 +2924,13 @@ export type Database = {
             columns: ['empresa_id']
             isOneToOne: false
             referencedRelation: 'empresas'
+            referencedColumns: ['id']
+          },
+          {
+            foreignKeyName: 'safras_fazenda_id_fkey'
+            columns: ['fazenda_id']
+            isOneToOne: false
+            referencedRelation: 'fazendas'
             referencedColumns: ['id']
           },
           {
@@ -3990,10 +4052,16 @@ export const Constants = {
 //   data_vencimento: date (nullable)
 //   created_at: timestamp with time zone (nullable, default: now())
 //   updated_at: timestamp with time zone (nullable, default: now())
+// Table: safra_talhoes
+//   id: uuid (not null, default: gen_random_uuid())
+//   empresa_id: uuid (not null)
+//   safra_id: uuid (not null)
+//   talhao_id: uuid (not null)
+//   created_at: timestamp with time zone (not null, default: now())
 // Table: safras
 //   id: uuid (not null, default: gen_random_uuid())
 //   empresa_id: uuid (not null)
-//   talhao_id: uuid (not null)
+//   talhao_id: uuid (nullable)
 //   cultivar_id: uuid (not null)
 //   data_plantio: date (nullable)
 //   data_colheita_prevista: date (nullable)
@@ -4009,6 +4077,9 @@ export const Constants = {
 //   produtividade_planejada: numeric (nullable)
 //   meta_producao_kg: numeric (nullable)
 //   orcamento_total: numeric (nullable)
+//   fazenda_id: uuid (nullable)
+//   ano_safra: integer (nullable)
+//   imagem_url: text (nullable)
 // Table: suporte_mensagens
 //   id: uuid (not null, default: gen_random_uuid())
 //   ticket_id: uuid (not null)
@@ -4281,9 +4352,16 @@ export const Constants = {
 // Table: saas_faturas
 //   FOREIGN KEY saas_faturas_empresa_id_fkey: FOREIGN KEY (empresa_id) REFERENCES empresas(id)
 //   PRIMARY KEY saas_faturas_pkey: PRIMARY KEY (id)
+// Table: safra_talhoes
+//   FOREIGN KEY safra_talhoes_empresa_id_fkey: FOREIGN KEY (empresa_id) REFERENCES empresas(id) ON DELETE CASCADE
+//   PRIMARY KEY safra_talhoes_pkey: PRIMARY KEY (id)
+//   FOREIGN KEY safra_talhoes_safra_id_fkey: FOREIGN KEY (safra_id) REFERENCES safras(id) ON DELETE CASCADE
+//   UNIQUE safra_talhoes_safra_id_talhao_id_key: UNIQUE (safra_id, talhao_id)
+//   FOREIGN KEY safra_talhoes_talhao_id_fkey: FOREIGN KEY (talhao_id) REFERENCES talhoes(id) ON DELETE CASCADE
 // Table: safras
 //   FOREIGN KEY safras_cultivar_id_fkey: FOREIGN KEY (cultivar_id) REFERENCES cultivares(id)
 //   FOREIGN KEY safras_empresa_id_fkey: FOREIGN KEY (empresa_id) REFERENCES empresas(id) ON DELETE CASCADE
+//   FOREIGN KEY safras_fazenda_id_fkey: FOREIGN KEY (fazenda_id) REFERENCES fazendas(id) ON DELETE CASCADE
 //   PRIMARY KEY safras_pkey: PRIMARY KEY (id)
 //   FOREIGN KEY safras_talhao_id_fkey: FOREIGN KEY (talhao_id) REFERENCES talhoes(id) ON DELETE CASCADE
 // Table: suporte_mensagens
@@ -4491,6 +4569,10 @@ export const Constants = {
 //     USING: is_admin_saas()
 //   Policy "saas_faturas_admin_saas" (ALL, PERMISSIVE) roles={authenticated}
 //     USING: is_admin_saas()
+// Table: safra_talhoes
+//   Policy "safra_talhoes_empresa" (ALL, PERMISSIVE) roles={authenticated}
+//     USING: (empresa_id = ( SELECT usuarios.empresa_id    FROM usuarios   WHERE (usuarios.id = auth.uid())))
+//     WITH CHECK: (empresa_id = ( SELECT usuarios.empresa_id    FROM usuarios   WHERE (usuarios.id = auth.uid())))
 // Table: safras
 //   Policy "safras_empresa" (ALL, PERMISSIVE) roles={public}
 //     USING: (empresa_id = ( SELECT usuarios.empresa_id    FROM usuarios   WHERE (usuarios.id = auth.uid())))
@@ -4900,8 +4982,11 @@ export const Constants = {
 //   CREATE INDEX idx_packing_recepcoes_status ON public.packing_recepcoes USING btree (status)
 // Table: planos
 //   CREATE UNIQUE INDEX planos_nome_key ON public.planos USING btree (nome)
+// Table: safra_talhoes
+//   CREATE UNIQUE INDEX safra_talhoes_safra_id_talhao_id_key ON public.safra_talhoes USING btree (safra_id, talhao_id)
 // Table: safras
 //   CREATE INDEX idx_safras_status ON public.safras USING btree (status) WHERE (deleted_at IS NULL)
 //   CREATE INDEX idx_safras_talhao ON public.safras USING btree (talhao_id) WHERE (deleted_at IS NULL)
+//   CREATE UNIQUE INDEX safras_empresa_fazenda_cultivar_ano_idx ON public.safras USING btree (empresa_id, fazenda_id, cultivar_id, ano_safra) WHERE ((fazenda_id IS NOT NULL) AND (ano_safra IS NOT NULL))
 // Table: usuarios
 //   CREATE INDEX idx_usuarios_empresa ON public.usuarios USING btree (empresa_id) WHERE (deleted_at IS NULL)
