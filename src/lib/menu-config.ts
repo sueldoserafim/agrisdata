@@ -35,6 +35,7 @@ import {
   UserPlus,
   Sliders,
   ShieldAlert,
+  CloudRain,
 } from 'lucide-react'
 
 export type MenuItemRaw = {
@@ -69,6 +70,12 @@ export const allMenuItems: MenuItemRaw[] = [
         icon: ThermometerSun,
         label: 'Graus-Dia (GDA)',
         path: '/app/agronomia/gda',
+        module: 'cadastros',
+      },
+      {
+        icon: CloudRain,
+        label: 'Pluviometria',
+        path: '/app/agronomia/pluviometria',
         module: 'cadastros',
       },
     ],
