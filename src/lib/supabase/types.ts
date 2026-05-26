@@ -997,6 +997,7 @@ export type Database = {
           detentor_licenciador: string | null
           dias_para_colheita: number | null
           empresa_id: string
+          gda_objetivo_colheita: number | null
           id: string
           nome: string
           pais_origem: string | null
@@ -1013,6 +1014,7 @@ export type Database = {
           detentor_licenciador?: string | null
           dias_para_colheita?: number | null
           empresa_id: string
+          gda_objetivo_colheita?: number | null
           id?: string
           nome: string
           pais_origem?: string | null
@@ -1029,6 +1031,7 @@ export type Database = {
           detentor_licenciador?: string | null
           dias_para_colheita?: number | null
           empresa_id?: string
+          gda_objetivo_colheita?: number | null
           id?: string
           nome?: string
           pais_origem?: string | null
@@ -1712,33 +1715,51 @@ export type Database = {
           data: string | null
           deleted_at: string | null
           empresa_id: string
+          fonte_dados: string | null
+          gda_diario: number | null
           graus_dia_acumulado: number | null
           id: string
+          safra_id: string | null
           talhao_id: string
+          temp_maxima: number | null
+          temp_minima: number | null
           temperatura_media: number | null
           updated_at: string | null
+          usuario_id: string | null
         }
         Insert: {
           created_at?: string | null
           data?: string | null
           deleted_at?: string | null
           empresa_id: string
+          fonte_dados?: string | null
+          gda_diario?: number | null
           graus_dia_acumulado?: number | null
           id?: string
+          safra_id?: string | null
           talhao_id: string
+          temp_maxima?: number | null
+          temp_minima?: number | null
           temperatura_media?: number | null
           updated_at?: string | null
+          usuario_id?: string | null
         }
         Update: {
           created_at?: string | null
           data?: string | null
           deleted_at?: string | null
           empresa_id?: string
+          fonte_dados?: string | null
+          gda_diario?: number | null
           graus_dia_acumulado?: number | null
           id?: string
+          safra_id?: string | null
           talhao_id?: string
+          temp_maxima?: number | null
+          temp_minima?: number | null
           temperatura_media?: number | null
           updated_at?: string | null
+          usuario_id?: string | null
         }
         Relationships: [
           {
@@ -1746,6 +1767,13 @@ export type Database = {
             columns: ['empresa_id']
             isOneToOne: false
             referencedRelation: 'empresas'
+            referencedColumns: ['id']
+          },
+          {
+            foreignKeyName: 'graus_dia_safra_id_fkey'
+            columns: ['safra_id']
+            isOneToOne: false
+            referencedRelation: 'safras'
             referencedColumns: ['id']
           },
           {
@@ -3473,6 +3501,7 @@ export const Constants = {
 //   produtividade_esperada_t_ha: numeric (nullable)
 //   shelf_life_ideal_dias: integer (nullable)
 //   shelf_life_minimo_dias: integer (nullable)
+//   gda_objetivo_colheita: numeric (nullable)
 // Table: culturas
 //   id: uuid (not null, default: gen_random_uuid())
 //   empresa_id: uuid (not null)
@@ -3628,6 +3657,12 @@ export const Constants = {
 //   created_at: timestamp with time zone (nullable, default: now())
 //   updated_at: timestamp with time zone (nullable, default: now())
 //   deleted_at: timestamp with time zone (nullable)
+//   temp_maxima: numeric (nullable)
+//   temp_minima: numeric (nullable)
+//   fonte_dados: character varying (nullable)
+//   gda_diario: numeric (nullable)
+//   safra_id: uuid (nullable)
+//   usuario_id: uuid (nullable)
 // Table: historico_produtividade_talhao
 //   id: uuid (not null, default: gen_random_uuid())
 //   empresa_id: uuid (not null)
@@ -4029,7 +4064,10 @@ export const Constants = {
 // Table: graus_dia
 //   FOREIGN KEY graus_dia_empresa_id_fkey: FOREIGN KEY (empresa_id) REFERENCES empresas(id) ON DELETE CASCADE
 //   PRIMARY KEY graus_dia_pkey: PRIMARY KEY (id)
+//   UNIQUE graus_dia_safra_id_data_key: UNIQUE (safra_id, data)
+//   FOREIGN KEY graus_dia_safra_id_fkey: FOREIGN KEY (safra_id) REFERENCES safras(id) ON DELETE CASCADE
 //   FOREIGN KEY graus_dia_talhao_id_fkey: FOREIGN KEY (talhao_id) REFERENCES talhoes(id) ON DELETE CASCADE
+//   FOREIGN KEY graus_dia_usuario_id_fkey: FOREIGN KEY (usuario_id) REFERENCES auth.users(id) ON DELETE SET NULL
 // Table: historico_produtividade_talhao
 //   FOREIGN KEY historico_produtividade_talhao_empresa_id_fkey: FOREIGN KEY (empresa_id) REFERENCES empresas(id) ON DELETE CASCADE
 //   PRIMARY KEY historico_produtividade_talhao_pkey: PRIMARY KEY (id)
@@ -4693,6 +4731,8 @@ export const Constants = {
 //   CREATE UNIQUE INDEX empresas_cnpj_key ON public.empresas USING btree (cnpj)
 //   CREATE UNIQUE INDEX empresas_slug_key ON public.empresas USING btree (slug)
 //   CREATE INDEX idx_empresas_slug ON public.empresas USING btree (slug) WHERE (deleted_at IS NULL)
+// Table: graus_dia
+//   CREATE UNIQUE INDEX graus_dia_safra_id_data_key ON public.graus_dia USING btree (safra_id, data)
 // Table: lotes_estoque
 //   CREATE INDEX idx_lotes_estoque_armazem ON public.lotes_estoque USING btree (armazem_id) WHERE (deleted_at IS NULL)
 //   CREATE INDEX idx_lotes_estoque_produto ON public.lotes_estoque USING btree (produto_id) WHERE (deleted_at IS NULL)

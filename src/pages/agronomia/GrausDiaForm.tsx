@@ -7,6 +7,7 @@ import { format } from 'date-fns'
 import { ArrowLeft, Save, Loader2, CloudRain, ThermometerSun } from 'lucide-react'
 
 import { Button } from '@/components/ui/button'
+import { HelpButton } from '@/components/HelpButton'
 import {
   Form,
   FormControl,
@@ -173,18 +174,69 @@ export default function GrausDiaForm() {
 
   return (
     <div className="p-8 max-w-3xl mx-auto space-y-6 animate-fade-in-up">
-      <div className="flex items-center gap-4">
-        <Button variant="outline" size="icon" onClick={() => navigate('/app/agronomia/gda')}>
-          <ArrowLeft className="size-4" />
-        </Button>
-        <div>
-          <h1 className="text-3xl font-bold tracking-tight">
-            {id ? 'Editar Registro GDA' : 'Novo Registro GDA'}
-          </h1>
-          <p className="text-muted-foreground">
-            Registre os dados de temperatura para calcular os Graus-Dia Acumulados.
-          </p>
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div className="flex items-center gap-4">
+          <Button variant="outline" size="icon" onClick={() => navigate('/app/agronomia/gda')}>
+            <ArrowLeft className="size-4" />
+          </Button>
+          <div>
+            <h1 className="text-3xl font-bold tracking-tight">
+              {id ? 'Editar Registro GDA' : 'Novo Registro GDA'}
+            </h1>
+            <p className="text-muted-foreground">
+              Registre os dados de temperatura para calcular os Graus-Dia Acumulados.
+            </p>
+          </div>
         </div>
+        <HelpButton
+          title="Ajuda: Registro de Graus-Dia"
+          content={
+            <div className="space-y-4">
+              <div>
+                <h4 className="font-semibold text-foreground">Como preencher:</h4>
+                <ul className="list-disc list-inside space-y-1 mt-2 text-muted-foreground ml-2">
+                  <li>
+                    <strong className="text-foreground">Safra:</strong> Selecione a safra ativa à
+                    qual este registro se aplica.
+                  </li>
+                  <li>
+                    <strong className="text-foreground">Data:</strong> Selecione o dia específico da
+                    leitura de temperatura.
+                  </li>
+                  <li>
+                    <strong className="text-foreground">Fonte dos Dados:</strong> Escolha a origem
+                    da informação (Manual, INMET, ClimaTempo, etc.). Opções automatizadas permitem a
+                    importação de dados.
+                  </li>
+                  <li>
+                    <strong className="text-foreground">Temperaturas:</strong> Insira as
+                    temperaturas Máxima e Mínima em Celsius (°C) registradas no dia.
+                  </li>
+                </ul>
+              </div>
+              <div>
+                <h4 className="font-semibold text-foreground">Lógica de Cálculo GDA:</h4>
+                <p className="mt-1 text-muted-foreground">
+                  A fórmula utilizada para o cálculo de Graus-Dia Acumulados é:
+                </p>
+                <div className="bg-muted p-3 rounded-md mt-2 font-mono text-sm text-center">
+                  GDA = ((Temp. Máx + Temp. Mín) / 2) - Temp. Base
+                </div>
+                <p className="mt-2 text-muted-foreground text-sm">
+                  A <strong>Temp. Base</strong> é recuperada automaticamente das configurações da
+                  cultura associada à safra selecionada.
+                </p>
+              </div>
+              <div className="bg-primary/10 p-3 rounded-md">
+                <p className="text-sm text-primary">
+                  <strong>Nota de Conformidade:</strong> O preenchimento preciso destes dados é
+                  necessário para manter a conformidade com as normas do{' '}
+                  <strong>GLOBALG.A.P.</strong> em relação ao monitoramento climático.
+                </p>
+              </div>
+            </div>
+          }
+        />
       </div>
 
       <Form {...form}>
