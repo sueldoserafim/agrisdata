@@ -51,6 +51,8 @@ import PedidoForm from './pages/compras/PedidoForm'
 import RecebimentoForm from './pages/compras/RecebimentoForm'
 import FornecedorList from './pages/compras/FornecedorList'
 import FornecedorForm from './pages/compras/FornecedorForm'
+import GrausDiaDashboard from './pages/agronomia/GrausDiaDashboard'
+import GrausDiaForm from './pages/agronomia/GrausDiaForm'
 import OperacaoList from './pages/operacoes/OperacaoList'
 import OperacaoForm from './pages/operacoes/OperacaoForm'
 import MinhasOperacoes from './pages/operacoes/MinhasOperacoes'
@@ -110,6 +112,10 @@ const App = () => (
                 <Route path="/app/talhoes" element={<TalhaoList />} />
                 <Route path="/app/talhoes/new" element={<TalhaoForm />} />
                 <Route path="/app/talhoes/:id" element={<TalhaoForm />} />
+
+                <Route path="/app/agronomia/gda" element={<GrausDiaDashboard />} />
+                <Route path="/app/agronomia/gda/novo" element={<GrausDiaForm />} />
+                <Route path="/app/agronomia/gda/:id" element={<GrausDiaForm />} />
 
                 <Route path="/app/culturas" element={<CulturaList />} />
                 <Route path="/app/culturas/new" element={<CulturaForm />} />

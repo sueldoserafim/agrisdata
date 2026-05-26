@@ -4680,10 +4680,15 @@ export const Constants = {
 // --- INDEXES ---
 // Table: audit_logs
 //   CREATE INDEX idx_audit_logs_empresa ON public.audit_logs USING btree (empresa_id)
+// Table: colheita_registros
+//   CREATE UNIQUE INDEX idx_colheita_lote_producao_uniq ON public.colheita_registros USING btree (lote_producao) WHERE (lote_producao IS NOT NULL)
+//   CREATE INDEX idx_colheita_safra_id ON public.colheita_registros USING btree (safra_id)
 // Table: compras_requisicao
 //   CREATE INDEX idx_compras_requisicao_status ON public.compras_requisicao USING btree (status) WHERE (deleted_at IS NULL)
 // Table: culturas_fenologia
 //   CREATE INDEX idx_culturas_fenologia_cultura_id ON public.culturas_fenologia USING btree (cultura_id) WHERE (deleted_at IS NULL)
+// Table: custos_talhao
+//   CREATE INDEX idx_custos_talhao_safra_id ON public.custos_talhao USING btree (safra_id)
 // Table: empresas
 //   CREATE UNIQUE INDEX empresas_cnpj_key ON public.empresas USING btree (cnpj)
 //   CREATE UNIQUE INDEX empresas_slug_key ON public.empresas USING btree (slug)
@@ -4694,6 +4699,8 @@ export const Constants = {
 // Table: operacoes_campo
 //   CREATE INDEX idx_operacoes_safra ON public.operacoes_campo USING btree (safra_id) WHERE (deleted_at IS NULL)
 //   CREATE INDEX idx_operacoes_status ON public.operacoes_campo USING btree (status) WHERE (deleted_at IS NULL)
+// Table: packing_recepcoes
+//   CREATE INDEX idx_packing_recepcoes_status ON public.packing_recepcoes USING btree (status)
 // Table: planos
 //   CREATE UNIQUE INDEX planos_nome_key ON public.planos USING btree (nome)
 // Table: safras

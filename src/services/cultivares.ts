@@ -8,6 +8,7 @@ export type CultivarRow = Database['public']['Tables']['cultivares']['Row'] & {
   produtividade_esperada_t_ha?: number | null
   shelf_life_ideal_dias?: number | null
   shelf_life_minimo_dias?: number | null
+  gda_objetivo_colheita?: number | null
   culturas?: { nome: string } | null
 }
 

@@ -1,6 +1,7 @@
 import {
   LayoutDashboard,
   Factory,
+  ThermometerSun,
   Package,
   Users,
   Truck,
@@ -63,6 +64,12 @@ export const allMenuItems: MenuItemRaw[] = [
         label: 'Monitoramento (MIP)',
         path: '/app/producao/monitoramento',
         module: 'producao',
+      },
+      {
+        icon: ThermometerSun,
+        label: 'Graus-Dia (GDA)',
+        path: '/app/agronomia/gda',
+        module: 'cadastros',
       },
     ],
   },
