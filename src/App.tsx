@@ -27,6 +27,9 @@ import SettingsPage from './pages/Settings'
 import AuditoriaSafrasList from './pages/auditoria/AuditoriaSafrasList'
 import RelatorioSafra from './pages/auditoria/RelatorioSafra'
 import PerformanceDashboard from './pages/bi/PerformanceDashboard'
+import TendenciasDashboard from './pages/performance/TendenciasDashboard'
+import CadernoCampo from './pages/operacoes/CadernoCampo'
+import BalancoMassas from './pages/producao/BalancoMassas'
 
 import FazendaList from './pages/fazendas/FazendaList'
 import FazendaForm from './pages/fazendas/FazendaForm'
@@ -194,6 +197,7 @@ const App = () => (
 
                 <Route path="/app/operacoes" element={<OperacaoList />} />
                 <Route path="/app/operacoes/minhas" element={<MinhasOperacoes />} />
+                <Route path="/app/operacoes/caderno" element={<CadernoCampo />} />
                 <Route path="/app/operacoes/equipe" element={<EquipePerformance />} />
                 <Route path="/app/operacoes/nova" element={<OperacaoForm />} />
                 <Route path="/app/operacoes/:id" element={<OperacaoForm />} />
@@ -202,6 +206,7 @@ const App = () => (
                   element={<div className="p-8 font-semibold text-xl">Suporte</div>}
                 />
                 <Route path="/app/producao" element={<ProducaoDashboard />} />
+                <Route path="/app/producao/balanco-massas" element={<BalancoMassas />} />
                 <Route path="/app/producao/monitoramento" element={<MonitoramentoList />} />
                 <Route path="/app/producao/monitoramento/novo" element={<MonitoramentoForm />} />
                 <Route path="/app/producao/monitoramento/:id" element={<MonitoramentoForm />} />
@@ -246,6 +251,7 @@ const App = () => (
                   element={<div className="p-8 font-semibold text-xl">BI</div>}
                 />
                 <Route path="/app/performance" element={<PerformanceDashboard />} />
+                <Route path="/app/performance/tendencias" element={<TendenciasDashboard />} />
                 <Route path="/app/auditoria-safras" element={<AuditoriaSafrasList />} />
                 <Route path="/app/auditoria-safras/:id/relatorio" element={<RelatorioSafra />} />
                 <Route path="/app/usuarios" element={<Usuarios />} />

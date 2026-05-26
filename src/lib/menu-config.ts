@@ -1,6 +1,9 @@
 import {
   LayoutDashboard,
   Factory,
+  BookOpen,
+  Scale,
+  TrendingUp,
   ThermometerSun,
   Package,
   Users,
@@ -159,12 +162,24 @@ export const allMenuItems: MenuItemRaw[] = [
       },
       { icon: Wrench, label: 'Painel de Operações', path: '/app/operacoes', module: 'operacoes' },
       {
+        icon: BookOpen,
+        label: 'Caderno de Campo (Digital)',
+        path: '/app/operacoes/caderno',
+        module: 'operacoes',
+      },
+      {
         icon: Users,
         label: 'Performance da Equipe',
         path: '/app/operacoes/equipe',
         module: 'operacoes',
       },
       { icon: Cog, label: 'Produção', path: '/app/producao', module: 'producao' },
+      {
+        icon: Scale,
+        label: 'Módulo F - Balanço',
+        path: '/app/producao/balanco-massas',
+        module: 'producao',
+      },
       {
         icon: ShieldAlert,
         label: 'Monitoramento (MIP)',
@@ -214,6 +229,7 @@ export const allMenuItems: MenuItemRaw[] = [
       { icon: UserPlus, label: 'RH', path: '/app/rh', module: 'rh' },
       { icon: Truck, label: 'Frota', path: '/app/frota', module: 'frota' },
       { icon: LineChart, label: 'Desempenho (Safras)', path: '/app/performance', module: 'bi' },
+      { icon: TrendingUp, label: 'Tendências', path: '/app/performance/tendencias', module: 'bi' },
       { icon: LineChart, label: 'BI', path: '/app/bi', module: 'bi' },
       {
         icon: ClipboardList,

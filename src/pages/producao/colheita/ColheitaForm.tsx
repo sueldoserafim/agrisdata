@@ -4,7 +4,7 @@ import { z } from 'zod'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { toast } from 'sonner'
-import { Loader2, X, Upload } from 'lucide-react'
+import { Loader2, X, Upload, AlertTriangle } from 'lucide-react'
 import { supabase } from '@/lib/supabase/client'
 import { useEmpresa } from '@/hooks/use-empresa'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
@@ -14,6 +14,7 @@ import { Textarea } from '@/components/ui/textarea'
 import { Label } from '@/components/ui/label'
 import { Badge } from '@/components/ui/badge'
 import { Separator } from '@/components/ui/separator'
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
 import {
   Form,
   FormControl,
@@ -56,6 +57,11 @@ export default function ColheitaForm() {
   const navigate = useNavigate()
   const [loading, setLoading] = useState(false)
   const [uploading, setUploading] = useState(false)
+  const [carenciaAtiva, setCarenciaAtiva] = useState<{
+    ativa: boolean
+    dias: number
+    produto: string
+  } | null>(null)
 
   const [safras, setSafras] = useState<any[]>([])
   const [usuarios, setUsuarios] = useState<any[]>([])
@@ -81,11 +87,30 @@ export default function ColheitaForm() {
     },
   })
 
+  const safra_id = form.watch('safra_id')
+  const data_colheita = form.watch('data_colheita')
+
   useEffect(() => {
     if (empresa?.id) {
       loadData()
     }
   }, [empresa?.id])
+
+  useEffect(() => {
+    async function checkCarencia() {
+      if (!safra_id || !data_colheita) return
+      const { data, error } = await supabase.rpc('verificar_carencia_safra', {
+        p_safra_id: safra_id,
+        p_data_colheita: data_colheita,
+      })
+      if (data && data.ativa) {
+        setCarenciaAtiva(data)
+      } else {
+        setCarenciaAtiva(null)
+      }
+    }
+    checkCarencia()
+  }, [safra_id, data_colheita])
 
   const loadData = async () => {
     const [safrasRes, usersRes, funcRes, equipRes] = await Promise.all([
@@ -114,7 +139,6 @@ export default function ColheitaForm() {
     if (equipRes.data) setEquipamentos(equipRes.data)
   }
 
-  // Automations: Auto-calculate Net Production
   const producao_bruta = form.watch('producao_bruta_ton') || 0
   const perdas = form.watch('perdas_ton') || 0
 
@@ -122,10 +146,6 @@ export default function ColheitaForm() {
     const net = Number((producao_bruta - perdas).toFixed(2))
     form.setValue('producao_liquida_ton', net >= 0 ? net : 0)
   }, [producao_bruta, perdas])
-
-  // Automations: Auto-generate Lote
-  const safra_id = form.watch('safra_id')
-  const data_colheita = form.watch('data_colheita')
 
   useEffect(() => {
     if (safra_id && data_colheita) {
@@ -171,10 +191,13 @@ export default function ColheitaForm() {
 
   const onSubmit = async (values: ColheitaFormValues) => {
     if (!empresa?.id) return
+    if (carenciaAtiva?.ativa) {
+      toast.error('Não é possível salvar. Há produtos em período de carência.')
+      return
+    }
     setLoading(true)
 
     try {
-      // 1. Insert colheita_registros
       const { data: colheita, error: colheitaError } = await supabase
         .from('colheita_registros')
         .insert({
@@ -201,28 +224,6 @@ export default function ColheitaForm() {
 
       if (colheitaError) throw new Error(`Erro ao registrar colheita: ${colheitaError.message}`)
 
-      // 2. Automations: Mass Balance
-      const kgColhidos = values.producao_liquida_ton * 1000
-      const { data: balanco } = await supabase
-        .from('balanco_massas')
-        .select('*')
-        .eq('safra_id', values.safra_id)
-        .maybeSingle()
-
-      if (balanco) {
-        await supabase
-          .from('balanco_massas')
-          .update({ quantidade_colhida_kg: (balanco.quantidade_colhida_kg || 0) + kgColhidos })
-          .eq('id', balanco.id)
-      } else {
-        await supabase.from('balanco_massas').insert({
-          empresa_id: empresa.id,
-          safra_id: values.safra_id,
-          quantidade_colhida_kg: kgColhidos,
-        })
-      }
-
-      // 3. Automations: Packing Reception
       if (values.destino_producao === 'packing_house') {
         const { error: packingError } = await supabase.from('packing_recepcoes').insert({
           empresa_id: empresa.id,
@@ -234,10 +235,9 @@ export default function ColheitaForm() {
         if (packingError) console.error('Erro ao gerar recepção:', packingError)
       }
 
-      // 4. Automations: Safra Status
       await supabase.from('safras').update({ status: 'em_colheita' }).eq('id', values.safra_id)
 
-      // 5. Automations: Productivity History
+      const kgColhidos = values.producao_liquida_ton * 1000
       const prod_kg_ha = kgColhidos / values.area_colhida_ha
       const ano = new Date(values.data_colheita).getFullYear()
       const safraInfo = safras.find((s) => s.id === values.safra_id)
@@ -282,6 +282,18 @@ export default function ColheitaForm() {
           Registre os dados de colheita e garanta a rastreabilidade da produção.
         </p>
       </div>
+
+      {carenciaAtiva?.ativa && (
+        <Alert variant="destructive">
+          <AlertTriangle className="h-4 w-4" />
+          <AlertTitle>Alerta de Carência (GLOBALG.A.P.)</AlertTitle>
+          <AlertDescription>
+            Aviso crítico de segurança alimentar: Não é permitido colher. O produto{' '}
+            <strong>{carenciaAtiva.produto}</strong> ainda está no período de carência (
+            {carenciaAtiva.dias} dias restantes).
+          </AlertDescription>
+        </Alert>
+      )}
 
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
@@ -679,7 +691,7 @@ export default function ColheitaForm() {
             <Button type="button" variant="outline" onClick={() => navigate(-1)} disabled={loading}>
               Cancelar
             </Button>
-            <Button type="submit" disabled={loading || uploading}>
+            <Button type="submit" disabled={loading || uploading || carenciaAtiva?.ativa}>
               {loading && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
               Confirmar Registro de Colheita
             </Button>
