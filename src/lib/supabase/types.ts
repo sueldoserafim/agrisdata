@@ -119,49 +119,103 @@ export type Database = {
       }
       analises_solo: {
         Row: {
+          areia: number | null
+          argila: number | null
+          boro: number | null
+          calcario_recomendado: number | null
+          calcio: number | null
+          cobre: number | null
           created_at: string | null
+          ctc: number | null
           data_coleta: string | null
           deleted_at: string | null
           empresa_id: string
+          enxofre: number | null
+          ferro: number | null
           fosforo: number | null
+          gesso_recomendado: number | null
           id: string
+          laboratorio: string | null
+          laudo_pdf_url: string | null
+          magnesio: number | null
+          manganes: number | null
           materia_organica: number | null
+          metodologia: string | null
           nitrogenio: number | null
           ph: number | null
           potassio: number | null
           profundidade_cm: number | null
+          saturacao_bases: number | null
+          silte: number | null
           talhao_id: string
           updated_at: string | null
+          zinco: number | null
         }
         Insert: {
+          areia?: number | null
+          argila?: number | null
+          boro?: number | null
+          calcario_recomendado?: number | null
+          calcio?: number | null
+          cobre?: number | null
           created_at?: string | null
+          ctc?: number | null
           data_coleta?: string | null
           deleted_at?: string | null
           empresa_id: string
+          enxofre?: number | null
+          ferro?: number | null
           fosforo?: number | null
+          gesso_recomendado?: number | null
           id?: string
+          laboratorio?: string | null
+          laudo_pdf_url?: string | null
+          magnesio?: number | null
+          manganes?: number | null
           materia_organica?: number | null
+          metodologia?: string | null
           nitrogenio?: number | null
           ph?: number | null
           potassio?: number | null
           profundidade_cm?: number | null
+          saturacao_bases?: number | null
+          silte?: number | null
           talhao_id: string
           updated_at?: string | null
+          zinco?: number | null
         }
         Update: {
+          areia?: number | null
+          argila?: number | null
+          boro?: number | null
+          calcario_recomendado?: number | null
+          calcio?: number | null
+          cobre?: number | null
           created_at?: string | null
+          ctc?: number | null
           data_coleta?: string | null
           deleted_at?: string | null
           empresa_id?: string
+          enxofre?: number | null
+          ferro?: number | null
           fosforo?: number | null
+          gesso_recomendado?: number | null
           id?: string
+          laboratorio?: string | null
+          laudo_pdf_url?: string | null
+          magnesio?: number | null
+          manganes?: number | null
           materia_organica?: number | null
+          metodologia?: string | null
           nitrogenio?: number | null
           ph?: number | null
           potassio?: number | null
           profundidade_cm?: number | null
+          saturacao_bases?: number | null
+          silte?: number | null
           talhao_id?: string
           updated_at?: string | null
+          zinco?: number | null
         }
         Relationships: [
           {
@@ -3317,6 +3371,24 @@ export const Constants = {
 //   created_at: timestamp with time zone (nullable, default: now())
 //   updated_at: timestamp with time zone (nullable, default: now())
 //   deleted_at: timestamp with time zone (nullable)
+//   laboratorio: text (nullable)
+//   metodologia: text (nullable)
+//   calcio: numeric (nullable)
+//   magnesio: numeric (nullable)
+//   enxofre: numeric (nullable)
+//   boro: numeric (nullable)
+//   zinco: numeric (nullable)
+//   ferro: numeric (nullable)
+//   manganes: numeric (nullable)
+//   cobre: numeric (nullable)
+//   ctc: numeric (nullable)
+//   saturacao_bases: numeric (nullable)
+//   argila: numeric (nullable)
+//   areia: numeric (nullable)
+//   silte: numeric (nullable)
+//   calcario_recomendado: numeric (nullable)
+//   gesso_recomendado: numeric (nullable)
+//   laudo_pdf_url: text (nullable)
 // Table: armazens
 //   id: uuid (not null, default: gen_random_uuid())
 //   empresa_id: uuid (not null)
@@ -4175,8 +4247,9 @@ export const Constants = {
 //   Policy "amostras_qualidade_campo_empresa" (ALL, PERMISSIVE) roles={public}
 //     USING: (empresa_id = ( SELECT usuarios.empresa_id    FROM usuarios   WHERE (usuarios.id = auth.uid())))
 // Table: analises_solo
-//   Policy "analises_solo_empresa" (ALL, PERMISSIVE) roles={public}
+//   Policy "analises_solo_empresa" (ALL, PERMISSIVE) roles={authenticated}
 //     USING: (empresa_id = ( SELECT usuarios.empresa_id    FROM usuarios   WHERE (usuarios.id = auth.uid())))
+//     WITH CHECK: (empresa_id = ( SELECT usuarios.empresa_id    FROM usuarios   WHERE (usuarios.id = auth.uid())))
 // Table: armazens
 //   Policy "armazens_empresa" (ALL, PERMISSIVE) roles={authenticated}
 //     USING: (empresa_id = ( SELECT usuarios.empresa_id    FROM usuarios   WHERE (usuarios.id = auth.uid())))

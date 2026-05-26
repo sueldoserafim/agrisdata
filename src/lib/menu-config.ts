@@ -79,6 +79,12 @@ export const allMenuItems: MenuItemRaw[] = [
         module: 'cadastros',
       },
       {
+        icon: FlaskConical,
+        label: 'Amostras de Qualidade',
+        path: '/app/agronomia/amostras-qualidade',
+        module: 'producao',
+      },
+      {
         icon: CloudRain,
         label: 'Pluviometria',
         path: '/app/agronomia/pluviometria',

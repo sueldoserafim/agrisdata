@@ -57,6 +57,8 @@ import PluviometriaDashboard from './pages/agronomia/PluviometriaDashboard'
 import PluviometriaForm from './pages/agronomia/PluviometriaForm'
 import AnalisesSoloList from './pages/agronomia/AnalisesSoloList'
 import AnalisesSoloForm from './pages/agronomia/AnalisesSoloForm'
+import AmostrasQualidadeList from './pages/agronomia/AmostrasQualidadeList'
+import AmostrasQualidadeForm from './pages/agronomia/AmostrasQualidadeForm'
 import OperacaoList from './pages/operacoes/OperacaoList'
 import OperacaoForm from './pages/operacoes/OperacaoForm'
 import MinhasOperacoes from './pages/operacoes/MinhasOperacoes'
@@ -128,6 +130,19 @@ const App = () => (
                 <Route path="/app/agronomia/analises-solo" element={<AnalisesSoloList />} />
                 <Route path="/app/agronomia/analises-solo/novo" element={<AnalisesSoloForm />} />
                 <Route path="/app/agronomia/analises-solo/:id" element={<AnalisesSoloForm />} />
+
+                <Route
+                  path="/app/agronomia/amostras-qualidade"
+                  element={<AmostrasQualidadeList />}
+                />
+                <Route
+                  path="/app/agronomia/amostras-qualidade/nova"
+                  element={<AmostrasQualidadeForm />}
+                />
+                <Route
+                  path="/app/agronomia/amostras-qualidade/:id"
+                  element={<AmostrasQualidadeForm />}
+                />
 
                 <Route path="/app/culturas" element={<CulturaList />} />
                 <Route path="/app/culturas/new" element={<CulturaForm />} />
