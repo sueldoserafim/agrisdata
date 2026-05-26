@@ -111,14 +111,20 @@ export default function SafraForm() {
     if (id && empresa?.id)
       supabase
         .from('safras')
-        .select('*')
+        .select('*, cultivares(cultura_id)')
         .eq('id', id)
         .single()
         .then(({ data }) => {
-          if (data)
+          if (data) {
+            const culturaId = (data.cultivares as any)?.cultura_id
+            if (culturaId) setValue('cultura_id', culturaId)
+
             Object.keys(data).forEach((k) => {
-              if (k in schema.shape) setValue(k as keyof z.infer<typeof schema>, data[k] || '')
+              if (k in schema.shape && k !== 'cultura_id') {
+                setValue(k as keyof z.infer<typeof schema>, data[k as keyof typeof data] || '')
+              }
             })
+          }
         })
   }, [id, empresa?.id, setValue])
 
@@ -140,8 +146,10 @@ export default function SafraForm() {
       })
     }
     setLoading(true)
+    const { cultura_id, ...restData } = data
+
     const payload = {
-      ...data,
+      ...restData,
       empresa_id: empresa!.id,
       densidade_plantio: data.densidade_plantio || null,
       produtividade_planejada: data.produtividade_planejada || null,

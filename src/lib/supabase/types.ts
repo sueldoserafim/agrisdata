@@ -62,41 +62,89 @@ export type Database = {
       }
       amostras_qualidade_campo: {
         Row: {
+          acidez_titulavel: number | null
+          apto_colheita: boolean | null
+          brix_maximo: number | null
+          brix_medio: number | null
+          brix_minimo: number | null
+          coloracao_escala: number | null
           cor: string | null
           created_at: string | null
           data_coleta: string | null
+          data_estimada_colheita: string | null
+          defeitos_percentual: number | null
           deleted_at: string | null
           empresa_id: string
+          estagio_fenologico: string | null
           firmeza: string | null
+          firmeza_media: number | null
+          fotos: string[] | null
           id: string
+          observacoes: string | null
+          peso_medio_fruto: number | null
+          ratio_brix_acidez: number | null
+          safra_id: string | null
           solidos_soluveis_brix: number | null
           talhao_id: string
+          tamanho_amostra_frutos: number | null
           tamanho_fruto_mm: number | null
           updated_at: string | null
         }
         Insert: {
+          acidez_titulavel?: number | null
+          apto_colheita?: boolean | null
+          brix_maximo?: number | null
+          brix_medio?: number | null
+          brix_minimo?: number | null
+          coloracao_escala?: number | null
           cor?: string | null
           created_at?: string | null
           data_coleta?: string | null
+          data_estimada_colheita?: string | null
+          defeitos_percentual?: number | null
           deleted_at?: string | null
           empresa_id: string
+          estagio_fenologico?: string | null
           firmeza?: string | null
+          firmeza_media?: number | null
+          fotos?: string[] | null
           id?: string
+          observacoes?: string | null
+          peso_medio_fruto?: number | null
+          ratio_brix_acidez?: number | null
+          safra_id?: string | null
           solidos_soluveis_brix?: number | null
           talhao_id: string
+          tamanho_amostra_frutos?: number | null
           tamanho_fruto_mm?: number | null
           updated_at?: string | null
         }
         Update: {
+          acidez_titulavel?: number | null
+          apto_colheita?: boolean | null
+          brix_maximo?: number | null
+          brix_medio?: number | null
+          brix_minimo?: number | null
+          coloracao_escala?: number | null
           cor?: string | null
           created_at?: string | null
           data_coleta?: string | null
+          data_estimada_colheita?: string | null
+          defeitos_percentual?: number | null
           deleted_at?: string | null
           empresa_id?: string
+          estagio_fenologico?: string | null
           firmeza?: string | null
+          firmeza_media?: number | null
+          fotos?: string[] | null
           id?: string
+          observacoes?: string | null
+          peso_medio_fruto?: number | null
+          ratio_brix_acidez?: number | null
+          safra_id?: string | null
           solidos_soluveis_brix?: number | null
           talhao_id?: string
+          tamanho_amostra_frutos?: number | null
           tamanho_fruto_mm?: number | null
           updated_at?: string | null
         }
@@ -106,6 +154,13 @@ export type Database = {
             columns: ['empresa_id']
             isOneToOne: false
             referencedRelation: 'empresas'
+            referencedColumns: ['id']
+          },
+          {
+            foreignKeyName: 'amostras_qualidade_campo_safra_id_fkey'
+            columns: ['safra_id']
+            isOneToOne: false
+            referencedRelation: 'safras'
             referencedColumns: ['id']
           },
           {
@@ -3357,6 +3412,22 @@ export const Constants = {
 //   created_at: timestamp with time zone (nullable, default: now())
 //   updated_at: timestamp with time zone (nullable, default: now())
 //   deleted_at: timestamp with time zone (nullable)
+//   safra_id: uuid (nullable)
+//   estagio_fenologico: text (nullable)
+//   tamanho_amostra_frutos: integer (nullable)
+//   brix_minimo: numeric (nullable)
+//   brix_medio: numeric (nullable)
+//   brix_maximo: numeric (nullable)
+//   firmeza_media: numeric (nullable)
+//   coloracao_escala: integer (nullable)
+//   peso_medio_fruto: numeric (nullable)
+//   defeitos_percentual: numeric (nullable)
+//   acidez_titulavel: numeric (nullable)
+//   ratio_brix_acidez: numeric (nullable)
+//   apto_colheita: boolean (nullable, default: false)
+//   data_estimada_colheita: date (nullable)
+//   fotos: _text (nullable)
+//   observacoes: text (nullable)
 // Table: analises_solo
 //   id: uuid (not null, default: gen_random_uuid())
 //   empresa_id: uuid (not null)
@@ -4022,8 +4093,11 @@ export const Constants = {
 //   PRIMARY KEY alertas_pkey: PRIMARY KEY (id)
 //   FOREIGN KEY alertas_usuario_id_fkey: FOREIGN KEY (usuario_id) REFERENCES usuarios(id) ON DELETE CASCADE
 // Table: amostras_qualidade_campo
+//   CHECK amostras_qualidade_campo_coloracao_escala_check: CHECK (((coloracao_escala >= 1) AND (coloracao_escala <= 9)))
+//   CHECK amostras_qualidade_campo_defeitos_percentual_check: CHECK (((defeitos_percentual >= (0)::numeric) AND (defeitos_percentual <= (100)::numeric)))
 //   FOREIGN KEY amostras_qualidade_campo_empresa_id_fkey: FOREIGN KEY (empresa_id) REFERENCES empresas(id) ON DELETE CASCADE
 //   PRIMARY KEY amostras_qualidade_campo_pkey: PRIMARY KEY (id)
+//   FOREIGN KEY amostras_qualidade_campo_safra_id_fkey: FOREIGN KEY (safra_id) REFERENCES safras(id) ON DELETE CASCADE
 //   FOREIGN KEY amostras_qualidade_campo_talhao_id_fkey: FOREIGN KEY (talhao_id) REFERENCES talhoes(id) ON DELETE CASCADE
 // Table: analises_solo
 //   FOREIGN KEY analises_solo_empresa_id_fkey: FOREIGN KEY (empresa_id) REFERENCES empresas(id) ON DELETE CASCADE
@@ -4246,6 +4320,15 @@ export const Constants = {
 // Table: amostras_qualidade_campo
 //   Policy "amostras_qualidade_campo_empresa" (ALL, PERMISSIVE) roles={public}
 //     USING: (empresa_id = ( SELECT usuarios.empresa_id    FROM usuarios   WHERE (usuarios.id = auth.uid())))
+//   Policy "amostras_qualidade_campo_empresa_delete" (DELETE, PERMISSIVE) roles={authenticated}
+//     USING: (empresa_id = get_user_empresa_id())
+//   Policy "amostras_qualidade_campo_empresa_insert" (INSERT, PERMISSIVE) roles={authenticated}
+//     WITH CHECK: (empresa_id = get_user_empresa_id())
+//   Policy "amostras_qualidade_campo_empresa_select" (SELECT, PERMISSIVE) roles={authenticated}
+//     USING: (empresa_id = get_user_empresa_id())
+//   Policy "amostras_qualidade_campo_empresa_update" (UPDATE, PERMISSIVE) roles={authenticated}
+//     USING: (empresa_id = get_user_empresa_id())
+//     WITH CHECK: (empresa_id = get_user_empresa_id())
 // Table: analises_solo
 //   Policy "analises_solo_empresa" (ALL, PERMISSIVE) roles={authenticated}
 //     USING: (empresa_id = ( SELECT usuarios.empresa_id    FROM usuarios   WHERE (usuarios.id = auth.uid())))
