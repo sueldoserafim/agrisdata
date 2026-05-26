@@ -18,18 +18,13 @@ export function SafraCard({ safra, onUpdate }: { safra: any; onUpdate: () => voi
     e.dataTransfer.setData('safraId', safra.id)
   }
 
-  const encerrarSafra = async () => {
-    if (!confirm('Deseja realmente encerrar esta safra?')) return
-    const { error } = await supabase
-      .from('safras')
-      .update({ status: 'Finalizada', data_colheita_real: new Date().toISOString().split('T')[0] })
-      .eq('id', safra.id)
-    if (error) {
-      toast({ title: 'Erro', description: error.message, variant: 'destructive' })
-    } else {
-      toast({ title: 'Safra encerrada com sucesso' })
-      onUpdate()
-    }
+  const encerrarSafra = () => {
+    toast({
+      title: 'Encerramento de Safra',
+      description:
+        'Por favor, realize o encerramento pela tela principal de Safras para validar o checklist obrigatório.',
+      variant: 'default',
+    })
   }
 
   return (
@@ -89,6 +84,7 @@ export function SafraCard({ safra, onUpdate }: { safra: any; onUpdate: () => voi
               size="sm"
               className="w-full text-[10px] h-8 px-2"
               onClick={encerrarSafra}
+              title="Acesse o Dashboard para encerrar"
             >
               <CheckCircle2 className="w-3 h-3 mr-1" /> Encerrar
             </Button>

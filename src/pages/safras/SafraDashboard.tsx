@@ -1,6 +1,6 @@
 import { useEffect, useState, useMemo } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
-import { Plus, Search, Edit, CheckCircle } from 'lucide-react'
+import { Plus, Search, Edit, CheckCircle, Loader2, XCircle } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
@@ -23,6 +23,14 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
+import { Label } from '@/components/ui/label'
 import { useEmpresa } from '@/hooks/use-empresa'
 import { supabase } from '@/lib/supabase/client'
 import { useToast } from '@/hooks/use-toast'
@@ -32,7 +40,11 @@ export default function SafraDashboard() {
   const navigate = useNavigate()
   const { toast } = useToast()
   const [safras, setSafras] = useState<any[]>([])
+  const [usuarios, setUsuarios] = useState<any[]>([])
   const [safraToClose, setSafraToClose] = useState<any | null>(null)
+  const [closureData, setClosureData] = useState<any>(null)
+  const [loadingClosure, setLoadingClosure] = useState(false)
+  const [selectedUser, setSelectedUser] = useState('')
   const [searchTerm, setSearchTerm] = useState('')
   const [activeTab, setActiveTab] = useState('planejada')
 
@@ -48,24 +60,84 @@ export default function SafraDashboard() {
     if (data) setSafras(data)
   }
 
+  const loadUsuarios = async () => {
+    if (!empresa?.id) return
+    const { data } = await supabase
+      .from('usuarios')
+      .select('id, nome, perfil, email')
+      .eq('empresa_id', empresa.id)
+      .eq('ativo', true)
+    if (data) setUsuarios(data)
+  }
+
   useEffect(() => {
     loadSafras()
+    loadUsuarios()
   }, [empresa?.id])
 
+  const openClosureModal = async (safra: any) => {
+    setSafraToClose(safra)
+    setLoadingClosure(true)
+    try {
+      const [opsRes, colheitasRes, balancoRes] = await Promise.all([
+        supabase
+          .from('operacoes_campo')
+          .select('status')
+          .eq('safra_id', safra.id)
+          .is('deleted_at', null),
+        supabase
+          .from('colheita_registros')
+          .select('id')
+          .eq('safra_id', safra.id)
+          .is('deleted_at', null),
+        supabase.from('balanco_massas').select('*').eq('safra_id', safra.id).maybeSingle(),
+      ])
+
+      const ops = opsRes.data || []
+      const pendingOps = ops.filter((op) => op.status !== 'concluída' && op.status !== 'cancelada')
+      const hasColheita = (colheitasRes.data || []).length > 0
+
+      let divergence = 0
+      const b = balancoRes.data
+      if (b && b.quantidade_colhida_kg) {
+        const inputs = b.quantidade_colhida_kg || 0
+        const outputs = (b.quantidade_processada_kg || 0) + (b.quantidade_descarte_kg || 0)
+        if (inputs > 0) {
+          divergence = Math.abs((inputs - outputs) / inputs) * 100
+        }
+      }
+
+      setClosureData({
+        pendingOpsCount: pendingOps.length,
+        hasColheita,
+        divergence,
+        isBalancoValid: divergence <= 0.5,
+      })
+    } catch (e) {
+      console.error(e)
+    } finally {
+      setLoadingClosure(false)
+    }
+  }
+
   const handleCloseSafra = async () => {
-    if (!safraToClose) return
+    if (!safraToClose || !selectedUser) return
 
     try {
       const { error } = await supabase
         .from('safras')
-        .update({ status: 'encerrada' })
+        .update({
+          status: 'encerrada',
+          data_colheita_real: new Date().toISOString().split('T')[0],
+          responsavel_encerramento_id: selectedUser,
+        })
         .eq('id', safraToClose.id)
 
       if (error) throw error
 
       toast({
         title: 'Safra encerrada',
-        description: 'A safra foi encerrada com sucesso.',
+        description: 'A safra foi encerrada e bloqueada com sucesso.',
       })
 
       loadSafras()
@@ -77,6 +149,8 @@ export default function SafraDashboard() {
       })
     } finally {
       setSafraToClose(null)
+      setSelectedUser('')
+      setClosureData(null)
     }
   }
 
@@ -208,7 +282,7 @@ export default function SafraDashboard() {
                           className="h-8 w-8 text-emerald-600 hover:text-emerald-700 hover:bg-emerald-50"
                           onClick={(e) => {
                             e.stopPropagation()
-                            setSafraToClose(safra)
+                            openClosureModal(safra)
                           }}
                           title="Encerrar Safra"
                         >
@@ -216,12 +290,14 @@ export default function SafraDashboard() {
                           <span className="sr-only">Encerrar</span>
                         </Button>
                       )}
-                      <Button variant="ghost" size="icon" className="h-8 w-8" asChild>
-                        <Link to={`/app/safras/${safra.id}`} onClick={(e) => e.stopPropagation()}>
-                          <Edit className="h-4 w-4" />
-                          <span className="sr-only">Editar</span>
-                        </Link>
-                      </Button>
+                      {normalizeStatus(safra.status) !== 'finalizada' && (
+                        <Button variant="ghost" size="icon" className="h-8 w-8" asChild>
+                          <Link to={`/app/safras/${safra.id}`} onClick={(e) => e.stopPropagation()}>
+                            <Edit className="h-4 w-4" />
+                            <span className="sr-only">Editar</span>
+                          </Link>
+                        </Button>
+                      )}
                     </div>
                   </TableCell>
                 </TableRow>
@@ -304,22 +380,91 @@ export default function SafraDashboard() {
         </TabsContent>
       </Tabs>
 
-      <AlertDialog open={!!safraToClose} onOpenChange={(open) => !open && setSafraToClose(null)}>
-        <AlertDialogContent>
+      <AlertDialog
+        open={!!safraToClose}
+        onOpenChange={(open) => {
+          if (!open) {
+            setSafraToClose(null)
+            setClosureData(null)
+          }
+        }}
+      >
+        <AlertDialogContent className="max-w-md">
           <AlertDialogHeader>
-            <AlertDialogTitle>Encerrar Safra</AlertDialogTitle>
+            <AlertDialogTitle>Checklist de Encerramento da Safra</AlertDialogTitle>
             <AlertDialogDescription>
-              Deseja realmente encerrar esta safra? Esta ação alterará o status para encerrada e
-              liberará os talhões vinculados para novos plantios.
+              A safra {safraToClose?.nome_safra || safraToClose?.codigo_safra} passará por
+              validações antes de ser encerrada definitivamente.
             </AlertDialogDescription>
           </AlertDialogHeader>
+
+          {loadingClosure ? (
+            <div className="flex justify-center p-6">
+              <Loader2 className="w-6 h-6 animate-spin" />
+            </div>
+          ) : closureData ? (
+            <div className="space-y-4 py-4">
+              <div className="flex items-center gap-3">
+                {closureData.pendingOpsCount === 0 ? (
+                  <CheckCircle className="text-emerald-500 w-5 h-5 shrink-0" />
+                ) : (
+                  <XCircle className="text-red-500 w-5 h-5 shrink-0" />
+                )}
+                <span className="text-sm">
+                  Todas as operações concluídas ({closureData.pendingOpsCount} pendentes)
+                </span>
+              </div>
+              <div className="flex items-center gap-3">
+                {closureData.hasColheita ? (
+                  <CheckCircle className="text-emerald-500 w-5 h-5 shrink-0" />
+                ) : (
+                  <XCircle className="text-red-500 w-5 h-5 shrink-0" />
+                )}
+                <span className="text-sm">Possui registros de colheita</span>
+              </div>
+              <div className="flex items-center gap-3">
+                {closureData.isBalancoValid ? (
+                  <CheckCircle className="text-emerald-500 w-5 h-5 shrink-0" />
+                ) : (
+                  <XCircle className="text-red-500 w-5 h-5 shrink-0" />
+                )}
+                <span className="text-sm">
+                  Balanço de massas divergência ≤ 0.5% (Atual: {closureData.divergence.toFixed(2)}%)
+                </span>
+              </div>
+
+              <div className="mt-4 pt-4 border-t space-y-2">
+                <Label>Aprovação Técnica (Responsável)</Label>
+                <Select value={selectedUser} onValueChange={setSelectedUser}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Selecione o responsável..." />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {usuarios.map((u) => (
+                      <SelectItem key={u.id} value={u.id}>
+                        {u.nome || u.email} ({u.perfil})
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+          ) : null}
+
           <AlertDialogFooter>
             <AlertDialogCancel>Cancelar</AlertDialogCancel>
             <AlertDialogAction
               onClick={handleCloseSafra}
-              className="bg-emerald-600 hover:bg-emerald-700 text-white"
+              disabled={
+                !closureData ||
+                closureData.pendingOpsCount > 0 ||
+                !closureData.hasColheita ||
+                !closureData.isBalancoValid ||
+                !selectedUser
+              }
+              className="bg-emerald-600 hover:bg-emerald-700 text-white disabled:opacity-50"
             >
-              Encerrar Safra
+              Confirmar Encerramento
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

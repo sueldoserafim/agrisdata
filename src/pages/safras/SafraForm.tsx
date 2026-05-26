@@ -18,7 +18,7 @@ import {
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { useToast } from '@/components/ui/use-toast'
 import { Badge } from '@/components/ui/badge'
-import { Upload, X, MapPin } from 'lucide-react'
+import { Upload, X, MapPin, AlertTriangle } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
 const schema = z.object({
@@ -49,6 +49,7 @@ export default function SafraForm() {
   const [selectedTalhoes, setSelectedTalhoes] = useState<string[]>([])
   const [imageFile, setImageFile] = useState<File | null>(null)
   const [imagePreview, setImagePreview] = useState<string>('')
+  const [isEncerrada, setIsEncerrada] = useState(false)
 
   const fileInputRef = useRef<HTMLInputElement>(null)
 
@@ -152,6 +153,10 @@ export default function SafraForm() {
 
         if (data.imagem_url) {
           setImagePreview(data.imagem_url)
+        }
+
+        if (data.status === 'encerrada') {
+          setIsEncerrada(true)
         }
 
         const { data: st } = await supabase
@@ -300,6 +305,16 @@ export default function SafraForm() {
           Cancelar
         </Button>
       </div>
+
+      {isEncerrada && (
+        <div className="bg-amber-50 border border-amber-200 text-amber-800 p-4 rounded-md mb-6 flex items-center gap-2 animate-fade-in">
+          <AlertTriangle className="w-5 h-5 shrink-0" />
+          <p className="text-sm font-medium">
+            Esta safra está encerrada. O registro está protegido e os dados são apenas para
+            visualização.
+          </p>
+        </div>
+      )}
 
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
         <Card>
@@ -538,7 +553,12 @@ export default function SafraForm() {
         )}
 
         <div className="flex justify-end pt-4 pb-12">
-          <Button type="submit" size="lg" disabled={loading} className="w-full sm:w-auto">
+          <Button
+            type="submit"
+            size="lg"
+            disabled={loading || isEncerrada}
+            className="w-full sm:w-auto"
+          >
             {loading ? 'Salvando...' : 'Salvar Safra'}
           </Button>
         </div>
