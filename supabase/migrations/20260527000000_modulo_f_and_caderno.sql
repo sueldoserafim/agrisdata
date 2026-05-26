@@ -1,5 +1,12 @@
 -- Adicionar restrição única para permitir upsert em balanco_massas
-ALTER TABLE public.balanco_massas ADD CONSTRAINT IF NOT EXISTS balanco_massas_safra_id_key UNIQUE (safra_id);
+DO $$
+BEGIN
+    IF NOT EXISTS (
+        SELECT 1 FROM pg_constraint WHERE conname = 'balanco_massas_safra_id_key'
+    ) THEN
+        ALTER TABLE public.balanco_massas ADD CONSTRAINT balanco_massas_safra_id_key UNIQUE (safra_id);
+    END IF;
+END $$;
 
 -- Adicionar novas colunas no balanco_massas (Módulo F)
 ALTER TABLE public.balanco_massas ADD COLUMN IF NOT EXISTS exportacao_kg NUMERIC DEFAULT 0;
