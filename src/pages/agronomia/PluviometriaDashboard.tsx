@@ -1,9 +1,11 @@
 import { useEffect, useState, useMemo } from 'react'
 import { Link } from 'react-router-dom'
-import { Plus, CloudRain, Droplets, Calendar, Edit, Trash2 } from 'lucide-react'
+import { Plus, CloudRain, Droplets, Calendar, Edit, Trash2, AlertTriangle } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Badge } from '@/components/ui/badge'
+import { cn } from '@/lib/utils'
 import {
   Table,
   TableBody,
@@ -39,6 +41,7 @@ import {
 export default function PluviometriaDashboard() {
   const [data, setData] = useState<Pluviometria[]>([])
   const [talhoes, setTalhoes] = useState<{ id: string; nome: string }[]>([])
+  const [safras, setSafras] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
   const [filtroTalhao, setFiltroTalhao] = useState('todos')
   const [filtroDataInicio, setFiltroDataInicio] = useState('')
@@ -52,12 +55,25 @@ export default function PluviometriaDashboard() {
   const loadData = async () => {
     try {
       setLoading(true)
-      const [pluvData, { data: talhoesData }] = await Promise.all([
+      const [pluvData, { data: talhoesData }, { data: safrasData }] = await Promise.all([
         pluviometriaService.getAll(),
         supabase.from('talhoes').select('id, nome').is('deleted_at', null).order('nome'),
+        supabase
+          .from('safras')
+          .select(`
+            talhao_id,
+            status,
+            cultivares (
+              culturas (
+                necessidade_hidrica_mm_dia
+              )
+            )
+          `)
+          .is('deleted_at', null),
       ])
       setData(pluvData)
       if (talhoesData) setTalhoes(talhoesData)
+      if (safrasData) setSafras(safrasData)
     } catch (error: any) {
       toast({ title: 'Erro ao carregar dados', description: error.message, variant: 'destructive' })
     } finally {
@@ -83,6 +99,47 @@ export default function PluviometriaDashboard() {
       return true
     })
   }, [data, filtroTalhao, filtroDataInicio, filtroDataFim])
+
+  const alertasPorTalhao = useMemo(() => {
+    const sevenDaysAgo = subDays(new Date(), 7)
+    sevenDaysAgo.setHours(0, 0, 0, 0)
+
+    return talhoes.map((talhao) => {
+      const safra = safras.find(
+        (s) => s.talhao_id === talhao.id && s.status !== 'encerrada' && s.status !== 'cancelada',
+      )
+
+      let necessidadeDiaria = null
+      if (safra && safra.cultivares) {
+        const cultivares = Array.isArray(safra.cultivares) ? safra.cultivares[0] : safra.cultivares
+        if (cultivares && cultivares.culturas) {
+          const culturas = Array.isArray(cultivares.culturas)
+            ? cultivares.culturas[0]
+            : cultivares.culturas
+          necessidadeDiaria = culturas?.necessidade_hidrica_mm_dia
+        }
+      }
+
+      const registrosTalhao = data.filter(
+        (d) => d.talhao_id === talhao.id && d.data && parseISO(d.data) >= sevenDaysAgo,
+      )
+
+      const total7Dias = registrosTalhao.reduce((acc, curr) => acc + (curr.precipitacao_mm || 0), 0)
+      const excessoChuva = registrosTalhao.some((d) => (d.precipitacao_mm || 0) > 60)
+      const deficitHidrico = necessidadeDiaria ? total7Dias < necessidadeDiaria * 7 : false
+
+      return {
+        talhao_id: talhao.id,
+        talhao_nome: talhao.nome,
+        total7Dias,
+        excessoChuva,
+        deficitHidrico,
+        necessidadeDiaria,
+      }
+    })
+  }, [talhoes, safras, data])
+
+  const talhoesComAlerta = alertasPorTalhao.filter((a) => a.excessoChuva || a.deficitHidrico)
 
   const totalMensal = useMemo(() => {
     const start = startOfMonth(new Date())
@@ -173,6 +230,69 @@ export default function PluviometriaDashboard() {
           </CardContent>
         </Card>
       </div>
+
+      {talhoesComAlerta.length > 0 && (
+        <div className="space-y-4">
+          <div className="flex items-center gap-2">
+            <AlertTriangle className="h-5 w-5 text-amber-500" />
+            <h2 className="text-lg font-semibold text-slate-900 tracking-tight">
+              Alertas Hídricos (Últimos 7 dias)
+            </h2>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {talhoesComAlerta.map((alerta) => (
+              <Card
+                key={alerta.talhao_id}
+                className={cn(
+                  'border-l-4',
+                  alerta.excessoChuva ? 'border-l-red-500' : 'border-l-amber-500',
+                )}
+              >
+                <CardHeader className="pb-2 pt-4 px-4">
+                  <CardTitle className="text-sm font-medium flex items-center justify-between">
+                    <span className="truncate mr-2" title={alerta.talhao_nome}>
+                      {alerta.talhao_nome}
+                    </span>
+                    {alerta.excessoChuva ? (
+                      <Badge variant="destructive" className="bg-red-500 hover:bg-red-600">
+                        Excesso
+                      </Badge>
+                    ) : (
+                      <Badge
+                        variant="outline"
+                        className="text-amber-600 border-amber-500 bg-amber-50"
+                      >
+                        Déficit
+                      </Badge>
+                    )}
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="px-4 pb-4">
+                  <div className="text-sm text-muted-foreground flex justify-between items-center mb-1">
+                    <span>Precipitação (7d):</span>
+                    <span className="font-medium text-slate-900">
+                      {alerta.total7Dias.toFixed(1)} mm
+                    </span>
+                  </div>
+                  {alerta.necessidadeDiaria ? (
+                    <div className="text-sm text-muted-foreground flex justify-between items-center">
+                      <span>Necessidade (7d):</span>
+                      <span className="font-medium text-slate-900">
+                        {(alerta.necessidadeDiaria * 7).toFixed(1)} mm
+                      </span>
+                    </div>
+                  ) : (
+                    <div className="text-sm text-muted-foreground flex justify-between items-center">
+                      <span>Necessidade (7d):</span>
+                      <span className="font-medium text-slate-900">N/D</span>
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        </div>
+      )}
 
       <Card>
         <CardHeader>

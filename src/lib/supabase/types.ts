@@ -4314,8 +4314,9 @@ export const Constants = {
 //   Policy "planos_read" (SELECT, PERMISSIVE) roles={public}
 //     USING: (deleted_at IS NULL)
 // Table: pluviometria
-//   Policy "pluviometria_empresa" (ALL, PERMISSIVE) roles={public}
+//   Policy "pluviometria_empresa" (ALL, PERMISSIVE) roles={authenticated}
 //     USING: (empresa_id = ( SELECT usuarios.empresa_id    FROM usuarios   WHERE (usuarios.id = auth.uid())))
+//     WITH CHECK: (empresa_id = ( SELECT usuarios.empresa_id    FROM usuarios   WHERE (usuarios.id = auth.uid())))
 // Table: produtos
 //   Policy "produtos_empresa" (ALL, PERMISSIVE) roles={authenticated}
 //     USING: (empresa_id = ( SELECT usuarios.empresa_id    FROM usuarios   WHERE (usuarios.id = auth.uid())))
