@@ -176,7 +176,7 @@ export const allMenuItems: MenuItemRaw[] = [
       { icon: Cog, label: 'Produção', path: '/app/producao', module: 'producao' },
       {
         icon: Scale,
-        label: 'Módulo F - Balanço',
+        label: 'Balanço de Massa',
         path: '/app/producao/balanco-massas',
         module: 'producao',
       },
