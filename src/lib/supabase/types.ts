@@ -547,39 +547,78 @@ export type Database = {
       }
       colheita_registros: {
         Row: {
+          area_colhida_ha: number | null
+          brix_medio: number | null
           created_at: string | null
           data_colheita: string | null
           deleted_at: string | null
+          destino_producao: string | null
           empresa_id: string
+          equipamento_id: string | null
+          fotos: string[] | null
           id: string
+          lote_producao: string | null
+          numero_caixas: number | null
           observacoes: string | null
+          operadores: Json | null
+          perdas_ton: number | null
+          producao_bruta_ton: number | null
+          producao_liquida_ton: number | null
           qualidade_visual: string | null
           quantidade_colhida_kg: number | null
+          responsavel_id: string | null
           safra_id: string
+          temperatura_colheita: number | null
           updated_at: string | null
         }
         Insert: {
+          area_colhida_ha?: number | null
+          brix_medio?: number | null
           created_at?: string | null
           data_colheita?: string | null
           deleted_at?: string | null
+          destino_producao?: string | null
           empresa_id: string
+          equipamento_id?: string | null
+          fotos?: string[] | null
           id?: string
+          lote_producao?: string | null
+          numero_caixas?: number | null
           observacoes?: string | null
+          operadores?: Json | null
+          perdas_ton?: number | null
+          producao_bruta_ton?: number | null
+          producao_liquida_ton?: number | null
           qualidade_visual?: string | null
           quantidade_colhida_kg?: number | null
+          responsavel_id?: string | null
           safra_id: string
+          temperatura_colheita?: number | null
           updated_at?: string | null
         }
         Update: {
+          area_colhida_ha?: number | null
+          brix_medio?: number | null
           created_at?: string | null
           data_colheita?: string | null
           deleted_at?: string | null
+          destino_producao?: string | null
           empresa_id?: string
+          equipamento_id?: string | null
+          fotos?: string[] | null
           id?: string
+          lote_producao?: string | null
+          numero_caixas?: number | null
           observacoes?: string | null
+          operadores?: Json | null
+          perdas_ton?: number | null
+          producao_bruta_ton?: number | null
+          producao_liquida_ton?: number | null
           qualidade_visual?: string | null
           quantidade_colhida_kg?: number | null
+          responsavel_id?: string | null
           safra_id?: string
+          temperatura_colheita?: number | null
           updated_at?: string | null
         }
         Relationships: [
@@ -588,6 +627,20 @@ export type Database = {
             columns: ['empresa_id']
             isOneToOne: false
             referencedRelation: 'empresas'
+            referencedColumns: ['id']
+          },
+          {
+            foreignKeyName: 'colheita_registros_equipamento_id_fkey'
+            columns: ['equipamento_id']
+            isOneToOne: false
+            referencedRelation: 'equipamentos'
+            referencedColumns: ['id']
+          },
+          {
+            foreignKeyName: 'colheita_registros_responsavel_id_fkey'
+            columns: ['responsavel_id']
+            isOneToOne: false
+            referencedRelation: 'usuarios'
             referencedColumns: ['id']
           },
           {
@@ -2090,6 +2143,67 @@ export type Database = {
           },
         ]
       }
+      packing_recepcoes: {
+        Row: {
+          colheita_id: string
+          created_at: string | null
+          data_recepcao: string
+          deleted_at: string | null
+          empresa_id: string
+          id: string
+          quantidade_ton: number
+          safra_id: string
+          status: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          colheita_id: string
+          created_at?: string | null
+          data_recepcao?: string
+          deleted_at?: string | null
+          empresa_id: string
+          id?: string
+          quantidade_ton: number
+          safra_id: string
+          status?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          colheita_id?: string
+          created_at?: string | null
+          data_recepcao?: string
+          deleted_at?: string | null
+          empresa_id?: string
+          id?: string
+          quantidade_ton?: number
+          safra_id?: string
+          status?: string | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: 'packing_recepcoes_colheita_id_fkey'
+            columns: ['colheita_id']
+            isOneToOne: false
+            referencedRelation: 'colheita_registros'
+            referencedColumns: ['id']
+          },
+          {
+            foreignKeyName: 'packing_recepcoes_empresa_id_fkey'
+            columns: ['empresa_id']
+            isOneToOne: false
+            referencedRelation: 'empresas'
+            referencedColumns: ['id']
+          },
+          {
+            foreignKeyName: 'packing_recepcoes_safra_id_fkey'
+            columns: ['safra_id']
+            isOneToOne: false
+            referencedRelation: 'safras'
+            referencedColumns: ['id']
+          },
+        ]
+      }
       pallets: {
         Row: {
           codigo: string
@@ -3261,6 +3375,19 @@ export const Constants = {
 //   created_at: timestamp with time zone (nullable, default: now())
 //   updated_at: timestamp with time zone (nullable, default: now())
 //   deleted_at: timestamp with time zone (nullable)
+//   producao_bruta_ton: numeric (nullable)
+//   perdas_ton: numeric (nullable, default: 0)
+//   producao_liquida_ton: numeric (nullable)
+//   area_colhida_ha: numeric (nullable)
+//   numero_caixas: integer (nullable)
+//   brix_medio: numeric (nullable)
+//   temperatura_colheita: numeric (nullable)
+//   lote_producao: character varying (nullable)
+//   operadores: jsonb (nullable, default: '[]'::jsonb)
+//   equipamento_id: uuid (nullable)
+//   destino_producao: character varying (nullable)
+//   fotos: _text (nullable)
+//   responsavel_id: uuid (nullable)
 // Table: compras_cotacao_fornecedores
 //   id: uuid (not null, default: gen_random_uuid())
 //   empresa_id: uuid (not null)
@@ -3576,6 +3703,17 @@ export const Constants = {
 //   equipamento_id: uuid (nullable)
 //   clima_observacoes: text (nullable)
 //   observacoes: text (nullable)
+// Table: packing_recepcoes
+//   id: uuid (not null, default: gen_random_uuid())
+//   empresa_id: uuid (not null)
+//   colheita_id: uuid (not null)
+//   safra_id: uuid (not null)
+//   quantidade_ton: numeric (not null)
+//   data_recepcao: timestamp with time zone (not null, default: now())
+//   status: text (nullable, default: 'pendente'::text)
+//   created_at: timestamp with time zone (nullable, default: now())
+//   updated_at: timestamp with time zone (nullable, default: now())
+//   deleted_at: timestamp with time zone (nullable)
 // Table: pallets
 //   id: uuid (not null, default: gen_random_uuid())
 //   empresa_id: uuid (not null)
@@ -3813,7 +3951,9 @@ export const Constants = {
 //   PRIMARY KEY clientes_pkey: PRIMARY KEY (id)
 // Table: colheita_registros
 //   FOREIGN KEY colheita_registros_empresa_id_fkey: FOREIGN KEY (empresa_id) REFERENCES empresas(id) ON DELETE CASCADE
+//   FOREIGN KEY colheita_registros_equipamento_id_fkey: FOREIGN KEY (equipamento_id) REFERENCES equipamentos(id) ON DELETE SET NULL
 //   PRIMARY KEY colheita_registros_pkey: PRIMARY KEY (id)
+//   FOREIGN KEY colheita_registros_responsavel_id_fkey: FOREIGN KEY (responsavel_id) REFERENCES usuarios(id) ON DELETE SET NULL
 //   FOREIGN KEY colheita_registros_safra_id_fkey: FOREIGN KEY (safra_id) REFERENCES safras(id) ON DELETE CASCADE
 // Table: compras_cotacao_fornecedores
 //   FOREIGN KEY compras_cotacao_fornecedores_cotacao_id_fkey: FOREIGN KEY (cotacao_id) REFERENCES compras_cotacoes(id) ON DELETE CASCADE
@@ -3918,6 +4058,11 @@ export const Constants = {
 //   FOREIGN KEY operacoes_campo_receituario_id_fkey: FOREIGN KEY (receituario_id) REFERENCES receituarios_agronomicos(id)
 //   FOREIGN KEY operacoes_campo_responsavel_id_fkey: FOREIGN KEY (responsavel_id) REFERENCES usuarios(id)
 //   FOREIGN KEY operacoes_campo_safra_id_fkey: FOREIGN KEY (safra_id) REFERENCES safras(id) ON DELETE CASCADE
+// Table: packing_recepcoes
+//   FOREIGN KEY packing_recepcoes_colheita_id_fkey: FOREIGN KEY (colheita_id) REFERENCES colheita_registros(id) ON DELETE CASCADE
+//   FOREIGN KEY packing_recepcoes_empresa_id_fkey: FOREIGN KEY (empresa_id) REFERENCES empresas(id) ON DELETE CASCADE
+//   PRIMARY KEY packing_recepcoes_pkey: PRIMARY KEY (id)
+//   FOREIGN KEY packing_recepcoes_safra_id_fkey: FOREIGN KEY (safra_id) REFERENCES safras(id) ON DELETE CASCADE
 // Table: pallets
 //   FOREIGN KEY pallets_empresa_id_fkey: FOREIGN KEY (empresa_id) REFERENCES empresas(id) ON DELETE CASCADE
 //   PRIMARY KEY pallets_pkey: PRIMARY KEY (id)
@@ -4113,6 +4258,10 @@ export const Constants = {
 // Table: operacoes_campo
 //   Policy "operacoes_campo_empresa" (ALL, PERMISSIVE) roles={public}
 //     USING: (empresa_id = ( SELECT usuarios.empresa_id    FROM usuarios   WHERE (usuarios.id = auth.uid())))
+// Table: packing_recepcoes
+//   Policy "packing_recepcoes_empresa" (ALL, PERMISSIVE) roles={authenticated}
+//     USING: (empresa_id = ( SELECT usuarios.empresa_id    FROM usuarios   WHERE (usuarios.id = auth.uid())))
+//     WITH CHECK: (empresa_id = ( SELECT usuarios.empresa_id    FROM usuarios   WHERE (usuarios.id = auth.uid())))
 // Table: pallets
 //   Policy "pallets_empresa" (ALL, PERMISSIVE) roles={public}
 //     USING: (empresa_id = ( SELECT usuarios.empresa_id    FROM usuarios   WHERE (usuarios.id = auth.uid())))

@@ -151,7 +151,19 @@ export const allMenuItems: MenuItemRaw[] = [
         path: '/app/producao/colheita/novo',
         module: 'producao',
       },
-      { icon: Box, label: 'Packing', path: '/app/packing', module: 'packing' },
+      {
+        icon: Box,
+        label: 'Packing',
+        subItems: [
+          {
+            icon: Box,
+            label: 'Dashboard de Estoque',
+            path: '/app/packing/estoque',
+            module: 'packing',
+          },
+        ],
+        module: 'packing',
+      },
       { icon: Ship, label: 'Exportação', path: '/app/exportacao', module: 'exportacao' },
     ],
   },
@@ -162,7 +174,15 @@ export const allMenuItems: MenuItemRaw[] = [
       {
         icon: CircleDollarSign,
         label: 'Financeiro',
-        path: '/app/financeiro',
+        subItems: [
+          { icon: CircleDollarSign, label: 'Geral', path: '/app/financeiro', module: 'financeiro' },
+          {
+            icon: LineChart,
+            label: 'Rentabilidade de Lotes',
+            path: '/app/financeiro/rentabilidade',
+            module: 'financeiro',
+          },
+        ],
         module: 'financeiro',
       },
       { icon: UserPlus, label: 'RH', path: '/app/rh', module: 'rh' },

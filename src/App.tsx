@@ -64,6 +64,9 @@ import ColheitaForm from './pages/producao/colheita/ColheitaForm'
 import EquipamentoList from './pages/equipamentos/EquipamentoList'
 import EquipamentoForm from './pages/equipamentos/EquipamentoForm'
 import EquipamentoDetail from './pages/equipamentos/EquipamentoDetail'
+import RentabilidadeList from './pages/financeiro/RentabilidadeList'
+import RastreabilidadeDetail from './pages/producao/colheita/RastreabilidadeDetail'
+import PackingDashboard from './pages/packing/PackingDashboard'
 
 const App = () => (
   <BrowserRouter future={{ v7_startTransition: false, v7_relativeSplatPath: false }}>
@@ -179,10 +182,8 @@ const App = () => (
                 <Route path="/app/equipamentos" element={<EquipamentoList />} />
                 <Route path="/app/equipamentos/new" element={<EquipamentoForm />} />
                 <Route path="/app/equipamentos/:id" element={<EquipamentoDetail />} />
-                <Route
-                  path="/app/packing"
-                  element={<div className="p-8 font-semibold text-xl">Packing</div>}
-                />
+                <Route path="/app/packing" element={<PackingDashboard />} />
+                <Route path="/app/packing/estoque" element={<PackingDashboard />} />
                 <Route
                   path="/app/exportacao"
                   element={<div className="p-8 font-semibold text-xl">Exportação</div>}
@@ -190,6 +191,11 @@ const App = () => (
                 <Route
                   path="/app/financeiro"
                   element={<div className="p-8 font-semibold text-xl">Financeiro</div>}
+                />
+                <Route path="/app/financeiro/rentabilidade" element={<RentabilidadeList />} />
+                <Route
+                  path="/app/producao/colheita/rastreabilidade/:id"
+                  element={<RastreabilidadeDetail />}
                 />
                 <Route
                   path="/app/rh"
