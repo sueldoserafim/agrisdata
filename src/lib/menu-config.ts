@@ -62,6 +62,7 @@ export const allMenuItems: MenuItemRaw[] = [
       { icon: MapPin, label: 'Talhões', path: '/app/talhoes', module: 'cadastros' },
       { icon: Sprout, label: 'Culturas', path: '/app/culturas', module: 'cadastros' },
       { icon: Leaf, label: 'Cultivares/Variedades', path: '/app/cultivares', module: 'cadastros' },
+      { icon: Sprout, label: 'Lotes de Mudas', path: '/app/mudas', module: 'producao' },
       { icon: Tractor, label: 'Safras', path: '/app/safras', module: 'cadastros' },
       {
         icon: Bug,

@@ -43,6 +43,8 @@ import SafraDashboard from './pages/safras/SafraDashboard'
 import SafraForm from './pages/safras/SafraForm'
 import ProdutoList from './pages/produtos/ProdutoList'
 import ProdutoForm from './pages/produtos/ProdutoForm'
+import LotesMudasList from './pages/mudas/LotesMudasList'
+import LotesMudasForm from './pages/mudas/LotesMudasForm'
 import AlmoxarifadoDashboard from './pages/estoque/AlmoxarifadoDashboard'
 import RequisicoesInternasList from './pages/estoque/RequisicoesInternasList'
 import RequisicoesInternasForm from './pages/estoque/RequisicoesInternasForm'
@@ -157,6 +159,10 @@ const App = () => (
                 <Route path="/app/cultivares" element={<CultivarList />} />
                 <Route path="/app/cultivares/new" element={<CultivarForm />} />
                 <Route path="/app/cultivares/:id" element={<CultivarForm />} />
+
+                <Route path="/app/mudas" element={<LotesMudasList />} />
+                <Route path="/app/mudas/novo" element={<LotesMudasForm />} />
+                <Route path="/app/mudas/:id" element={<LotesMudasForm />} />
 
                 <Route path="/app/safras" element={<SafraDashboard />} />
                 <Route path="/app/safras/new" element={<SafraForm />} />
