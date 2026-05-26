@@ -1825,38 +1825,65 @@ export type Database = {
       monitoramento_pragas: {
         Row: {
           acao_recomendada: string | null
+          area_afetada_percentual: number | null
           created_at: string | null
           data_monitoramento: string | null
           deleted_at: string | null
           empresa_id: string
+          fotos: string[] | null
           id: string
+          latitude: number | null
+          longitude: number | null
           nivel_infestacao: string | null
+          num_armadilhas: number | null
+          num_capturas: number | null
           praga_identificada: string | null
+          responsavel_id: string | null
+          safra_id: string | null
           talhao_id: string
+          tipo: string | null
           updated_at: string | null
         }
         Insert: {
           acao_recomendada?: string | null
+          area_afetada_percentual?: number | null
           created_at?: string | null
           data_monitoramento?: string | null
           deleted_at?: string | null
           empresa_id: string
+          fotos?: string[] | null
           id?: string
+          latitude?: number | null
+          longitude?: number | null
           nivel_infestacao?: string | null
+          num_armadilhas?: number | null
+          num_capturas?: number | null
           praga_identificada?: string | null
+          responsavel_id?: string | null
+          safra_id?: string | null
           talhao_id: string
+          tipo?: string | null
           updated_at?: string | null
         }
         Update: {
           acao_recomendada?: string | null
+          area_afetada_percentual?: number | null
           created_at?: string | null
           data_monitoramento?: string | null
           deleted_at?: string | null
           empresa_id?: string
+          fotos?: string[] | null
           id?: string
+          latitude?: number | null
+          longitude?: number | null
           nivel_infestacao?: string | null
+          num_armadilhas?: number | null
+          num_capturas?: number | null
           praga_identificada?: string | null
+          responsavel_id?: string | null
+          safra_id?: string | null
           talhao_id?: string
+          tipo?: string | null
           updated_at?: string | null
         }
         Relationships: [
@@ -1865,6 +1892,20 @@ export type Database = {
             columns: ['empresa_id']
             isOneToOne: false
             referencedRelation: 'empresas'
+            referencedColumns: ['id']
+          },
+          {
+            foreignKeyName: 'monitoramento_pragas_responsavel_id_fkey'
+            columns: ['responsavel_id']
+            isOneToOne: false
+            referencedRelation: 'usuarios'
+            referencedColumns: ['id']
+          },
+          {
+            foreignKeyName: 'monitoramento_pragas_safra_id_fkey'
+            columns: ['safra_id']
+            isOneToOne: false
+            referencedRelation: 'safras'
             referencedColumns: ['id']
           },
           {
@@ -3494,6 +3535,15 @@ export const Constants = {
 //   created_at: timestamp with time zone (nullable, default: now())
 //   updated_at: timestamp with time zone (nullable, default: now())
 //   deleted_at: timestamp with time zone (nullable)
+//   safra_id: uuid (nullable)
+//   responsavel_id: uuid (nullable)
+//   tipo: character varying (nullable)
+//   area_afetada_percentual: numeric (nullable)
+//   num_armadilhas: integer (nullable)
+//   num_capturas: integer (nullable)
+//   latitude: numeric (nullable)
+//   longitude: numeric (nullable)
+//   fotos: _text (nullable)
 // Table: operacao_insumos
 //   id: uuid (not null, default: gen_random_uuid())
 //   empresa_id: uuid (not null)
@@ -3852,6 +3902,8 @@ export const Constants = {
 // Table: monitoramento_pragas
 //   FOREIGN KEY monitoramento_pragas_empresa_id_fkey: FOREIGN KEY (empresa_id) REFERENCES empresas(id) ON DELETE CASCADE
 //   PRIMARY KEY monitoramento_pragas_pkey: PRIMARY KEY (id)
+//   FOREIGN KEY monitoramento_pragas_responsavel_id_fkey: FOREIGN KEY (responsavel_id) REFERENCES usuarios(id) ON DELETE SET NULL
+//   FOREIGN KEY monitoramento_pragas_safra_id_fkey: FOREIGN KEY (safra_id) REFERENCES safras(id) ON DELETE CASCADE
 //   FOREIGN KEY monitoramento_pragas_talhao_id_fkey: FOREIGN KEY (talhao_id) REFERENCES talhoes(id) ON DELETE CASCADE
 // Table: operacao_insumos
 //   FOREIGN KEY operacao_insumos_empresa_id_fkey: FOREIGN KEY (empresa_id) REFERENCES empresas(id) ON DELETE CASCADE
@@ -4052,8 +4104,9 @@ export const Constants = {
 //     USING: (empresa_id = ( SELECT usuarios.empresa_id    FROM usuarios   WHERE (usuarios.id = auth.uid())))
 //     WITH CHECK: (empresa_id = ( SELECT usuarios.empresa_id    FROM usuarios   WHERE (usuarios.id = auth.uid())))
 // Table: monitoramento_pragas
-//   Policy "monitoramento_pragas_empresa" (ALL, PERMISSIVE) roles={public}
+//   Policy "monitoramento_pragas_empresa" (ALL, PERMISSIVE) roles={authenticated}
 //     USING: (empresa_id = ( SELECT usuarios.empresa_id    FROM usuarios   WHERE (usuarios.id = auth.uid())))
+//     WITH CHECK: (empresa_id = ( SELECT usuarios.empresa_id    FROM usuarios   WHERE (usuarios.id = auth.uid())))
 // Table: operacao_insumos
 //   Policy "operacao_insumos_empresa" (ALL, PERMISSIVE) roles={public}
 //     USING: (empresa_id = ( SELECT usuarios.empresa_id    FROM usuarios   WHERE (usuarios.id = auth.uid())))

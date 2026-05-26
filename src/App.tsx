@@ -60,6 +60,7 @@ import EquipePerformance from './pages/operacoes/EquipePerformance'
 import ProducaoDashboard from './pages/producao/ProducaoDashboard'
 import MonitoramentoPragasMap from './pages/producao/MonitoramentoPragasMap'
 import MonitoramentoPragasForm from './pages/producao/MonitoramentoPragasForm'
+import ColheitaForm from './pages/producao/colheita/ColheitaForm'
 import EquipamentoList from './pages/equipamentos/EquipamentoList'
 import EquipamentoForm from './pages/equipamentos/EquipamentoForm'
 import EquipamentoDetail from './pages/equipamentos/EquipamentoDetail'
@@ -174,6 +175,7 @@ const App = () => (
                   path="/app/producao/monitoramento/:id"
                   element={<MonitoramentoPragasForm />}
                 />
+                <Route path="/app/producao/colheita/novo" element={<ColheitaForm />} />
                 <Route path="/app/equipamentos" element={<EquipamentoList />} />
                 <Route path="/app/equipamentos/new" element={<EquipamentoForm />} />
                 <Route path="/app/equipamentos/:id" element={<EquipamentoDetail />} />

@@ -145,6 +145,12 @@ export const allMenuItems: MenuItemRaw[] = [
         path: '/app/producao/monitoramento',
         module: 'producao',
       },
+      {
+        icon: Tractor,
+        label: 'Registro de Colheita',
+        path: '/app/producao/colheita/novo',
+        module: 'producao',
+      },
       { icon: Box, label: 'Packing', path: '/app/packing', module: 'packing' },
       { icon: Ship, label: 'Exportação', path: '/app/exportacao', module: 'exportacao' },
     ],
