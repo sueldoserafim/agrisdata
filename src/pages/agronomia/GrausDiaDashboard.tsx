@@ -55,10 +55,11 @@ export default function GrausDiaDashboard() {
       setLoading(true)
       const data = await grausDiaService.getSafras(empresa!.id)
       setSafras(data || [])
-      if (data && data.length > 0) {
+      if (data && data.length > 0 && !selectedSafraId) {
         setSelectedSafraId(data[0].id)
       }
     } catch (error: any) {
+      console.warn('Erro ao carregar safras', error)
       toast({ title: 'Erro', description: 'Erro ao carregar safras', variant: 'destructive' })
     } finally {
       setLoading(false)
@@ -66,11 +67,13 @@ export default function GrausDiaDashboard() {
   }
 
   const loadRecords = async () => {
+    if (!selectedSafraId) return
     try {
       setLoading(true)
       const data = await grausDiaService.fetchBySafra(empresa!.id, selectedSafraId)
       setRecords(data || [])
     } catch (error: any) {
+      console.warn('Erro ao carregar registros de GDA', error)
       toast({
         title: 'Erro',
         description: 'Erro ao carregar registros de GDA',
@@ -102,7 +105,8 @@ export default function GrausDiaDashboard() {
       }
 
     const safra = safras.find((s) => s.id === selectedSafraId)
-    const target = safra?.cultivares?.gda_objetivo_colheita || 0
+    const cultivar = Array.isArray(safra?.cultivares) ? safra?.cultivares[0] : safra?.cultivares
+    const target = cultivar?.gda_objetivo_colheita || 0
 
     // Sort asc to calculate running total
     const ascRecords = [...records].sort(
@@ -112,13 +116,14 @@ export default function GrausDiaDashboard() {
     let sum = 0
     const processed = ascRecords.map((r) => {
       sum += Number(r.gda_diario || 0)
-      return { ...r, acumulado: sum }
+      return { ...r, acumulado: r.graus_dia_acumulado ?? sum }
     })
 
     // Reverse back to desc for table display
     processed.reverse()
 
-    const prog = target > 0 ? Math.min((sum / target) * 100, 100) : 0
+    const currentTotal = processed.length > 0 ? processed[0].acumulado : 0
+    const prog = target > 0 ? Math.min((currentTotal / target) * 100, 100) : 0
 
     // Estimate based on last 7 records
     const last7 = ascRecords.slice(-7)
@@ -131,11 +136,11 @@ export default function GrausDiaDashboard() {
     let estDate = null
     let alert = null
 
-    if (target > 0 && avgLast7 > 0 && sum < target) {
-      estDays = Math.ceil((target - sum) / avgLast7)
+    if (target > 0 && avgLast7 > 0 && currentTotal < target) {
+      estDays = Math.ceil((target - currentTotal) / avgLast7)
       estDate = addDays(new Date(), estDays)
 
-      const remainingGDA = target - sum
+      const remainingGDA = target - currentTotal
       if (remainingGDA <= 7 * avgLast7) {
         alert = {
           label: `Janela de colheita em ~${estDays} dias!`,
@@ -150,7 +155,7 @@ export default function GrausDiaDashboard() {
     }
 
     return {
-      totalGDA: sum,
+      totalGDA: currentTotal,
       targetGDA: target,
       progress: prog,
       estimatedDays: estDays,
@@ -301,7 +306,7 @@ export default function GrausDiaDashboard() {
                             </Badge>
                           </TableCell>
                           <TableCell className="text-muted-foreground">
-                            {r.usuarios?.nome || '-'}
+                            {r.usuario_id ? 'Registrado' : '-'}
                           </TableCell>
                         </TableRow>
                       ))}
