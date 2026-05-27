@@ -26,6 +26,7 @@ import {
 } from '@/components/ui/select'
 import { Switch } from '@/components/ui/switch'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { HelpTooltip } from '@/components/HelpTooltip'
 
 const formSchema = z.object({
   nome: z.string().min(1, 'Nome é obrigatório'),
@@ -165,7 +166,10 @@ export default function EstufaForm() {
                 name="tipo"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Tipo de Estrutura</FormLabel>
+                    <FormLabel className="flex items-center">
+                      Tipo de Estrutura
+                      <HelpTooltip content="Define o ambiente e regime de controle climático para as mudas." />
+                    </FormLabel>
                     <Select onValueChange={field.onChange} value={field.value}>
                       <FormControl>
                         <SelectTrigger>
@@ -228,7 +232,10 @@ export default function EstufaForm() {
                 name="capacidade_lotes"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Capacidade (Qtd. de Lotes)</FormLabel>
+                    <FormLabel className="flex items-center">
+                      Capacidade (Qtd. de Lotes)
+                      <HelpTooltip content="Limite máximo sugerido de lotes de mudas simultâneos nesta estrutura para controle adequado." />
+                    </FormLabel>
                     <FormControl>
                       <Input type="number" {...field} />
                     </FormControl>
@@ -268,7 +275,10 @@ export default function EstufaForm() {
                 render={({ field }) => (
                   <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4 col-span-1 md:col-span-2">
                     <div className="space-y-0.5">
-                      <FormLabel className="text-base">Estufa Ativa</FormLabel>
+                      <FormLabel className="text-base flex items-center">
+                        Estufa Ativa
+                        <HelpTooltip content="Desmarque caso a estufa esteja inativa, em manutenção ou limpeza, bloqueando o alocamento de novos lotes." />
+                      </FormLabel>
                       <div className="text-sm text-muted-foreground">
                         Define se a estufa está em operação atualmente.
                       </div>

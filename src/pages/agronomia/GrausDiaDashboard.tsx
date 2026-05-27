@@ -4,6 +4,7 @@ import { Plus, ThermometerSun, Leaf, Clock, Target, CalendarDays, Loader2 } from
 import { format, addDays, parseISO } from 'date-fns'
 
 import { Button } from '@/components/ui/button'
+import { HelpButton } from '@/components/HelpButton'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
 import { Progress } from '@/components/ui/progress'
 import {
@@ -168,16 +169,56 @@ export default function GrausDiaDashboard() {
   return (
     <div className="p-8 max-w-7xl mx-auto space-y-6 animate-fade-in-up">
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-        <div>
-          <h1 className="text-3xl font-bold tracking-tight flex items-center gap-2">
-            <ThermometerSun className="size-8 text-primary" />
-            Painel GDA (Graus-Dia)
-          </h1>
-          <p className="text-muted-foreground">
-            Monitore o acúmulo térmico e a estimativa de colheita.
-          </p>
+        <div className="flex items-start gap-4">
+          <div>
+            <h1 className="text-3xl font-bold tracking-tight flex items-center gap-2">
+              <ThermometerSun className="size-8 text-primary" />
+              Painel GDA (Graus-Dia)
+            </h1>
+            <p className="text-muted-foreground">
+              Monitore o acúmulo térmico e a estimativa de colheita.
+            </p>
+          </div>
+          <div className="mt-1 hidden md:block">
+            <HelpButton
+              title="Como o GDA afeta a Cultura?"
+              content={
+                <div className="space-y-4">
+                  <p>
+                    O <strong>Grau-Dia Acumulado (GDA)</strong> é a soma diária de calor que a
+                    planta recebe acima da sua Temperatura Base.
+                  </p>
+                  <p>
+                    Cada cultivar necessita de uma quantidade específica de calor para completar seu
+                    ciclo produtivo. Ao monitorar este acúmulo térmico, o sistema prevê a data de
+                    colheita com maior precisão.
+                  </p>
+                  <ul className="list-disc list-inside text-muted-foreground">
+                    <li>
+                      <strong>Alvo:</strong> GDA Objetivo configurado na cultivar.
+                    </li>
+                    <li>
+                      <strong>Estimativa:</strong> Calculada projetando a média dos últimos 7 dias
+                      registrados.
+                    </li>
+                  </ul>
+                </div>
+              }
+            />
+          </div>
         </div>
         <div className="flex items-center gap-4 w-full md:w-auto">
+          <div className="md:hidden">
+            <HelpButton
+              title="Ajuda: GDA"
+              content={
+                <p>
+                  O GDA indica a soma térmica. Monitore o progresso em relação ao objetivo da
+                  cultivar para prever a colheita.
+                </p>
+              }
+            />
+          </div>
           <div className="w-full md:w-64">
             <Select value={selectedSafraId} onValueChange={setSelectedSafraId}>
               <SelectTrigger>

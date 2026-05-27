@@ -29,6 +29,8 @@ import { Switch } from '@/components/ui/switch'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { useToast } from '@/components/ui/use-toast'
+import { HelpTooltip } from '@/components/HelpTooltip'
+import { HelpPopover } from '@/components/HelpPopover'
 import { useEmpresa } from '@/hooks/use-empresa'
 import {
   getAmostraQualidade,
@@ -310,7 +312,10 @@ export default function AmostrasQualidadeForm() {
                   name="tamanho_amostra_frutos"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Tamanho da Amostra (frutos)</FormLabel>
+                      <FormLabel className="flex items-center">
+                        Tamanho da Amostra (frutos)
+                        <HelpTooltip content="Quantidade de frutos coletados para formar a média desta amostra representativa." />
+                      </FormLabel>
                       <FormControl>
                         <Input
                           type="number"
@@ -359,7 +364,10 @@ export default function AmostrasQualidadeForm() {
                   name="brix_medio"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel className="font-bold">Brix Médio *</FormLabel>
+                      <FormLabel className="font-bold flex items-center">
+                        Brix Médio *
+                        <HelpTooltip content="Grau Brix (ºBx) indica o teor aproximado de sólidos solúveis, principalmente açúcares, no suco da fruta." />
+                      </FormLabel>
                       <FormControl>
                         <Input
                           type="number"
@@ -419,7 +427,27 @@ export default function AmostrasQualidadeForm() {
                   name="ratio_brix_acidez"
                   render={({ field }) => (
                     <FormItem className="col-span-2">
-                      <FormLabel>Ratio Brix/Acidez (Auto)</FormLabel>
+                      <FormLabel className="flex items-center">
+                        Ratio Brix/Acidez (Auto)
+                        <HelpPopover
+                          title="Ratio Brix/Acidez"
+                          content={
+                            <div className="space-y-2 mt-2">
+                              <p>
+                                O "Ratio" é a relação entre o teor de açúcares (Brix) e a Acidez
+                                Titulável.
+                              </p>
+                              <p>
+                                É o principal indicador do grau de maturação e sabor da fruta
+                                (doçura vs. acidez).
+                              </p>
+                              <p>
+                                Calculado automaticamente quando os dois campos são preenchidos.
+                              </p>
+                            </div>
+                          }
+                        />
+                      </FormLabel>
                       <FormControl>
                         <Input
                           type="number"

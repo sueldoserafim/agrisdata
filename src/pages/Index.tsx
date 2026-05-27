@@ -3,6 +3,7 @@ import { KPIRow } from '@/components/dashboard/KPIRow'
 import { DashboardCharts } from '@/components/dashboard/DashboardCharts'
 import { AlertsShortcuts } from '@/components/dashboard/AlertsShortcuts'
 import { Loader2 } from 'lucide-react'
+import { HelpButton } from '@/components/HelpButton'
 
 export default function Index() {
   const { data, loading, modulos } = useDashboard()
@@ -17,11 +18,41 @@ export default function Index() {
 
   return (
     <div className="space-y-6 pb-10 max-w-7xl mx-auto animate-fade-in">
-      <div className="flex justify-between items-end">
+      <div className="flex justify-between items-start md:items-end">
         <div>
           <h1 className="text-3xl font-bold tracking-tight text-foreground">Dashboard Agrícola</h1>
           <p className="text-muted-foreground mt-1">Visão geral e indicadores da sua operação.</p>
         </div>
+        <HelpButton
+          title="Ajuda: Dashboard Agrícola"
+          content={
+            <div className="space-y-4">
+              <p>
+                Este painel consolida os principais indicadores de performance (KPIs) da sua
+                operação.
+              </p>
+              <div>
+                <h4 className="font-semibold text-foreground">Indicadores Disponíveis:</h4>
+                <ul className="list-disc list-inside space-y-1 mt-2 ml-2">
+                  <li>
+                    <strong>Safras Ativas:</strong> Total de safras em andamento na fazenda.
+                  </li>
+                  <li>
+                    <strong>Talhões em Produção:</strong> Áreas com safras não encerradas.
+                  </li>
+                  <li>
+                    <strong>OS Pendentes:</strong> Ordens de serviço ainda não concluídas pelas
+                    equipes.
+                  </li>
+                </ul>
+              </div>
+              <p className="text-xs text-muted-foreground mt-2">
+                Dica: Utilize os atalhos no final da página para acessar as tarefas pendentes
+                rapidamente.
+              </p>
+            </div>
+          }
+        />
       </div>
 
       <div className="space-y-8 mt-6">

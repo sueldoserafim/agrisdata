@@ -26,6 +26,8 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { HelpTooltip } from '@/components/HelpTooltip'
+import { HelpPopover } from '@/components/HelpPopover'
 
 const formSchema = z.object({
   nome_lote: z.string().min(1, 'Nome do lote é obrigatório'),
@@ -279,7 +281,10 @@ export default function LoteMudaForm() {
                 name="quantidade_mudas"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Qtd. de Sementes/Mudas</FormLabel>
+                    <FormLabel className="flex items-center">
+                      Qtd. de Sementes/Mudas
+                      <HelpTooltip content="Número inicial de sementes plantadas ou mudas recebidas que formam este lote." />
+                    </FormLabel>
                     <FormControl>
                       <Input type="number" {...field} />
                     </FormControl>
@@ -307,7 +312,33 @@ export default function LoteMudaForm() {
                 name="status"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Status Atual</FormLabel>
+                    <FormLabel className="flex items-center">
+                      Status Atual
+                      <HelpPopover
+                        title="Status do Lote de Mudas"
+                        content={
+                          <ul className="list-disc ml-4 space-y-1 mt-2">
+                            <li>
+                              <strong>Germinando:</strong> Semente plantada aguardando emergência.
+                            </li>
+                            <li>
+                              <strong>Em Desenvolvimento:</strong> Muda emergida e em crescimento.
+                            </li>
+                            <li>
+                              <strong>Pronto p/ Campo:</strong> Muda atingiu vigor ideal para
+                              transplantio.
+                            </li>
+                            <li>
+                              <strong>Transplantado:</strong> Lote foi totalmente enviado ao campo.
+                            </li>
+                            <li>
+                              <strong>Descartado:</strong> Lote inviabilizado por
+                              pragas/doenças/clima.
+                            </li>
+                          </ul>
+                        }
+                      />
+                    </FormLabel>
                     <Select onValueChange={field.onChange} value={field.value}>
                       <FormControl>
                         <SelectTrigger>

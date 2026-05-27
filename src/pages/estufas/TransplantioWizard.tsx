@@ -26,6 +26,9 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
+import { HelpButton } from '@/components/HelpButton'
+import { HelpTooltip } from '@/components/HelpTooltip'
+import { HelpPopover } from '@/components/HelpPopover'
 
 const itemSchema = z.object({
   item_tipo: z.enum(['insumo', 'mao_de_obra', 'energia', 'agua']),
@@ -235,13 +238,34 @@ export default function TransplantioWizard() {
 
   return (
     <div className="p-6 max-w-4xl mx-auto space-y-6">
-      <div className="flex items-center gap-4">
-        <Button variant="outline" size="icon" asChild>
-          <Link to="/app/transplantios">
-            <ArrowLeft className="h-4 w-4" />
-          </Link>
-        </Button>
-        <h1 className="text-3xl font-bold tracking-tight">Registro de Transplantio</h1>
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-4">
+          <Button variant="outline" size="icon" asChild>
+            <Link to="/app/transplantios">
+              <ArrowLeft className="h-4 w-4" />
+            </Link>
+          </Button>
+          <h1 className="text-3xl font-bold tracking-tight">Registro de Transplantio</h1>
+        </div>
+        <HelpButton
+          title="Ajuda: Transplantio para o Campo"
+          content={
+            <div className="space-y-4">
+              <p>
+                O processo de transplantio move um lote de mudas pronto do viveiro para um talhão
+                (campo).
+              </p>
+              <div>
+                <h4 className="font-semibold text-foreground">Custos Operacionais:</h4>
+                <p>
+                  O custo investido no lote de mudas no viveiro será transferido automaticamente
+                  ("Custo Transferido") para o custo da Safra no Campo. Você também pode alocar
+                  custos diretos da operação, como maquinário e mão de obra nesta tela.
+                </p>
+              </div>
+            </div>
+          }
+        />
       </div>
 
       <Form {...form}>
@@ -411,7 +435,10 @@ export default function TransplantioWizard() {
                 name="quantidade_transplantada"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Mudas Plantadas</FormLabel>
+                    <FormLabel className="flex items-center">
+                      Mudas Plantadas
+                      <HelpTooltip content="Quantidade transferida do viveiro e efetivamente plantada no talhão para iniciar o ciclo da cultura." />
+                    </FormLabel>
                     <FormControl>
                       <Input type="number" {...field} />
                     </FormControl>
@@ -426,7 +453,23 @@ export default function TransplantioWizard() {
                 name="densidade_plantio"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Densidade (Mudas/ha)</FormLabel>
+                    <FormLabel className="flex items-center">
+                      Densidade (Mudas/ha)
+                      <HelpPopover
+                        title="Densidade de Plantio"
+                        content={
+                          <div className="space-y-2">
+                            <p>
+                              É calculada automaticamente dividindo a Quantidade de Mudas Plantadas
+                              pela Área Plantada em Hectares.
+                            </p>
+                            <p>
+                              Fórmula: <code>Densidade = Mudas / Área (ha)</code>
+                            </p>
+                          </div>
+                        }
+                      />
+                    </FormLabel>
                     <FormControl>
                       <Input
                         type="number"

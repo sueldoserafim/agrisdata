@@ -17,14 +17,17 @@ Deno.serve(async (req: Request) => {
     const supabaseClient = createClient(
       Deno.env.get('SUPABASE_URL') ?? '',
       Deno.env.get('SUPABASE_ANON_KEY') ?? '',
-      { global: { headers: { Authorization: authHeader } } }
+      { global: { headers: { Authorization: authHeader } } },
     )
-    
-    const { data: { user }, error: userError } = await supabaseClient.auth.getUser()
+
+    const {
+      data: { user },
+      error: userError,
+    } = await supabaseClient.auth.getUser()
     if (userError || !user) {
       throw new Error(`Unauthorized: ${userError?.message || 'User not found'}`)
     }
-    
+
     // Verificar se o usuário possui a role de admin_saas
     const { data: profile, error: profileError } = await supabaseClient
       .from('usuarios')
@@ -43,18 +46,34 @@ Deno.serve(async (req: Request) => {
     const supabaseAdmin = createClient(
       Deno.env.get('SUPABASE_URL') ?? '',
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? '',
-      { auth: { persistSession: false } }
+      { auth: { persistSession: false } },
     )
 
     const payload = await req.json()
-    const { nome, cnpj, email, telefone, plano_id, slug, modulos_habilitados, limite_usuarios, admin_nome, admin_email, admin_senha } = payload
+    const {
+      nome,
+      cnpj,
+      email,
+      telefone,
+      plano_id,
+      slug,
+      modulos_habilitados,
+      limite_usuarios,
+      admin_nome,
+      admin_email,
+      admin_senha,
+    } = payload
 
     if (!nome || !slug || !admin_email || !admin_senha) {
       throw new Error('Campos obrigatórios faltando: nome, slug, admin_email, ou admin_senha')
     }
 
     // Verificar unicidade do slug
-    const { data: existingEmpresa } = await supabaseAdmin.from('empresas').select('id').eq('slug', slug).maybeSingle()
+    const { data: existingEmpresa } = await supabaseAdmin
+      .from('empresas')
+      .select('id')
+      .eq('slug', slug)
+      .maybeSingle()
     if (existingEmpresa) {
       throw new Error(`O slug "${slug}" já está em uso por outra empresa.`)
     }
@@ -63,15 +82,15 @@ Deno.serve(async (req: Request) => {
     const { data: empresa, error: empresaError } = await supabaseAdmin
       .from('empresas')
       .insert({
-        nome, 
-        cnpj: cnpj || null, 
-        email: email || null, 
-        telefone: telefone || null, 
-        plano_id: plano_id || null, 
-        slug, 
+        nome,
+        cnpj: cnpj || null,
+        email: email || null,
+        telefone: telefone || null,
+        plano_id: plano_id || null,
+        slug,
         ativo: true,
         modulos_habilitados: modulos_habilitados || [],
-        limite_usuarios: limite_usuarios || 5
+        limite_usuarios: limite_usuarios || 5,
       })
       .select()
       .single()
@@ -83,7 +102,7 @@ Deno.serve(async (req: Request) => {
       email: admin_email,
       password: admin_senha,
       email_confirm: true,
-      user_metadata: { name: admin_nome, role: 'admin' }
+      user_metadata: { name: admin_nome, role: 'admin' },
     })
 
     if (authError) {
@@ -93,16 +112,14 @@ Deno.serve(async (req: Request) => {
     }
 
     // Criar o Perfil do usuário vinculando à empresa recém criada
-    const { error: userErrorAdmin } = await supabaseAdmin
-      .from('usuarios')
-      .insert({
-        id: authData.user.id,
-        empresa_id: empresa.id,
-        email: admin_email,
-        nome: admin_nome,
-        perfil: 'admin',
-        ativo: true
-      })
+    const { error: userErrorAdmin } = await supabaseAdmin.from('usuarios').insert({
+      id: authData.user.id,
+      empresa_id: empresa.id,
+      email: admin_email,
+      nome: admin_nome,
+      perfil: 'admin',
+      ativo: true,
+    })
 
     if (userErrorAdmin) {
       // Reverter criação
@@ -112,12 +129,12 @@ Deno.serve(async (req: Request) => {
     }
 
     return new Response(JSON.stringify({ success: true, empresa }), {
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     })
   } catch (err: any) {
     return new Response(JSON.stringify({ error: err.message }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      status: 400
+      status: 400,
     })
   }
 })
