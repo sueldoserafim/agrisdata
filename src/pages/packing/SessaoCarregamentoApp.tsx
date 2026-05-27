@@ -64,18 +64,74 @@ export default function SessaoCarregamentoApp() {
     setInputCode('')
   }
 
-  const finalizarCarregamento = async () => {
-    if (scanned.length < pallets.length) {
-      if (
-        !confirm(
-          'Ainda há pallets não carregados. Deseja finalizar mesmo assim (Romaneio parcial)?',
-        )
-      )
-        return
+  const [finishModalOpen, setFinishModalOpen] = useState(false)
+  const [transportadoras, setTransportadoras] = useState<any[]>([])
+  const [finishForm, setFinishForm] = useState({
+    transportadora_id: '',
+    peso_confirmado_kg: '',
+    temperatura_carga: '',
+  })
+
+  useEffect(() => {
+    if (sessao?.empresa_id) {
+      supabase
+        .from('transportadoras')
+        .select('*')
+        .eq('empresa_id', sessao.empresa_id)
+        .then(({ data }) => setTransportadoras(data || []))
     }
-    await supabase.from('sessoes_carregamento').update({ status: 'concluido' }).eq('id', id)
-    toast({ title: 'Sucesso', description: 'Carregamento finalizado!' })
-    navigate('/app/packing/expedicao')
+  }, [sessao?.empresa_id])
+
+  const preFinalizarCarregamento = async () => {
+    // Check if 100% scanned or if missing pallets have an approved divergence
+    const unscanned = pallets.filter((p) => !scanned.includes(p.id) && p.status !== 'carregado')
+    if (unscanned.length > 0) {
+      const { data: divergencies } = await supabase
+        .from('divergencias_carregamento')
+        .select('*')
+        .eq('sessao_id', id)
+        .eq('status', 'aprovado')
+        .in(
+          'pallet_id',
+          unscanned.map((p) => p.id),
+        )
+
+      const approvedIds = divergencies?.map((d) => d.pallet_id) || []
+      const hasUnapproved = unscanned.some((p) => !approvedIds.includes(p.id))
+
+      if (hasUnapproved) {
+        toast({
+          title: 'Atenção',
+          description:
+            'Todos os pallets devem ser bipados ou possuir uma divergência APROVADA por um supervisor para concluir o carregamento.',
+          variant: 'destructive',
+        })
+        return
+      }
+    }
+
+    setFinishModalOpen(true)
+  }
+
+  const finalizarCarregamento = async () => {
+    await supabase
+      .from('sessoes_carregamento')
+      .update({
+        status: 'concluido',
+        transportadora_id: finishForm.transportadora_id || null,
+        peso_confirmado_kg: finishForm.peso_confirmado_kg
+          ? Number(finishForm.peso_confirmado_kg)
+          : null,
+        temperatura_carga: finishForm.temperatura_carga
+          ? Number(finishForm.temperatura_carga)
+          : null,
+      })
+      .eq('id', id)
+    toast({
+      title: 'Sucesso',
+      description: 'Carregamento finalizado! Romaneio e Pallets atualizados, estoque baixado.',
+    })
+    navigate('/app/packing/carregamento')
   }
 
   if (!sessao) return <div className="p-8">Carregando sessão...</div>
@@ -89,13 +145,69 @@ export default function SessaoCarregamentoApp() {
             Romaneio: {sessao.romaneio?.numero_romaneio} | Veículo: {sessao.veiculo_placa}
           </p>
         </div>
-        <Button
-          onClick={finalizarCarregamento}
-          disabled={sessao.status === 'concluido'}
-          className="bg-emerald-600 hover:bg-emerald-700"
-        >
-          Finalizar Carga ({scanned.length}/{pallets.length})
-        </Button>
+        <Dialog open={finishModalOpen} onOpenChange={setFinishModalOpen}>
+          <DialogTrigger asChild>
+            <Button
+              onClick={preFinalizarCarregamento}
+              disabled={sessao.status === 'concluido'}
+              className="bg-emerald-600 hover:bg-emerald-700"
+            >
+              Finalizar Carga ({scanned.length}/{pallets.length})
+            </Button>
+          </DialogTrigger>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Finalizar Carregamento</DialogTitle>
+            </DialogHeader>
+            <div className="space-y-4 pt-4">
+              <div className="space-y-2">
+                <Label>Transportadora</Label>
+                <select
+                  className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background"
+                  value={finishForm.transportadora_id}
+                  onChange={(e) =>
+                    setFinishForm({ ...finishForm, transportadora_id: e.target.value })
+                  }
+                >
+                  <option value="">Selecione...</option>
+                  {transportadoras.map((t) => (
+                    <option key={t.id} value={t.id}>
+                      {t.nome}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              <div className="space-y-2">
+                <Label>Peso Confirmado na Balança (kg)</Label>
+                <Input
+                  type="number"
+                  step="0.01"
+                  value={finishForm.peso_confirmado_kg}
+                  onChange={(e) =>
+                    setFinishForm({ ...finishForm, peso_confirmado_kg: e.target.value })
+                  }
+                />
+              </div>
+              <div className="space-y-2">
+                <Label>Temperatura da Carga (°C)</Label>
+                <Input
+                  type="number"
+                  step="0.1"
+                  value={finishForm.temperatura_carga}
+                  onChange={(e) =>
+                    setFinishForm({ ...finishForm, temperatura_carga: e.target.value })
+                  }
+                />
+              </div>
+              <Button
+                onClick={finalizarCarregamento}
+                className="w-full bg-emerald-600 hover:bg-emerald-700"
+              >
+                Confirmar Saída
+              </Button>
+            </div>
+          </DialogContent>
+        </Dialog>
       </div>
 
       <Card>

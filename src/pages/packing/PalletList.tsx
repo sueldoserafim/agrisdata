@@ -39,6 +39,10 @@ export default function PalletList() {
   const [items, setItems] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
 
+  const [filterStatus, setFilterStatus] = useState<string>('_all')
+  const [filterProduto, setFilterProduto] = useState<string>('_all')
+  const [filterCalibre, setFilterCalibre] = useState<string>('')
+
   const [recepcoes, setRecepcoes] = useState<any[]>([])
   const [produtos, setProdutos] = useState<any[]>([])
   const [openModal, setOpenModal] = useState(false)
@@ -54,13 +58,19 @@ export default function PalletList() {
   const loadData = async () => {
     if (!empresa?.id) return
     setLoading(true)
-    const { data, error } = await supabase
+    let query = supabase
       .from('pallets')
       .select(
-        `id, codigo_pallet, peso_liquido_kg, quantidade_caixas, status, created_at, produto:produtos(nome)`,
+        `id, codigo_pallet, peso_liquido_kg, quantidade_caixas, status, created_at, calibre, produto_id, produto:produtos(nome)`,
       )
       .eq('empresa_id', empresa.id)
       .order('created_at', { ascending: false })
+
+    if (filterStatus !== '_all') query = query.eq('status', filterStatus)
+    if (filterProduto !== '_all') query = query.eq('produto_id', filterProduto)
+    if (filterCalibre) query = query.ilike('calibre', `%${filterCalibre}%`)
+
+    const { data, error } = await query
 
     if (error) toast({ title: 'Erro', description: error.message, variant: 'destructive' })
     else setItems(data || [])
@@ -81,7 +91,7 @@ export default function PalletList() {
 
   useEffect(() => {
     loadData()
-  }, [empresa?.id])
+  }, [empresa?.id, filterStatus, filterProduto, filterCalibre])
 
   const handleCreate = async () => {
     if (!empresa?.id) return
@@ -134,95 +144,128 @@ export default function PalletList() {
           <p className="text-muted-foreground">Controle de pallets formados no packing house.</p>
         </div>
 
-        <Dialog open={openModal} onOpenChange={setOpenModal}>
-          <DialogTrigger asChild>
-            <Button>
-              <Plus className="w-4 h-4 mr-2" /> Novo Pallet
-            </Button>
-          </DialogTrigger>
-          <DialogContent>
-            <DialogHeader>
-              <DialogTitle>Criar Novo Pallet</DialogTitle>
-            </DialogHeader>
-            <div className="space-y-4 pt-4">
-              <div className="space-y-2">
-                <Label>Recepção (Lote)</Label>
-                <Select
-                  value={form.recepcao_id}
-                  onValueChange={(v) => setForm({ ...form, recepcao_id: v })}
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="Selecione..." />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {recepcoes.map((r) => (
-                      <SelectItem key={r.id} value={r.id}>
-                        {r.colheita?.lote_producao} -{' '}
-                        {new Date(r.data_recepcao).toLocaleDateString()}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-              <div className="space-y-2">
-                <Label>Produto</Label>
-                <Select
-                  value={form.produto_id}
-                  onValueChange={(v) => setForm({ ...form, produto_id: v })}
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="Selecione..." />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {produtos.map((p) => (
-                      <SelectItem key={p.id} value={p.id}>
-                        {p.nome}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label>Peso Líquido (kg)</Label>
-                  <Input
-                    type="number"
-                    value={form.peso_liquido_kg}
-                    onChange={(e) => setForm({ ...form, peso_liquido_kg: e.target.value })}
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label>Qtd Caixas</Label>
-                  <Input
-                    type="number"
-                    value={form.quantidade_caixas}
-                    onChange={(e) => setForm({ ...form, quantidade_caixas: e.target.value })}
-                  />
-                </div>
-              </div>
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label>Calibre</Label>
-                  <Input
-                    value={form.calibre}
-                    onChange={(e) => setForm({ ...form, calibre: e.target.value })}
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label>Temp. Câmara (°C)</Label>
-                  <Input
-                    type="number"
-                    value={form.temperatura_camara}
-                    onChange={(e) => setForm({ ...form, temperatura_camara: e.target.value })}
-                  />
-                </div>
-              </div>
-              <Button className="w-full" onClick={handleCreate}>
-                Salvar Pallet
+        <div className="flex flex-wrap items-center gap-3 mt-4 md:mt-0">
+          <Select value={filterStatus} onValueChange={setFilterStatus}>
+            <SelectTrigger className="w-[160px]">
+              <SelectValue placeholder="Status" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="_all">Todos Status</SelectItem>
+              <SelectItem value="em_camara">Em Câmara</SelectItem>
+              <SelectItem value="reservado">Reservado</SelectItem>
+              <SelectItem value="carregado">Carregado</SelectItem>
+              <SelectItem value="descartado">Descartado</SelectItem>
+            </SelectContent>
+          </Select>
+          <Select value={filterProduto} onValueChange={setFilterProduto}>
+            <SelectTrigger className="w-[160px]">
+              <SelectValue placeholder="Produto" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="_all">Todos Produtos</SelectItem>
+              {produtos.map((p) => (
+                <SelectItem key={p.id} value={p.id}>
+                  {p.nome}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+          <Input
+            placeholder="Calibre..."
+            value={filterCalibre}
+            onChange={(e) => setFilterCalibre(e.target.value)}
+            className="w-[140px]"
+          />
+          <Dialog open={openModal} onOpenChange={setOpenModal}>
+            <DialogTrigger asChild>
+              <Button>
+                <Plus className="w-4 h-4 mr-2" /> Novo Pallet
               </Button>
-            </div>
-          </DialogContent>
-        </Dialog>
+            </DialogTrigger>
+            <DialogContent>
+              <DialogHeader>
+                <DialogTitle>Criar Novo Pallet</DialogTitle>
+              </DialogHeader>
+              <div className="space-y-4 pt-4">
+                <div className="space-y-2">
+                  <Label>Recepção (Lote)</Label>
+                  <Select
+                    value={form.recepcao_id}
+                    onValueChange={(v) => setForm({ ...form, recepcao_id: v })}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Selecione..." />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {recepcoes.map((r) => (
+                        <SelectItem key={r.id} value={r.id}>
+                          {r.colheita?.lote_producao} -{' '}
+                          {new Date(r.data_recepcao).toLocaleDateString()}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="space-y-2">
+                  <Label>Produto</Label>
+                  <Select
+                    value={form.produto_id}
+                    onValueChange={(v) => setForm({ ...form, produto_id: v })}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Selecione..." />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {produtos.map((p) => (
+                        <SelectItem key={p.id} value={p.id}>
+                          {p.nome}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label>Peso Líquido (kg)</Label>
+                    <Input
+                      type="number"
+                      value={form.peso_liquido_kg}
+                      onChange={(e) => setForm({ ...form, peso_liquido_kg: e.target.value })}
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label>Qtd Caixas</Label>
+                    <Input
+                      type="number"
+                      value={form.quantidade_caixas}
+                      onChange={(e) => setForm({ ...form, quantidade_caixas: e.target.value })}
+                    />
+                  </div>
+                </div>
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label>Calibre</Label>
+                    <Input
+                      value={form.calibre}
+                      onChange={(e) => setForm({ ...form, calibre: e.target.value })}
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label>Temp. Câmara (°C)</Label>
+                    <Input
+                      type="number"
+                      value={form.temperatura_camara}
+                      onChange={(e) => setForm({ ...form, temperatura_camara: e.target.value })}
+                    />
+                  </div>
+                </div>
+                <Button className="w-full" onClick={handleCreate}>
+                  Salvar Pallet
+                </Button>
+              </div>
+            </DialogContent>
+          </Dialog>
+        </div>
       </div>
 
       <Card className="shadow-subtle border-none">

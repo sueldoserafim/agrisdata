@@ -55,6 +55,10 @@ const formSchema = z
       path: ['motivo_reprovacao'],
     },
   )
+  .refine((data) => data.tara_kg < data.peso_bruto_kg, {
+    message: 'Tara deve ser menor que o peso bruto, gerando um peso líquido maior que zero.',
+    path: ['tara_kg'],
+  })
 
 type FormData = z.infer<typeof formSchema>
 

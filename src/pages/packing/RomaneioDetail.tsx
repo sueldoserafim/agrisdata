@@ -56,7 +56,7 @@ export default function RomaneioDetail() {
       .from('pallets')
       .select('*, produto:produtos(nome)')
       .eq('empresa_id', empresa.id)
-      .eq('status', 'em_camara')
+      .neq('status', 'descartado')
       .is('romaneio_id', null)
     setAvailablePallets(data || [])
   }

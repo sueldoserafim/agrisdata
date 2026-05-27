@@ -64,6 +64,17 @@ export default function SessaoCarregamentoList() {
 
   const handleStart = async () => {
     if (!form.romaneio_id) return
+
+    const placaRegex = /^[a-zA-Z]{3}-?[0-9][A-Za-z0-9][0-9]{2}$|^[a-zA-Z]{3}-?[0-9]{4}$/
+    if (!placaRegex.test(form.veiculo_placa)) {
+      toast({
+        title: 'Atenção',
+        description: 'Placa inválida. Formato: AAA-0000 ou AAA0A00',
+        variant: 'destructive',
+      })
+      return
+    }
+
     const { data, error } = await supabase
       .from('sessoes_carregamento')
       .insert({
@@ -78,7 +89,7 @@ export default function SessaoCarregamentoList() {
     if (error) toast({ title: 'Erro', description: error.message, variant: 'destructive' })
     else {
       toast({ title: 'Sucesso', description: 'Sessão de carregamento iniciada.' })
-      navigate(`/app/packing/expedicao/${data.id}`)
+      navigate(`/app/packing/carregamento/${data.id}`)
     }
   }
 
@@ -119,8 +130,11 @@ export default function SessaoCarregamentoList() {
                 <Label>Placa do Veículo</Label>
                 <Input
                   value={form.veiculo_placa}
-                  onChange={(e) => setForm({ ...form, veiculo_placa: e.target.value })}
-                  placeholder="AAA-0000"
+                  onChange={(e) =>
+                    setForm({ ...form, veiculo_placa: e.target.value.toUpperCase() })
+                  }
+                  placeholder="AAA-0000 ou AAA0A00"
+                  maxLength={8}
                 />
               </div>
               <div className="space-y-2">
@@ -172,7 +186,7 @@ export default function SessaoCarregamentoList() {
                   </TableCell>
                   <TableCell className="text-right">
                     <Button variant="ghost" asChild>
-                      <Link to={`/app/packing/expedicao/${s.id}`}>
+                      <Link to={`/app/packing/carregamento/${s.id}`}>
                         <Truck className="w-4 h-4 mr-2" /> Acessar Docas
                       </Link>
                     </Button>

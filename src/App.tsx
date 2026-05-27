@@ -98,6 +98,7 @@ import RomaneioForm from './pages/packing/RomaneioForm'
 import RomaneioDetail from './pages/packing/RomaneioDetail'
 import SessaoCarregamentoList from './pages/packing/SessaoCarregamentoList'
 import SessaoCarregamentoApp from './pages/packing/SessaoCarregamentoApp'
+import EtiquetasList from './pages/packing/EtiquetasList'
 
 const App = () => (
   <BrowserRouter future={{ v7_startTransition: false, v7_relativeSplatPath: false }}>
@@ -264,8 +265,9 @@ const App = () => (
                 <Route path="/app/packing/romaneios" element={<RomaneioList />} />
                 <Route path="/app/packing/romaneios/novo" element={<RomaneioForm />} />
                 <Route path="/app/packing/romaneios/:id" element={<RomaneioDetail />} />
-                <Route path="/app/packing/expedicao" element={<SessaoCarregamentoList />} />
-                <Route path="/app/packing/expedicao/:id" element={<SessaoCarregamentoApp />} />
+                <Route path="/app/packing/carregamento" element={<SessaoCarregamentoList />} />
+                <Route path="/app/packing/carregamento/:id" element={<SessaoCarregamentoApp />} />
+                <Route path="/app/packing/etiquetas" element={<EtiquetasList />} />
                 <Route
                   path="/app/exportacao"
                   element={<div className="p-8 font-semibold text-xl">Exportação</div>}

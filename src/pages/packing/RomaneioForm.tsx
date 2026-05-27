@@ -17,6 +17,21 @@ import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
 import { useToast } from '@/hooks/use-toast'
 
+import { z } from 'zod'
+import { zodResolver } from '@hookform/resolvers/zod'
+import { startOfDay } from 'date-fns'
+
+const schema = z.object({
+  cliente_id: z.string().optional(),
+  data_prevista_carregamento: z.string().refine((val) => {
+    if (!val) return true
+    const selectedDate = startOfDay(new Date(val))
+    const today = startOfDay(new Date())
+    return selectedDate >= today
+  }, 'Data prevista não pode ser anterior a hoje.'),
+  observacoes: z.string().optional(),
+})
+
 export default function RomaneioForm() {
   const { empresa } = useEmpresa()
   const { toast } = useToast()
@@ -24,6 +39,7 @@ export default function RomaneioForm() {
   const [clientes, setClientes] = useState<any[]>([])
 
   const form = useForm({
+    resolver: zodResolver(schema),
     defaultValues: {
       cliente_id: 'mock-1',
       data_prevista_carregamento: '',
@@ -101,6 +117,11 @@ export default function RomaneioForm() {
                     <FormControl>
                       <Input type="date" {...field} />
                     </FormControl>
+                    {form.formState.errors.data_prevista_carregamento && (
+                      <p className="text-sm text-destructive">
+                        {form.formState.errors.data_prevista_carregamento.message}
+                      </p>
+                    )}
                   </FormItem>
                 )}
               />
