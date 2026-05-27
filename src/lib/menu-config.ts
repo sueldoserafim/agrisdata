@@ -35,6 +35,7 @@ import {
   Cog,
   Box,
   Ship,
+  Anchor,
   CircleDollarSign,
   UserPlus,
   Sliders,
@@ -229,7 +230,33 @@ export const allMenuItems: MenuItemRaw[] = [
         ],
         module: 'packing',
       },
-      { icon: Ship, label: 'Exportação', path: '/app/exportacao', module: 'exportacao' },
+      {
+        icon: Ship,
+        label: 'Exportação',
+        module: 'exportacao',
+        subItems: [
+          { icon: Ship, label: 'Navios', path: '/app/exportacao/navios', module: 'exportacao' },
+          { icon: Anchor, label: 'Portos', path: '/app/exportacao/portos', module: 'exportacao' },
+          {
+            icon: ClipboardList,
+            label: 'Bookings',
+            path: '/app/exportacao/bookings',
+            module: 'exportacao',
+          },
+          {
+            icon: Box,
+            label: 'Containers',
+            path: '/app/exportacao/containers',
+            module: 'exportacao',
+          },
+          {
+            icon: FileText,
+            label: 'Invoices Exportação',
+            path: '/app/exportacao/invoices',
+            module: 'exportacao',
+          },
+        ],
+      },
     ],
   },
   {

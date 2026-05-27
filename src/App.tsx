@@ -99,6 +99,14 @@ import RomaneioDetail from './pages/packing/RomaneioDetail'
 import SessaoCarregamentoList from './pages/packing/SessaoCarregamentoList'
 import SessaoCarregamentoApp from './pages/packing/SessaoCarregamentoApp'
 import EtiquetasList from './pages/packing/EtiquetasList'
+import NaviosList from './pages/exportacao/NaviosList'
+import PortosList from './pages/exportacao/PortosList'
+import BookingsList from './pages/exportacao/BookingsList'
+import BookingForm from './pages/exportacao/BookingForm'
+import ContainersList from './pages/exportacao/ContainersList'
+import ContainerForm from './pages/exportacao/ContainerForm'
+import InvoicesList from './pages/exportacao/InvoicesList'
+import InvoiceForm from './pages/exportacao/InvoiceForm'
 
 const App = () => (
   <BrowserRouter future={{ v7_startTransition: false, v7_relativeSplatPath: false }}>
@@ -268,10 +276,17 @@ const App = () => (
                 <Route path="/app/packing/carregamento" element={<SessaoCarregamentoList />} />
                 <Route path="/app/packing/carregamento/:id" element={<SessaoCarregamentoApp />} />
                 <Route path="/app/packing/etiquetas" element={<EtiquetasList />} />
-                <Route
-                  path="/app/exportacao"
-                  element={<div className="p-8 font-semibold text-xl">Exportação</div>}
-                />
+                <Route path="/app/exportacao/navios" element={<NaviosList />} />
+                <Route path="/app/exportacao/portos" element={<PortosList />} />
+                <Route path="/app/exportacao/bookings" element={<BookingsList />} />
+                <Route path="/app/exportacao/bookings/novo" element={<BookingForm />} />
+                <Route path="/app/exportacao/bookings/:id" element={<BookingForm />} />
+                <Route path="/app/exportacao/containers" element={<ContainersList />} />
+                <Route path="/app/exportacao/containers/novo" element={<ContainerForm />} />
+                <Route path="/app/exportacao/containers/:id" element={<ContainerForm />} />
+                <Route path="/app/exportacao/invoices" element={<InvoicesList />} />
+                <Route path="/app/exportacao/invoices/nova" element={<InvoiceForm />} />
+                <Route path="/app/exportacao/invoices/:id" element={<InvoiceForm />} />
                 <Route
                   path="/app/financeiro"
                   element={<div className="p-8 font-semibold text-xl">Financeiro</div>}
