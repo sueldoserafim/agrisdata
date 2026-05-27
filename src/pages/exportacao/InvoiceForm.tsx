@@ -25,6 +25,7 @@ import { useEmpresa } from '@/hooks/use-empresa'
 import { useToast } from '@/components/ui/use-toast'
 import { exportacaoService } from '@/services/exportacao'
 import { ArrowLeft, Save } from 'lucide-react'
+import { supabase } from '@/lib/supabase/client'
 
 const formSchema = z.object({
   numero_invoice: z.string().min(1, 'Número da Invoice é obrigatório'),
@@ -56,6 +57,35 @@ export default function InvoiceForm() {
       status: 'rascunho',
     },
   })
+
+  const selectedContainerId = form.watch('container_id')
+
+  useEffect(() => {
+    if (!selectedContainerId || !empresa?.id) return
+    const fetchContainerDetails = async () => {
+      const { data: romaneios } = await supabase
+        .from('romaneios_venda')
+        .select('peso_total_kg, total_pallets, valor_total')
+        .eq('container_id', selectedContainerId)
+        .is('deleted_at', null)
+
+      if (romaneios && romaneios.length > 0) {
+        const sumPeso = romaneios.reduce((acc, r) => acc + (r.peso_total_kg || 0), 0)
+        const sumPallets = romaneios.reduce((acc, r) => acc + (r.total_pallets || 0), 0)
+        const sumValor = romaneios.reduce((acc, r) => acc + (r.valor_total || 0), 0)
+
+        const currentPeso = form.getValues('peso_total_kg')
+        const currentPallets = form.getValues('quantidade_pallets')
+
+        if (!currentPeso || currentPeso === 0) form.setValue('peso_total_kg', sumPeso)
+        if (!currentPallets || currentPallets === 0) form.setValue('quantidade_pallets', sumPallets)
+
+        const currentUsd = form.getValues('valor_total_usd')
+        if (!currentUsd || currentUsd === 0) form.setValue('valor_total_usd', sumValor)
+      }
+    }
+    fetchContainerDetails()
+  }, [selectedContainerId, empresa?.id, form])
 
   useEffect(() => {
     if (!empresa?.id) return

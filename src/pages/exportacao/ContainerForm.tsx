@@ -26,28 +26,21 @@ import { useToast } from '@/components/ui/use-toast'
 import { exportacaoService } from '@/services/exportacao'
 import { ArrowLeft, Save } from 'lucide-react'
 
-const formSchema = z
-  .object({
-    booking_id: z.string().optional(),
-    numero_container: z
-      .string()
-      .min(1, 'Número é obrigatório')
-      .regex(/^[A-Z0-9]+$/, 'Apenas letras e números'),
-    selo: z.string().optional(),
-    tara_kg: z.coerce.number().min(0).optional(),
-    peso_liquido_kg: z.coerce.number().min(0).optional(),
-    temperatura_configurada: z.coerce.number().optional(),
-    status: z.string().optional(),
-    aprovador_1_id: z.string().optional(),
-    aprovador_2_id: z.string().optional(),
-    romaneio_ids: z.array(z.string()).optional(),
-  })
-  .refine(
-    (data) => {
-      return true
-    },
-    { message: 'Erro de validação' },
-  )
+const formSchema = z.object({
+  booking_id: z.string().optional(),
+  numero_container: z
+    .string()
+    .min(1, 'Número é obrigatório')
+    .regex(/^[A-Z]{4}\d{7}$/, 'Formato inválido (ISO 6346: 4 letras, 7 números)'),
+  selo: z.string().optional(),
+  tara_kg: z.coerce.number().min(0).optional(),
+  peso_liquido_kg: z.coerce.number().min(0).optional(),
+  temperatura_configurada: z.coerce.number().optional(),
+  status: z.string().optional(),
+  aprovador_1_id: z.string().optional(),
+  aprovador_2_id: z.string().optional(),
+  romaneio_ids: z.array(z.string()).optional(),
+})
 
 export default function ContainerForm() {
   const { id } = useParams()
@@ -123,6 +116,42 @@ export default function ContainerForm() {
         variant: 'destructive',
       })
       return
+    }
+
+    const bkg = bookings.find((b) => b.id === values.booking_id)
+    if (bkg) {
+      let maxWeight = 30000
+      if (bkg.tipo_container === 'dry_20') maxWeight = 28000
+      else if (bkg.tipo_container === 'reefer_20') maxWeight = 27000
+      else if (bkg.tipo_container === 'reefer_40') maxWeight = 29000
+
+      if (pesoBrutoCalculado > maxWeight) {
+        toast({
+          title: 'Capacidade Excedida',
+          description: `O peso bruto calculado (${pesoBrutoCalculado} kg) excede o limite do tipo de container ${bkg.tipo_container} (${maxWeight} kg).`,
+          variant: 'destructive',
+        })
+        return
+      }
+    }
+
+    if (values.status === 'gate_in') {
+      if (!values.aprovador_1_id || !values.aprovador_2_id) {
+        toast({
+          title: 'Aprovação Pendente',
+          description: 'Para alterar para Gate In, ambos os aprovadores devem estar preenchidos.',
+          variant: 'destructive',
+        })
+        return
+      }
+      if (values.aprovador_1_id === values.aprovador_2_id) {
+        toast({
+          title: 'Aprovação Inválida',
+          description: 'O Aprovador 1 deve ser diferente do Aprovador 2.',
+          variant: 'destructive',
+        })
+        return
+      }
     }
 
     setLoading(true)
@@ -203,7 +232,12 @@ export default function ContainerForm() {
                           placeholder="Ex: ABCD1234567"
                           {...field}
                           onChange={(e) =>
-                            field.onChange(e.target.value.replace(/[^A-Z0-9]/gi, '').toUpperCase())
+                            field.onChange(
+                              e.target.value
+                                .replace(/[^A-Z0-9]/gi, '')
+                                .toUpperCase()
+                                .slice(0, 11),
+                            )
                           }
                         />
                       </FormControl>

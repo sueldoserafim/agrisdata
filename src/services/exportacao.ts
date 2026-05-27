@@ -162,7 +162,81 @@ export const exportacaoService = {
       .from('usuarios')
       .select('*')
       .eq('empresa_id', empresaId)
-      .in('perfil', ['admin', 'gerente'])
+      .in('perfil', ['admin', 'gerente', 'supervisor'])
       .is('deleted_at', null)
+  },
+
+  async getDocumentos(empresaId: string) {
+    return supabase
+      .from('documentos_exportacao' as any)
+      .select(`*, containers(numero_container)`)
+      .eq('empresa_id', empresaId)
+      .is('deleted_at', null)
+      .order('data_validade', { ascending: true })
+  },
+  async getDocumento(id: string) {
+    return supabase
+      .from('documentos_exportacao' as any)
+      .select('*')
+      .eq('id', id)
+      .single()
+  },
+  async saveDocumento(data: any) {
+    if (data.id)
+      return supabase
+        .from('documentos_exportacao' as any)
+        .update(data)
+        .eq('id', data.id)
+        .select()
+        .single()
+    return supabase
+      .from('documentos_exportacao' as any)
+      .insert(data)
+      .select()
+      .single()
+  },
+  async deleteDocumento(id: string) {
+    return supabase
+      .from('documentos_exportacao' as any)
+      .update({ deleted_at: new Date().toISOString() })
+      .eq('id', id)
+  },
+
+  async getRolagens(empresaId: string) {
+    return supabase
+      .from('rolagens_container' as any)
+      .select(
+        `*, containers(numero_container), booking_original:booking_original_id(numero_booking), booking_novo:booking_novo_id(numero_booking)`,
+      )
+      .eq('empresa_id', empresaId)
+      .is('deleted_at', null)
+      .order('created_at', { ascending: false })
+  },
+  async getRolagem(id: string) {
+    return supabase
+      .from('rolagens_container' as any)
+      .select('*')
+      .eq('id', id)
+      .single()
+  },
+  async saveRolagem(data: any) {
+    if (data.id)
+      return supabase
+        .from('rolagens_container' as any)
+        .update(data)
+        .eq('id', data.id)
+        .select()
+        .single()
+    return supabase
+      .from('rolagens_container' as any)
+      .insert(data)
+      .select()
+      .single()
+  },
+  async deleteRolagem(id: string) {
+    return supabase
+      .from('rolagens_container' as any)
+      .update({ deleted_at: new Date().toISOString() })
+      .eq('id', id)
   },
 }

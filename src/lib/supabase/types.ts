@@ -491,6 +491,92 @@ export type Database = {
           },
         ]
       }
+      bookings: {
+        Row: {
+          agente_maritimo: string | null
+          created_at: string
+          data_eta: string | null
+          data_etd: string | null
+          deleted_at: string | null
+          empresa_id: string
+          id: string
+          navio_id: string | null
+          numero_booking: string
+          observacoes: string | null
+          porto_destino_id: string | null
+          porto_origem_id: string | null
+          quantidade_containeres: number | null
+          status: Database['public']['Enums']['booking_status_enum'] | null
+          tipo_container: Database['public']['Enums']['tipo_container_enum'] | null
+          updated_at: string
+        }
+        Insert: {
+          agente_maritimo?: string | null
+          created_at?: string
+          data_eta?: string | null
+          data_etd?: string | null
+          deleted_at?: string | null
+          empresa_id: string
+          id?: string
+          navio_id?: string | null
+          numero_booking: string
+          observacoes?: string | null
+          porto_destino_id?: string | null
+          porto_origem_id?: string | null
+          quantidade_containeres?: number | null
+          status?: Database['public']['Enums']['booking_status_enum'] | null
+          tipo_container?: Database['public']['Enums']['tipo_container_enum'] | null
+          updated_at?: string
+        }
+        Update: {
+          agente_maritimo?: string | null
+          created_at?: string
+          data_eta?: string | null
+          data_etd?: string | null
+          deleted_at?: string | null
+          empresa_id?: string
+          id?: string
+          navio_id?: string | null
+          numero_booking?: string
+          observacoes?: string | null
+          porto_destino_id?: string | null
+          porto_origem_id?: string | null
+          quantidade_containeres?: number | null
+          status?: Database['public']['Enums']['booking_status_enum'] | null
+          tipo_container?: Database['public']['Enums']['tipo_container_enum'] | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: 'bookings_empresa_id_fkey'
+            columns: ['empresa_id']
+            isOneToOne: false
+            referencedRelation: 'empresas'
+            referencedColumns: ['id']
+          },
+          {
+            foreignKeyName: 'bookings_navio_id_fkey'
+            columns: ['navio_id']
+            isOneToOne: false
+            referencedRelation: 'navios'
+            referencedColumns: ['id']
+          },
+          {
+            foreignKeyName: 'bookings_porto_destino_id_fkey'
+            columns: ['porto_destino_id']
+            isOneToOne: false
+            referencedRelation: 'portos'
+            referencedColumns: ['id']
+          },
+          {
+            foreignKeyName: 'bookings_porto_origem_id_fkey'
+            columns: ['porto_origem_id']
+            isOneToOne: false
+            referencedRelation: 'portos'
+            referencedColumns: ['id']
+          },
+        ]
+      }
       caderno_campo: {
         Row: {
           created_at: string | null
@@ -1073,42 +1159,79 @@ export type Database = {
       }
       containers: {
         Row: {
+          aprovador_1_id: string | null
+          aprovador_2_id: string | null
+          booking_id: string | null
           created_at: string
           cut_off: string | null
           data_embarque: string | null
           deleted_at: string | null
           destino: string | null
           empresa_id: string
+          gate_in_data: string | null
+          gate_out_data: string | null
           id: string
           numero_container: string
+          peso_bruto_kg: number | null
+          peso_liquido_kg: number | null
+          selo: string | null
           status: string | null
+          tara_kg: number | null
+          temperatura_configurada: number | null
           updated_at: string
         }
         Insert: {
+          aprovador_1_id?: string | null
+          aprovador_2_id?: string | null
+          booking_id?: string | null
           created_at?: string
           cut_off?: string | null
           data_embarque?: string | null
           deleted_at?: string | null
           destino?: string | null
           empresa_id: string
+          gate_in_data?: string | null
+          gate_out_data?: string | null
           id?: string
           numero_container: string
+          peso_bruto_kg?: number | null
+          peso_liquido_kg?: number | null
+          selo?: string | null
           status?: string | null
+          tara_kg?: number | null
+          temperatura_configurada?: number | null
           updated_at?: string
         }
         Update: {
+          aprovador_1_id?: string | null
+          aprovador_2_id?: string | null
+          booking_id?: string | null
           created_at?: string
           cut_off?: string | null
           data_embarque?: string | null
           deleted_at?: string | null
           destino?: string | null
           empresa_id?: string
+          gate_in_data?: string | null
+          gate_out_data?: string | null
           id?: string
           numero_container?: string
+          peso_bruto_kg?: number | null
+          peso_liquido_kg?: number | null
+          selo?: string | null
           status?: string | null
+          tara_kg?: number | null
+          temperatura_configurada?: number | null
           updated_at?: string
         }
         Relationships: [
+          {
+            foreignKeyName: 'containers_booking_id_fkey'
+            columns: ['booking_id']
+            isOneToOne: false
+            referencedRelation: 'bookings'
+            referencedColumns: ['id']
+          },
           {
             foreignKeyName: 'containers_empresa_id_fkey'
             columns: ['empresa_id']
@@ -2167,6 +2290,88 @@ export type Database = {
           },
         ]
       }
+      invoices_exportacao: {
+        Row: {
+          cliente_id: string | null
+          container_id: string | null
+          created_at: string
+          data_emissao: string | null
+          deleted_at: string | null
+          empresa_id: string
+          id: string
+          incoterm: Database['public']['Enums']['invoice_incoterm_enum'] | null
+          numero_invoice: string
+          pdf_url: string | null
+          peso_total_kg: number | null
+          quantidade_pallets: number | null
+          romaneio_ids: string[] | null
+          status: Database['public']['Enums']['invoice_status_enum'] | null
+          updated_at: string
+          valor_total_brl: number | null
+          valor_total_usd: number | null
+        }
+        Insert: {
+          cliente_id?: string | null
+          container_id?: string | null
+          created_at?: string
+          data_emissao?: string | null
+          deleted_at?: string | null
+          empresa_id: string
+          id?: string
+          incoterm?: Database['public']['Enums']['invoice_incoterm_enum'] | null
+          numero_invoice: string
+          pdf_url?: string | null
+          peso_total_kg?: number | null
+          quantidade_pallets?: number | null
+          romaneio_ids?: string[] | null
+          status?: Database['public']['Enums']['invoice_status_enum'] | null
+          updated_at?: string
+          valor_total_brl?: number | null
+          valor_total_usd?: number | null
+        }
+        Update: {
+          cliente_id?: string | null
+          container_id?: string | null
+          created_at?: string
+          data_emissao?: string | null
+          deleted_at?: string | null
+          empresa_id?: string
+          id?: string
+          incoterm?: Database['public']['Enums']['invoice_incoterm_enum'] | null
+          numero_invoice?: string
+          pdf_url?: string | null
+          peso_total_kg?: number | null
+          quantidade_pallets?: number | null
+          romaneio_ids?: string[] | null
+          status?: Database['public']['Enums']['invoice_status_enum'] | null
+          updated_at?: string
+          valor_total_brl?: number | null
+          valor_total_usd?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: 'invoices_exportacao_cliente_id_fkey'
+            columns: ['cliente_id']
+            isOneToOne: false
+            referencedRelation: 'clientes'
+            referencedColumns: ['id']
+          },
+          {
+            foreignKeyName: 'invoices_exportacao_container_id_fkey'
+            columns: ['container_id']
+            isOneToOne: false
+            referencedRelation: 'containers'
+            referencedColumns: ['id']
+          },
+          {
+            foreignKeyName: 'invoices_exportacao_empresa_id_fkey'
+            columns: ['empresa_id']
+            isOneToOne: false
+            referencedRelation: 'empresas'
+            referencedColumns: ['id']
+          },
+        ]
+      }
       lotes_estoque: {
         Row: {
           armazem_id: string
@@ -2417,6 +2622,59 @@ export type Database = {
             columns: ['talhao_id']
             isOneToOne: false
             referencedRelation: 'talhoes'
+            referencedColumns: ['id']
+          },
+        ]
+      }
+      navios: {
+        Row: {
+          ano_construcao: number | null
+          armador: string | null
+          ativo: boolean | null
+          bandeira: string | null
+          capacidade_teus: number | null
+          created_at: string | null
+          deleted_at: string | null
+          empresa_id: string
+          id: string
+          imo_number: string | null
+          nome_navio: string
+          updated_at: string | null
+        }
+        Insert: {
+          ano_construcao?: number | null
+          armador?: string | null
+          ativo?: boolean | null
+          bandeira?: string | null
+          capacidade_teus?: number | null
+          created_at?: string | null
+          deleted_at?: string | null
+          empresa_id: string
+          id?: string
+          imo_number?: string | null
+          nome_navio: string
+          updated_at?: string | null
+        }
+        Update: {
+          ano_construcao?: number | null
+          armador?: string | null
+          ativo?: boolean | null
+          bandeira?: string | null
+          capacidade_teus?: number | null
+          created_at?: string | null
+          deleted_at?: string | null
+          empresa_id?: string
+          id?: string
+          imo_number?: string | null
+          nome_navio?: string
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: 'navios_empresa_id_fkey'
+            columns: ['empresa_id']
+            isOneToOne: false
+            referencedRelation: 'empresas'
             referencedColumns: ['id']
           },
         ]
@@ -3018,6 +3276,53 @@ export type Database = {
           },
         ]
       }
+      portos: {
+        Row: {
+          cidade: string | null
+          codigo_un_locode: string | null
+          created_at: string | null
+          deleted_at: string | null
+          empresa_id: string
+          id: string
+          nome_porto: string
+          pais: string | null
+          tipo: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          cidade?: string | null
+          codigo_un_locode?: string | null
+          created_at?: string | null
+          deleted_at?: string | null
+          empresa_id: string
+          id?: string
+          nome_porto: string
+          pais?: string | null
+          tipo?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          cidade?: string | null
+          codigo_un_locode?: string | null
+          created_at?: string | null
+          deleted_at?: string | null
+          empresa_id?: string
+          id?: string
+          nome_porto?: string
+          pais?: string | null
+          tipo?: string | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: 'portos_empresa_id_fkey'
+            columns: ['empresa_id']
+            isOneToOne: false
+            referencedRelation: 'empresas'
+            referencedColumns: ['id']
+          },
+        ]
+      }
       produtos: {
         Row: {
           carencia_dias: number | null
@@ -3296,6 +3601,7 @@ export type Database = {
       romaneios_venda: {
         Row: {
           cliente_id: string | null
+          container_id: string | null
           created_at: string
           data_emissao: string
           data_prevista_carregamento: string | null
@@ -3312,6 +3618,7 @@ export type Database = {
         }
         Insert: {
           cliente_id?: string | null
+          container_id?: string | null
           created_at?: string
           data_emissao?: string
           data_prevista_carregamento?: string | null
@@ -3328,6 +3635,7 @@ export type Database = {
         }
         Update: {
           cliente_id?: string | null
+          container_id?: string | null
           created_at?: string
           data_emissao?: string
           data_prevista_carregamento?: string | null
@@ -3348,6 +3656,13 @@ export type Database = {
             columns: ['cliente_id']
             isOneToOne: false
             referencedRelation: 'clientes'
+            referencedColumns: ['id']
+          },
+          {
+            foreignKeyName: 'romaneios_venda_container_id_fkey'
+            columns: ['container_id']
+            isOneToOne: false
+            referencedRelation: 'containers'
             referencedColumns: ['id']
           },
           {
@@ -4171,7 +4486,11 @@ export type Database = {
       }
     }
     Enums: {
+      booking_status_enum: 'reservado' | 'confirmado' | 'em_transito' | 'concluido' | 'cancelado'
+      invoice_incoterm_enum: 'fob' | 'cfr' | 'cif' | 'dap' | 'ddp'
+      invoice_status_enum: 'rascunho' | 'emitida' | 'paga' | 'cancelada'
       pallet_status: 'em_camara' | 'etiquetado' | 'reservado' | 'carregado' | 'descartado'
+      tipo_container_enum: 'dry_20' | 'dry_40' | 'reefer_20' | 'reefer_40' | 'hc_40' | 'outro'
     }
     CompositeTypes: {
       [_ in never]: never
@@ -4297,7 +4616,11 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
+      booking_status_enum: ['reservado', 'confirmado', 'em_transito', 'concluido', 'cancelado'],
+      invoice_incoterm_enum: ['fob', 'cfr', 'cif', 'dap', 'ddp'],
+      invoice_status_enum: ['rascunho', 'emitida', 'paga', 'cancelada'],
       pallet_status: ['em_camara', 'etiquetado', 'reservado', 'carregado', 'descartado'],
+      tipo_container_enum: ['dry_20', 'dry_40', 'reefer_20', 'reefer_40', 'hc_40', 'outro'],
     },
   },
 } as const
@@ -4426,6 +4749,23 @@ export const Constants = {
 //   descarte_excesso_kg: numeric (nullable, default: 0)
 //   perda_campo_kg: numeric (nullable, default: 0)
 //   perda_packing_kg: numeric (nullable, default: 0)
+// Table: bookings
+//   id: uuid (not null, default: gen_random_uuid())
+//   empresa_id: uuid (not null)
+//   numero_booking: text (not null)
+//   navio_id: uuid (nullable)
+//   porto_origem_id: uuid (nullable)
+//   porto_destino_id: uuid (nullable)
+//   data_etd: date (nullable)
+//   data_eta: date (nullable)
+//   quantidade_containeres: integer (nullable)
+//   tipo_container: tipo_container_enum (nullable)
+//   status: booking_status_enum (nullable, default: 'reservado'::booking_status_enum)
+//   agente_maritimo: text (nullable)
+//   observacoes: text (nullable)
+//   created_at: timestamp with time zone (not null, default: now())
+//   updated_at: timestamp with time zone (not null, default: now())
+//   deleted_at: timestamp with time zone (nullable)
 // Table: caderno_campo
 //   id: uuid (not null, default: gen_random_uuid())
 //   empresa_id: uuid (not null)
@@ -4558,6 +4898,16 @@ export const Constants = {
 //   created_at: timestamp with time zone (not null, default: now())
 //   updated_at: timestamp with time zone (not null, default: now())
 //   deleted_at: timestamp with time zone (nullable)
+//   booking_id: uuid (nullable)
+//   selo: text (nullable)
+//   tara_kg: numeric (nullable)
+//   peso_bruto_kg: numeric (nullable)
+//   peso_liquido_kg: numeric (nullable)
+//   temperatura_configurada: numeric (nullable)
+//   aprovador_1_id: uuid (nullable)
+//   aprovador_2_id: uuid (nullable)
+//   gate_in_data: timestamp with time zone (nullable)
+//   gate_out_data: timestamp with time zone (nullable)
 // Table: cultivares
 //   id: uuid (not null, default: gen_random_uuid())
 //   empresa_id: uuid (not null)
@@ -4784,6 +5134,24 @@ export const Constants = {
 //   created_at: timestamp with time zone (nullable, default: now())
 //   updated_at: timestamp with time zone (nullable, default: now())
 //   deleted_at: timestamp with time zone (nullable)
+// Table: invoices_exportacao
+//   id: uuid (not null, default: gen_random_uuid())
+//   empresa_id: uuid (not null)
+//   container_id: uuid (nullable)
+//   numero_invoice: text (not null)
+//   data_emissao: date (nullable)
+//   cliente_id: uuid (nullable)
+//   incoterm: invoice_incoterm_enum (nullable)
+//   valor_total_usd: numeric (nullable)
+//   valor_total_brl: numeric (nullable)
+//   peso_total_kg: numeric (nullable)
+//   quantidade_pallets: integer (nullable)
+//   romaneio_ids: _uuid (nullable)
+//   status: invoice_status_enum (nullable, default: 'rascunho'::invoice_status_enum)
+//   pdf_url: text (nullable)
+//   created_at: timestamp with time zone (not null, default: now())
+//   updated_at: timestamp with time zone (not null, default: now())
+//   deleted_at: timestamp with time zone (nullable)
 // Table: lotes_estoque
 //   id: uuid (not null, default: gen_random_uuid())
 //   empresa_id: uuid (not null)
@@ -4836,6 +5204,19 @@ export const Constants = {
 //   latitude: numeric (nullable)
 //   longitude: numeric (nullable)
 //   fotos: _text (nullable)
+// Table: navios
+//   id: uuid (not null, default: gen_random_uuid())
+//   empresa_id: uuid (not null)
+//   nome_navio: text (not null)
+//   bandeira: text (nullable)
+//   imo_number: text (nullable)
+//   armador: text (nullable)
+//   ano_construcao: integer (nullable)
+//   capacidade_teus: integer (nullable)
+//   ativo: boolean (nullable, default: true)
+//   created_at: timestamp with time zone (nullable, default: now())
+//   updated_at: timestamp with time zone (nullable, default: now())
+//   deleted_at: timestamp with time zone (nullable)
 // Table: operacao_insumos
 //   id: uuid (not null, default: gen_random_uuid())
 //   empresa_id: uuid (not null)
@@ -4956,6 +5337,17 @@ export const Constants = {
 //   created_at: timestamp with time zone (nullable, default: now())
 //   updated_at: timestamp with time zone (nullable, default: now())
 //   deleted_at: timestamp with time zone (nullable)
+// Table: portos
+//   id: uuid (not null, default: gen_random_uuid())
+//   empresa_id: uuid (not null)
+//   nome_porto: text (not null)
+//   pais: text (nullable)
+//   cidade: text (nullable)
+//   tipo: text (nullable)
+//   codigo_un_locode: text (nullable)
+//   created_at: timestamp with time zone (nullable, default: now())
+//   updated_at: timestamp with time zone (nullable, default: now())
+//   deleted_at: timestamp with time zone (nullable)
 // Table: produtos
 //   id: uuid (not null, default: gen_random_uuid())
 //   empresa_id: uuid (not null)
@@ -5030,6 +5422,7 @@ export const Constants = {
 //   created_at: timestamp with time zone (not null, default: now())
 //   updated_at: timestamp with time zone (not null, default: now())
 //   deleted_at: timestamp with time zone (nullable)
+//   container_id: uuid (nullable)
 // Table: saas_faturas
 //   id: uuid (not null, default: gen_random_uuid())
 //   empresa_id: uuid (not null)
@@ -5223,6 +5616,14 @@ export const Constants = {
 //   PRIMARY KEY balanco_massas_pkey: PRIMARY KEY (id)
 //   FOREIGN KEY balanco_massas_safra_id_fkey: FOREIGN KEY (safra_id) REFERENCES safras(id) ON DELETE CASCADE
 //   UNIQUE balanco_massas_safra_id_key: UNIQUE (safra_id)
+// Table: bookings
+//   CHECK bookings_check: CHECK ((data_etd < data_eta))
+//   FOREIGN KEY bookings_empresa_id_fkey: FOREIGN KEY (empresa_id) REFERENCES empresas(id) ON DELETE CASCADE
+//   UNIQUE bookings_empresa_id_numero_booking_key: UNIQUE (empresa_id, numero_booking)
+//   FOREIGN KEY bookings_navio_id_fkey: FOREIGN KEY (navio_id) REFERENCES navios(id) ON DELETE SET NULL
+//   PRIMARY KEY bookings_pkey: PRIMARY KEY (id)
+//   FOREIGN KEY bookings_porto_destino_id_fkey: FOREIGN KEY (porto_destino_id) REFERENCES portos(id) ON DELETE SET NULL
+//   FOREIGN KEY bookings_porto_origem_id_fkey: FOREIGN KEY (porto_origem_id) REFERENCES portos(id) ON DELETE SET NULL
 // Table: caderno_campo
 //   FOREIGN KEY caderno_campo_empresa_id_fkey: FOREIGN KEY (empresa_id) REFERENCES empresas(id) ON DELETE CASCADE
 //   PRIMARY KEY caderno_campo_pkey: PRIMARY KEY (id)
@@ -5264,6 +5665,10 @@ export const Constants = {
 //   FOREIGN KEY compras_requisicao_safra_id_fkey: FOREIGN KEY (safra_id) REFERENCES safras(id) ON DELETE SET NULL
 //   FOREIGN KEY compras_requisicao_solicitante_id_fkey: FOREIGN KEY (solicitante_id) REFERENCES usuarios(id)
 // Table: containers
+//   CHECK chk_container_weights: CHECK (((peso_liquido_kg IS NULL) OR (peso_bruto_kg IS NULL) OR (peso_liquido_kg < peso_bruto_kg)))
+//   FOREIGN KEY containers_aprovador_1_id_fkey: FOREIGN KEY (aprovador_1_id) REFERENCES auth.users(id) ON DELETE SET NULL
+//   FOREIGN KEY containers_aprovador_2_id_fkey: FOREIGN KEY (aprovador_2_id) REFERENCES auth.users(id) ON DELETE SET NULL
+//   FOREIGN KEY containers_booking_id_fkey: FOREIGN KEY (booking_id) REFERENCES bookings(id) ON DELETE SET NULL
 //   FOREIGN KEY containers_empresa_id_fkey: FOREIGN KEY (empresa_id) REFERENCES empresas(id) ON DELETE CASCADE
 //   PRIMARY KEY containers_pkey: PRIMARY KEY (id)
 // Table: cultivares
@@ -5345,6 +5750,12 @@ export const Constants = {
 //   FOREIGN KEY historico_produtividade_talhao_empresa_id_fkey: FOREIGN KEY (empresa_id) REFERENCES empresas(id) ON DELETE CASCADE
 //   PRIMARY KEY historico_produtividade_talhao_pkey: PRIMARY KEY (id)
 //   FOREIGN KEY historico_produtividade_talhao_talhao_id_fkey: FOREIGN KEY (talhao_id) REFERENCES talhoes(id) ON DELETE CASCADE
+// Table: invoices_exportacao
+//   FOREIGN KEY invoices_exportacao_cliente_id_fkey: FOREIGN KEY (cliente_id) REFERENCES clientes(id) ON DELETE SET NULL
+//   FOREIGN KEY invoices_exportacao_container_id_fkey: FOREIGN KEY (container_id) REFERENCES containers(id) ON DELETE SET NULL
+//   FOREIGN KEY invoices_exportacao_empresa_id_fkey: FOREIGN KEY (empresa_id) REFERENCES empresas(id) ON DELETE CASCADE
+//   UNIQUE invoices_exportacao_empresa_id_numero_invoice_key: UNIQUE (empresa_id, numero_invoice)
+//   PRIMARY KEY invoices_exportacao_pkey: PRIMARY KEY (id)
 // Table: lotes_estoque
 //   FOREIGN KEY lotes_estoque_armazem_id_fkey: FOREIGN KEY (armazem_id) REFERENCES armazens(id) ON DELETE CASCADE
 //   FOREIGN KEY lotes_estoque_empresa_id_fkey: FOREIGN KEY (empresa_id) REFERENCES empresas(id) ON DELETE CASCADE
@@ -5363,6 +5774,9 @@ export const Constants = {
 //   FOREIGN KEY monitoramento_pragas_responsavel_id_fkey: FOREIGN KEY (responsavel_id) REFERENCES usuarios(id) ON DELETE SET NULL
 //   FOREIGN KEY monitoramento_pragas_safra_id_fkey: FOREIGN KEY (safra_id) REFERENCES safras(id) ON DELETE CASCADE
 //   FOREIGN KEY monitoramento_pragas_talhao_id_fkey: FOREIGN KEY (talhao_id) REFERENCES talhoes(id) ON DELETE CASCADE
+// Table: navios
+//   FOREIGN KEY navios_empresa_id_fkey: FOREIGN KEY (empresa_id) REFERENCES empresas(id) ON DELETE CASCADE
+//   PRIMARY KEY navios_pkey: PRIMARY KEY (id)
 // Table: operacao_insumos
 //   FOREIGN KEY operacao_insumos_empresa_id_fkey: FOREIGN KEY (empresa_id) REFERENCES empresas(id) ON DELETE CASCADE
 //   FOREIGN KEY operacao_insumos_lote_id_fkey: FOREIGN KEY (lote_id) REFERENCES lotes_estoque(id)
@@ -5410,6 +5824,10 @@ export const Constants = {
 //   FOREIGN KEY pluviometria_empresa_id_fkey: FOREIGN KEY (empresa_id) REFERENCES empresas(id) ON DELETE CASCADE
 //   PRIMARY KEY pluviometria_pkey: PRIMARY KEY (id)
 //   FOREIGN KEY pluviometria_talhao_id_fkey: FOREIGN KEY (talhao_id) REFERENCES talhoes(id) ON DELETE CASCADE
+// Table: portos
+//   FOREIGN KEY portos_empresa_id_fkey: FOREIGN KEY (empresa_id) REFERENCES empresas(id) ON DELETE CASCADE
+//   PRIMARY KEY portos_pkey: PRIMARY KEY (id)
+//   CHECK portos_tipo_check: CHECK ((tipo = ANY (ARRAY['embarque'::text, 'desembarque'::text, 'ambos'::text])))
 // Table: produtos
 //   FOREIGN KEY produtos_empresa_id_fkey: FOREIGN KEY (empresa_id) REFERENCES empresas(id) ON DELETE CASCADE
 //   PRIMARY KEY produtos_pkey: PRIMARY KEY (id)
@@ -5434,6 +5852,7 @@ export const Constants = {
 //   CHECK requisicoes_internas_status_check: CHECK (((status)::text = ANY ((ARRAY['pendente'::character varying, 'aprovado'::character varying, 'recusado'::character varying])::text[])))
 // Table: romaneios_venda
 //   FOREIGN KEY romaneios_venda_cliente_id_fkey: FOREIGN KEY (cliente_id) REFERENCES clientes(id)
+//   FOREIGN KEY romaneios_venda_container_id_fkey: FOREIGN KEY (container_id) REFERENCES containers(id) ON DELETE SET NULL
 //   FOREIGN KEY romaneios_venda_empresa_id_fkey: FOREIGN KEY (empresa_id) REFERENCES empresas(id) ON DELETE CASCADE
 //   UNIQUE romaneios_venda_empresa_id_numero_romaneio_key: UNIQUE (empresa_id, numero_romaneio)
 //   PRIMARY KEY romaneios_venda_pkey: PRIMARY KEY (id)
@@ -5530,6 +5949,10 @@ export const Constants = {
 // Table: balanco_massas
 //   Policy "balanco_massas_empresa" (ALL, PERMISSIVE) roles={public}
 //     USING: (empresa_id = ( SELECT usuarios.empresa_id    FROM usuarios   WHERE (usuarios.id = auth.uid())))
+// Table: bookings
+//   Policy "bookings_empresa" (ALL, PERMISSIVE) roles={authenticated}
+//     USING: (empresa_id = get_user_empresa_id())
+//     WITH CHECK: (empresa_id = get_user_empresa_id())
 // Table: caderno_campo
 //   Policy "caderno_campo_empresa" (ALL, PERMISSIVE) roles={public}
 //     USING: (empresa_id = ( SELECT usuarios.empresa_id    FROM usuarios   WHERE (usuarios.id = auth.uid())))
@@ -5569,8 +5992,9 @@ export const Constants = {
 //     USING: (empresa_id = ( SELECT usuarios.empresa_id    FROM usuarios   WHERE (usuarios.id = auth.uid())))
 //     WITH CHECK: (empresa_id = ( SELECT usuarios.empresa_id    FROM usuarios   WHERE (usuarios.id = auth.uid())))
 // Table: containers
-//   Policy "containers_empresa" (ALL, PERMISSIVE) roles={public}
-//     USING: (empresa_id = ( SELECT usuarios.empresa_id    FROM usuarios   WHERE (usuarios.id = auth.uid())))
+//   Policy "containers_empresa" (ALL, PERMISSIVE) roles={authenticated}
+//     USING: (empresa_id = get_user_empresa_id())
+//     WITH CHECK: (empresa_id = get_user_empresa_id())
 // Table: cultivares
 //   Policy "cultivares_empresa" (ALL, PERMISSIVE) roles={authenticated}
 //     USING: (empresa_id = ( SELECT usuarios.empresa_id    FROM usuarios   WHERE (usuarios.id = auth.uid())))
@@ -5637,6 +6061,10 @@ export const Constants = {
 // Table: historico_produtividade_talhao
 //   Policy "historico_produtividade_empresa" (ALL, PERMISSIVE) roles={public}
 //     USING: (empresa_id = ( SELECT usuarios.empresa_id    FROM usuarios   WHERE (usuarios.id = auth.uid())))
+// Table: invoices_exportacao
+//   Policy "invoices_exportacao_empresa" (ALL, PERMISSIVE) roles={authenticated}
+//     USING: (empresa_id = get_user_empresa_id())
+//     WITH CHECK: (empresa_id = get_user_empresa_id())
 // Table: lotes_estoque
 //   Policy "lotes_estoque_empresa" (ALL, PERMISSIVE) roles={authenticated}
 //     USING: (empresa_id = ( SELECT usuarios.empresa_id    FROM usuarios   WHERE (usuarios.id = auth.uid())))
@@ -5649,6 +6077,10 @@ export const Constants = {
 //   Policy "monitoramento_pragas_empresa" (ALL, PERMISSIVE) roles={authenticated}
 //     USING: (empresa_id = ( SELECT usuarios.empresa_id    FROM usuarios   WHERE (usuarios.id = auth.uid())))
 //     WITH CHECK: (empresa_id = ( SELECT usuarios.empresa_id    FROM usuarios   WHERE (usuarios.id = auth.uid())))
+// Table: navios
+//   Policy "navios_empresa" (ALL, PERMISSIVE) roles={authenticated}
+//     USING: (empresa_id = get_user_empresa_id())
+//     WITH CHECK: (empresa_id = get_user_empresa_id())
 // Table: operacao_insumos
 //   Policy "operacao_insumos_empresa" (ALL, PERMISSIVE) roles={public}
 //     USING: (empresa_id = ( SELECT usuarios.empresa_id    FROM usuarios   WHERE (usuarios.id = auth.uid())))
@@ -5680,6 +6112,10 @@ export const Constants = {
 //   Policy "pluviometria_empresa" (ALL, PERMISSIVE) roles={authenticated}
 //     USING: (empresa_id = ( SELECT usuarios.empresa_id    FROM usuarios   WHERE (usuarios.id = auth.uid())))
 //     WITH CHECK: (empresa_id = ( SELECT usuarios.empresa_id    FROM usuarios   WHERE (usuarios.id = auth.uid())))
+// Table: portos
+//   Policy "portos_empresa" (ALL, PERMISSIVE) roles={authenticated}
+//     USING: (empresa_id = get_user_empresa_id())
+//     WITH CHECK: (empresa_id = get_user_empresa_id())
 // Table: produtos
 //   Policy "produtos_empresa" (ALL, PERMISSIVE) roles={authenticated}
 //     USING: (empresa_id = ( SELECT usuarios.empresa_id    FROM usuarios   WHERE (usuarios.id = auth.uid())))
@@ -6807,6 +7243,8 @@ export const Constants = {
 //   trg_lotes_mudas_updated_at: CREATE TRIGGER trg_lotes_mudas_updated_at BEFORE UPDATE ON public.lotes_mudas FOR EACH ROW EXECUTE FUNCTION set_atualizado_em()
 // Table: monitoramento_pragas
 //   trg_block_update_monitoramento: CREATE TRIGGER trg_block_update_monitoramento BEFORE INSERT OR DELETE OR UPDATE ON public.monitoramento_pragas FOR EACH ROW EXECUTE FUNCTION check_safra_encerrada()
+// Table: navios
+//   trg_navios_updated_at: CREATE TRIGGER trg_navios_updated_at BEFORE UPDATE ON public.navios FOR EACH ROW EXECUTE FUNCTION set_atualizado_em()
 // Table: operacoes_campo
 //   trg_block_update_operacoes: CREATE TRIGGER trg_block_update_operacoes BEFORE INSERT OR DELETE OR UPDATE ON public.operacoes_campo FOR EACH ROW EXECUTE FUNCTION check_safra_encerrada()
 //   trigger_conclusao_operacao: CREATE TRIGGER trigger_conclusao_operacao BEFORE UPDATE ON public.operacoes_campo FOR EACH ROW EXECUTE FUNCTION processa_conclusao_operacao()
@@ -6820,6 +7258,8 @@ export const Constants = {
 //   trg_perdas_estufa_updated_at: CREATE TRIGGER trg_perdas_estufa_updated_at BEFORE UPDATE ON public.perdas_estufa FOR EACH ROW EXECUTE FUNCTION set_atualizado_em()
 // Table: planos
 //   trigger_planos_updated_at: CREATE TRIGGER trigger_planos_updated_at BEFORE UPDATE ON public.planos FOR EACH ROW EXECUTE FUNCTION set_atualizado_em()
+// Table: portos
+//   trg_portos_updated_at: CREATE TRIGGER trg_portos_updated_at BEFORE UPDATE ON public.portos FOR EACH ROW EXECUTE FUNCTION set_atualizado_em()
 // Table: replantios
 //   trg_atualizar_quantidade_replantio: CREATE TRIGGER trg_atualizar_quantidade_replantio AFTER INSERT OR DELETE OR UPDATE ON public.replantios FOR EACH ROW EXECUTE FUNCTION atualizar_quantidade_replantio_transplantio()
 //   trg_check_replantio_transplantio_empresa: CREATE TRIGGER trg_check_replantio_transplantio_empresa BEFORE INSERT OR UPDATE ON public.replantios FOR EACH ROW EXECUTE FUNCTION check_replantio_transplantio_empresa()
@@ -6854,6 +7294,8 @@ export const Constants = {
 //   CREATE INDEX idx_audit_logs_empresa ON public.audit_logs USING btree (empresa_id)
 // Table: balanco_massas
 //   CREATE UNIQUE INDEX balanco_massas_safra_id_key ON public.balanco_massas USING btree (safra_id)
+// Table: bookings
+//   CREATE UNIQUE INDEX bookings_empresa_id_numero_booking_key ON public.bookings USING btree (empresa_id, numero_booking)
 // Table: colheita_registros
 //   CREATE UNIQUE INDEX idx_colheita_lote_producao_uniq ON public.colheita_registros USING btree (lote_producao) WHERE (lote_producao IS NOT NULL)
 //   CREATE INDEX idx_colheita_safra_id ON public.colheita_registros USING btree (safra_id)
@@ -6869,6 +7311,8 @@ export const Constants = {
 //   CREATE INDEX idx_empresas_slug ON public.empresas USING btree (slug) WHERE (deleted_at IS NULL)
 // Table: graus_dia
 //   CREATE UNIQUE INDEX graus_dia_safra_id_data_key ON public.graus_dia USING btree (safra_id, data)
+// Table: invoices_exportacao
+//   CREATE UNIQUE INDEX invoices_exportacao_empresa_id_numero_invoice_key ON public.invoices_exportacao USING btree (empresa_id, numero_invoice)
 // Table: lotes_estoque
 //   CREATE INDEX idx_lotes_estoque_armazem ON public.lotes_estoque USING btree (armazem_id) WHERE (deleted_at IS NULL)
 //   CREATE INDEX idx_lotes_estoque_produto ON public.lotes_estoque USING btree (produto_id) WHERE (deleted_at IS NULL)

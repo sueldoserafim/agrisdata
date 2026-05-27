@@ -18,6 +18,9 @@ import { exportacaoService } from '@/services/exportacao'
 
 export default function BookingsList() {
   const [bookings, setBookings] = useState<any[]>([])
+  const [navios, setNavios] = useState<any[]>([])
+  const [filterNavio, setFilterNavio] = useState<string>('all')
+  const [filterStatus, setFilterStatus] = useState<string>('all')
   const [loading, setLoading] = useState(true)
   const { empresa } = useEmpresa()
   const { toast } = useToast()
@@ -35,8 +38,16 @@ export default function BookingsList() {
   }
 
   useEffect(() => {
+    if (!empresa?.id) return
     loadData()
+    exportacaoService.getNavios(empresa.id).then(({ data }) => setNavios(data || []))
   }, [empresa?.id])
+
+  const filteredBookings = bookings.filter((b) => {
+    if (filterNavio !== 'all' && b.navio_id !== filterNavio) return false
+    if (filterStatus !== 'all' && b.status !== filterStatus) return false
+    return true
+  })
 
   const handleDelete = async (id: string) => {
     if (!confirm('Deseja realmente excluir este booking?')) return
@@ -66,6 +77,33 @@ export default function BookingsList() {
         </Link>
       </div>
 
+      <div className="flex flex-col sm:flex-row gap-4">
+        <select
+          value={filterNavio}
+          onChange={(e) => setFilterNavio(e.target.value)}
+          className="flex h-10 w-full md:w-[250px] rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+        >
+          <option value="all">Todos os Navios</option>
+          {navios.map((n) => (
+            <option key={n.id} value={n.id}>
+              {n.nome_navio}
+            </option>
+          ))}
+        </select>
+        <select
+          value={filterStatus}
+          onChange={(e) => setFilterStatus(e.target.value)}
+          className="flex h-10 w-full md:w-[200px] rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+        >
+          <option value="all">Todos os Status</option>
+          <option value="reservado">Reservado</option>
+          <option value="confirmado">Confirmado</option>
+          <option value="em_transito">Em Trânsito</option>
+          <option value="concluido">Concluído</option>
+          <option value="cancelado">Cancelado</option>
+        </select>
+      </div>
+
       <Card>
         <CardHeader>
           <CardTitle>Bookings Registrados</CardTitle>
@@ -86,14 +124,14 @@ export default function BookingsList() {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {bookings.length === 0 ? (
+                {filteredBookings.length === 0 ? (
                   <TableRow>
                     <TableCell colSpan={6} className="text-center text-slate-500 py-8">
                       Nenhum booking encontrado.
                     </TableCell>
                   </TableRow>
                 ) : (
-                  bookings.map((b) => (
+                  filteredBookings.map((b) => (
                     <TableRow key={b.id}>
                       <TableCell className="font-medium">{b.numero_booking}</TableCell>
                       <TableCell>{b.navios?.nome_navio || '-'}</TableCell>

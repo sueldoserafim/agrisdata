@@ -107,6 +107,10 @@ import ContainersList from './pages/exportacao/ContainersList'
 import ContainerForm from './pages/exportacao/ContainerForm'
 import InvoicesList from './pages/exportacao/InvoicesList'
 import InvoiceForm from './pages/exportacao/InvoiceForm'
+import DocumentosList from './pages/exportacao/DocumentosList'
+import DocumentoForm from './pages/exportacao/DocumentoForm'
+import RolagensList from './pages/exportacao/RolagensList'
+import RolagemForm from './pages/exportacao/RolagemForm'
 
 const App = () => (
   <BrowserRouter future={{ v7_startTransition: false, v7_relativeSplatPath: false }}>
@@ -287,6 +291,12 @@ const App = () => (
                 <Route path="/app/exportacao/invoices" element={<InvoicesList />} />
                 <Route path="/app/exportacao/invoices/nova" element={<InvoiceForm />} />
                 <Route path="/app/exportacao/invoices/:id" element={<InvoiceForm />} />
+                <Route path="/app/exportacao/documentos" element={<DocumentosList />} />
+                <Route path="/app/exportacao/documentos/novo" element={<DocumentoForm />} />
+                <Route path="/app/exportacao/documentos/:id" element={<DocumentoForm />} />
+                <Route path="/app/exportacao/rolagem" element={<RolagensList />} />
+                <Route path="/app/exportacao/rolagem/nova" element={<RolagemForm />} />
+                <Route path="/app/exportacao/rolagem/:id" element={<RolagemForm />} />
                 <Route
                   path="/app/financeiro"
                   element={<div className="p-8 font-semibold text-xl">Financeiro</div>}

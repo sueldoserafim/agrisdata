@@ -255,6 +255,18 @@ export const allMenuItems: MenuItemRaw[] = [
             path: '/app/exportacao/invoices',
             module: 'exportacao',
           },
+          {
+            icon: FileText,
+            label: 'Documentos',
+            path: '/app/exportacao/documentos',
+            module: 'exportacao',
+          },
+          {
+            icon: Box,
+            label: 'Rolagem de Container',
+            path: '/app/exportacao/rolagem',
+            module: 'exportacao',
+          },
         ],
       },
     ],
