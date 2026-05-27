@@ -18,10 +18,24 @@ export default function LancamentosList() {
   const { empresa } = useEmpresa()
   const [lancamentos, setLancamentos] = useState<any[]>([])
   const [filterTipo, setFilterTipo] = useState<string>('todos')
+  const [filterStatus, setFilterStatus] = useState<string>('todos')
+  const [filterConta, setFilterConta] = useState<string>('todas')
+  const [contas, setContas] = useState<any[]>([])
 
   useEffect(() => {
-    if (empresa) loadLancamentos()
-  }, [empresa, filterTipo])
+    if (empresa) {
+      loadLancamentos()
+      loadContas()
+    }
+  }, [empresa, filterTipo, filterStatus, filterConta])
+
+  const loadContas = async () => {
+    const { data } = await supabase
+      .from('contas_bancarias' as any)
+      .select('id, nome_banco')
+      .eq('empresa_id', empresa?.id)
+    if (data) setContas(data)
+  }
 
   const loadLancamentos = async () => {
     let q = supabase
@@ -33,6 +47,12 @@ export default function LancamentosList() {
 
     if (filterTipo !== 'todos') {
       q = q.eq('tipo', filterTipo)
+    }
+    if (filterStatus !== 'todos') {
+      q = q.eq('status', filterStatus)
+    }
+    if (filterConta !== 'todas') {
+      q = q.eq('conta_bancaria_id', filterConta)
     }
 
     const { data } = await q
@@ -71,20 +91,48 @@ export default function LancamentosList() {
           <h1 className="text-3xl font-bold tracking-tight">Lançamentos Financeiros</h1>
           <p className="text-muted-foreground">Contas a Pagar e a Receber.</p>
         </div>
-        <div className="flex gap-4">
+        <div className="flex flex-wrap items-center gap-4">
           <Select value={filterTipo} onValueChange={setFilterTipo}>
-            <SelectTrigger className="w-[180px]">
+            <SelectTrigger className="w-[140px]">
               <SelectValue placeholder="Tipo" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="todos">Todos</SelectItem>
+              <SelectItem value="todos">Todos Tipos</SelectItem>
               <SelectItem value="receita">Receitas</SelectItem>
               <SelectItem value="despesa">Despesas</SelectItem>
             </SelectContent>
           </Select>
+
+          <Select value={filterStatus} onValueChange={setFilterStatus}>
+            <SelectTrigger className="w-[140px]">
+              <SelectValue placeholder="Status" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="todos">Todos Status</SelectItem>
+              <SelectItem value="pendente">Pendente</SelectItem>
+              <SelectItem value="pago">Pago</SelectItem>
+              <SelectItem value="recebido">Recebido</SelectItem>
+              <SelectItem value="atrasado">Atrasado</SelectItem>
+            </SelectContent>
+          </Select>
+
+          <Select value={filterConta} onValueChange={setFilterConta}>
+            <SelectTrigger className="w-[160px]">
+              <SelectValue placeholder="Conta Bancária" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="todas">Todas Contas</SelectItem>
+              {contas.map((c) => (
+                <SelectItem key={c.id} value={c.id}>
+                  {c.nome_banco}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+
           <Button asChild>
             <Link to="/app/financeiro/lancamentos/novo">
-              <Plus className="w-4 h-4 mr-2" /> Novo Lançamento
+              <Plus className="w-4 h-4 mr-2" /> Novo
             </Link>
           </Button>
         </div>

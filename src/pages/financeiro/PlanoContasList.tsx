@@ -41,6 +41,7 @@ export default function PlanoContasList() {
     tipo: 'despesa',
     nivel: 1,
   })
+  const [editingId, setEditingId] = useState<string | null>(null)
 
   useEffect(() => {
     if (empresa) loadContas()
@@ -69,10 +70,27 @@ export default function PlanoContasList() {
       }
     }
 
-    const { error } = await supabase.from('plano_contas' as any).insert({
-      empresa_id: empresa?.id,
-      ...formData,
-    })
+    let error
+    if (editingId) {
+      const { error: updateError } = await supabase
+        .from('plano_contas' as any)
+        .update({
+          codigo: formData.codigo,
+          descricao: formData.descricao,
+          tipo: formData.tipo,
+          natureza: formData.natureza,
+          pai_id: formData.pai_id,
+          nivel: formData.nivel,
+        })
+        .eq('id', editingId)
+      error = updateError
+    } else {
+      const { error: insertError } = await supabase.from('plano_contas' as any).insert({
+        empresa_id: empresa?.id,
+        ...formData,
+      })
+      error = insertError
+    }
 
     if (error) {
       toast.error('Erro ao salvar conta')
@@ -81,7 +99,14 @@ export default function PlanoContasList() {
       setOpen(false)
       loadContas()
       setFormData({ natureza: 'sintetica', tipo: 'despesa', nivel: 1 })
+      setEditingId(null)
     }
+  }
+
+  const handleEdit = (conta: PlanoConta) => {
+    setFormData(conta)
+    setEditingId(conta.id)
+    setOpen(true)
   }
 
   const handleDelete = async (id: string) => {
@@ -105,7 +130,13 @@ export default function PlanoContasList() {
           <h1 className="text-3xl font-bold tracking-tight">Plano de Contas</h1>
           <p className="text-muted-foreground">Gerencie as categorias contábeis e gerenciais.</p>
         </div>
-        <Button onClick={() => setOpen(true)}>
+        <Button
+          onClick={() => {
+            setFormData({ natureza: 'sintetica', tipo: 'despesa', nivel: 1 })
+            setEditingId(null)
+            setOpen(true)
+          }}
+        >
           <Plus className="w-4 h-4 mr-2" /> Nova Conta
         </Button>
       </div>
@@ -142,7 +173,10 @@ export default function PlanoContasList() {
                 <td className="p-3">{conta.descricao}</td>
                 <td className="p-3 capitalize">{conta.tipo}</td>
                 <td className="p-3 capitalize">{conta.natureza}</td>
-                <td className="p-3 text-right">
+                <td className="p-3 text-right space-x-1">
+                  <Button variant="ghost" size="icon" onClick={() => handleEdit(conta)}>
+                    <FileText className="w-4 h-4" />
+                  </Button>
                   <Button
                     variant="ghost"
                     size="icon"
@@ -168,7 +202,7 @@ export default function PlanoContasList() {
       <Dialog open={open} onOpenChange={setOpen}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Nova Conta</DialogTitle>
+            <DialogTitle>{editingId ? 'Editar Conta' : 'Nova Conta'}</DialogTitle>
           </DialogHeader>
           <div className="space-y-4 py-4">
             <div className="grid grid-cols-2 gap-4">

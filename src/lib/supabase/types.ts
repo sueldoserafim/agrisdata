@@ -9,6 +9,82 @@ export type Database = {
   }
   public: {
     Tables: {
+      adiantamentos_internacionais: {
+        Row: {
+          cliente_id: string
+          created_at: string | null
+          data_adiantamento: string | null
+          data_prevista_reembolso: string | null
+          deleted_at: string | null
+          empresa_id: string
+          id: string
+          invoice_id: string | null
+          numero_adiantamento: string
+          observacoes: string | null
+          status: string | null
+          taxa_cambio: number | null
+          updated_at: string | null
+          valor_brl: number | null
+          valor_usd: number | null
+        }
+        Insert: {
+          cliente_id: string
+          created_at?: string | null
+          data_adiantamento?: string | null
+          data_prevista_reembolso?: string | null
+          deleted_at?: string | null
+          empresa_id: string
+          id?: string
+          invoice_id?: string | null
+          numero_adiantamento: string
+          observacoes?: string | null
+          status?: string | null
+          taxa_cambio?: number | null
+          updated_at?: string | null
+          valor_brl?: number | null
+          valor_usd?: number | null
+        }
+        Update: {
+          cliente_id?: string
+          created_at?: string | null
+          data_adiantamento?: string | null
+          data_prevista_reembolso?: string | null
+          deleted_at?: string | null
+          empresa_id?: string
+          id?: string
+          invoice_id?: string | null
+          numero_adiantamento?: string
+          observacoes?: string | null
+          status?: string | null
+          taxa_cambio?: number | null
+          updated_at?: string | null
+          valor_brl?: number | null
+          valor_usd?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: 'adiantamentos_internacionais_cliente_id_fkey'
+            columns: ['cliente_id']
+            isOneToOne: false
+            referencedRelation: 'clientes'
+            referencedColumns: ['id']
+          },
+          {
+            foreignKeyName: 'adiantamentos_internacionais_empresa_id_fkey'
+            columns: ['empresa_id']
+            isOneToOne: false
+            referencedRelation: 'empresas'
+            referencedColumns: ['id']
+          },
+          {
+            foreignKeyName: 'adiantamentos_internacionais_invoice_id_fkey'
+            columns: ['invoice_id']
+            isOneToOne: false
+            referencedRelation: 'invoices_exportacao'
+            referencedColumns: ['id']
+          },
+        ]
+      }
       alertas: {
         Row: {
           created_at: string | null
@@ -1157,6 +1233,76 @@ export type Database = {
           },
         ]
       }
+      conta_corrente_produtor: {
+        Row: {
+          created_at: string | null
+          data_movimento: string | null
+          deleted_at: string | null
+          descricao: string | null
+          documento: string | null
+          empresa_id: string
+          id: string
+          produtor_id: string
+          safra_id: string | null
+          saldo: number | null
+          tipo_movimento: string | null
+          updated_at: string | null
+          valor: number | null
+        }
+        Insert: {
+          created_at?: string | null
+          data_movimento?: string | null
+          deleted_at?: string | null
+          descricao?: string | null
+          documento?: string | null
+          empresa_id: string
+          id?: string
+          produtor_id: string
+          safra_id?: string | null
+          saldo?: number | null
+          tipo_movimento?: string | null
+          updated_at?: string | null
+          valor?: number | null
+        }
+        Update: {
+          created_at?: string | null
+          data_movimento?: string | null
+          deleted_at?: string | null
+          descricao?: string | null
+          documento?: string | null
+          empresa_id?: string
+          id?: string
+          produtor_id?: string
+          safra_id?: string | null
+          saldo?: number | null
+          tipo_movimento?: string | null
+          updated_at?: string | null
+          valor?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: 'conta_corrente_produtor_empresa_id_fkey'
+            columns: ['empresa_id']
+            isOneToOne: false
+            referencedRelation: 'empresas'
+            referencedColumns: ['id']
+          },
+          {
+            foreignKeyName: 'conta_corrente_produtor_produtor_id_fkey'
+            columns: ['produtor_id']
+            isOneToOne: false
+            referencedRelation: 'fornecedores'
+            referencedColumns: ['id']
+          },
+          {
+            foreignKeyName: 'conta_corrente_produtor_safra_id_fkey'
+            columns: ['safra_id']
+            isOneToOne: false
+            referencedRelation: 'safras'
+            referencedColumns: ['id']
+          },
+        ]
+      }
       containers: {
         Row: {
           aprovador_1_id: string | null
@@ -1234,6 +1380,65 @@ export type Database = {
           },
           {
             foreignKeyName: 'containers_empresa_id_fkey'
+            columns: ['empresa_id']
+            isOneToOne: false
+            referencedRelation: 'empresas'
+            referencedColumns: ['id']
+          },
+        ]
+      }
+      contas_bancarias: {
+        Row: {
+          agencia: string | null
+          ativo: boolean | null
+          conta: string | null
+          created_at: string | null
+          data_saldo: string | null
+          deleted_at: string | null
+          empresa_id: string
+          id: string
+          moeda: string | null
+          nome_banco: string
+          saldo_atual: number | null
+          saldo_inicial: number | null
+          tipo: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          agencia?: string | null
+          ativo?: boolean | null
+          conta?: string | null
+          created_at?: string | null
+          data_saldo?: string | null
+          deleted_at?: string | null
+          empresa_id: string
+          id?: string
+          moeda?: string | null
+          nome_banco: string
+          saldo_atual?: number | null
+          saldo_inicial?: number | null
+          tipo?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          agencia?: string | null
+          ativo?: boolean | null
+          conta?: string | null
+          created_at?: string | null
+          data_saldo?: string | null
+          deleted_at?: string | null
+          empresa_id?: string
+          id?: string
+          moeda?: string | null
+          nome_banco?: string
+          saldo_atual?: number | null
+          saldo_inicial?: number | null
+          tipo?: string | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: 'contas_bancarias_empresa_id_fkey'
             columns: ['empresa_id']
             isOneToOne: false
             referencedRelation: 'empresas'
@@ -1654,6 +1859,69 @@ export type Database = {
           },
         ]
       }
+      documentos_exportacao: {
+        Row: {
+          arquivo_url: string | null
+          container_id: string | null
+          created_at: string
+          data_emissao: string | null
+          data_validade: string | null
+          deleted_at: string | null
+          empresa_id: string
+          id: string
+          numero_documento: string | null
+          observacoes: string | null
+          status: Database['public']['Enums']['status_documento_enum'] | null
+          tipo_documento: Database['public']['Enums']['tipo_documento_enum']
+          updated_at: string
+        }
+        Insert: {
+          arquivo_url?: string | null
+          container_id?: string | null
+          created_at?: string
+          data_emissao?: string | null
+          data_validade?: string | null
+          deleted_at?: string | null
+          empresa_id: string
+          id?: string
+          numero_documento?: string | null
+          observacoes?: string | null
+          status?: Database['public']['Enums']['status_documento_enum'] | null
+          tipo_documento: Database['public']['Enums']['tipo_documento_enum']
+          updated_at?: string
+        }
+        Update: {
+          arquivo_url?: string | null
+          container_id?: string | null
+          created_at?: string
+          data_emissao?: string | null
+          data_validade?: string | null
+          deleted_at?: string | null
+          empresa_id?: string
+          id?: string
+          numero_documento?: string | null
+          observacoes?: string | null
+          status?: Database['public']['Enums']['status_documento_enum'] | null
+          tipo_documento?: Database['public']['Enums']['tipo_documento_enum']
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: 'documentos_exportacao_container_id_fkey'
+            columns: ['container_id']
+            isOneToOne: false
+            referencedRelation: 'containers'
+            referencedColumns: ['id']
+          },
+          {
+            foreignKeyName: 'documentos_exportacao_empresa_id_fkey'
+            columns: ['empresa_id']
+            isOneToOne: false
+            referencedRelation: 'empresas'
+            referencedColumns: ['id']
+          },
+        ]
+      }
       empresas: {
         Row: {
           ativo: boolean | null
@@ -2033,47 +2301,115 @@ export type Database = {
       }
       financeiro_lancamentos: {
         Row: {
+          centro_custo_id: string | null
+          cliente_id: string | null
+          conta_bancaria_id: string | null
           created_at: string
+          data_lancamento: string | null
+          data_pagamento: string | null
           data_vencimento: string | null
           deleted_at: string | null
           descricao: string
+          documento: string | null
           empresa_id: string
+          fornecedor_id: string | null
           id: string
+          observacoes: string | null
+          parcela: number | null
+          plano_conta_id: string | null
           status: string | null
           tipo: string
+          total_parcelas: number | null
           updated_at: string
           valor: number
         }
         Insert: {
+          centro_custo_id?: string | null
+          cliente_id?: string | null
+          conta_bancaria_id?: string | null
           created_at?: string
+          data_lancamento?: string | null
+          data_pagamento?: string | null
           data_vencimento?: string | null
           deleted_at?: string | null
           descricao: string
+          documento?: string | null
           empresa_id: string
+          fornecedor_id?: string | null
           id?: string
+          observacoes?: string | null
+          parcela?: number | null
+          plano_conta_id?: string | null
           status?: string | null
           tipo: string
+          total_parcelas?: number | null
           updated_at?: string
           valor: number
         }
         Update: {
+          centro_custo_id?: string | null
+          cliente_id?: string | null
+          conta_bancaria_id?: string | null
           created_at?: string
+          data_lancamento?: string | null
+          data_pagamento?: string | null
           data_vencimento?: string | null
           deleted_at?: string | null
           descricao?: string
+          documento?: string | null
           empresa_id?: string
+          fornecedor_id?: string | null
           id?: string
+          observacoes?: string | null
+          parcela?: number | null
+          plano_conta_id?: string | null
           status?: string | null
           tipo?: string
+          total_parcelas?: number | null
           updated_at?: string
           valor?: number
         }
         Relationships: [
           {
+            foreignKeyName: 'financeiro_lancamentos_centro_custo_id_fkey'
+            columns: ['centro_custo_id']
+            isOneToOne: false
+            referencedRelation: 'centros_custo'
+            referencedColumns: ['id']
+          },
+          {
+            foreignKeyName: 'financeiro_lancamentos_cliente_id_fkey'
+            columns: ['cliente_id']
+            isOneToOne: false
+            referencedRelation: 'clientes'
+            referencedColumns: ['id']
+          },
+          {
+            foreignKeyName: 'financeiro_lancamentos_conta_bancaria_id_fkey'
+            columns: ['conta_bancaria_id']
+            isOneToOne: false
+            referencedRelation: 'contas_bancarias'
+            referencedColumns: ['id']
+          },
+          {
             foreignKeyName: 'financeiro_lancamentos_empresa_id_fkey'
             columns: ['empresa_id']
             isOneToOne: false
             referencedRelation: 'empresas'
+            referencedColumns: ['id']
+          },
+          {
+            foreignKeyName: 'financeiro_lancamentos_fornecedor_id_fkey'
+            columns: ['fornecedor_id']
+            isOneToOne: false
+            referencedRelation: 'fornecedores'
+            referencedColumns: ['id']
+          },
+          {
+            foreignKeyName: 'financeiro_lancamentos_plano_conta_id_fkey'
+            columns: ['plano_conta_id']
+            isOneToOne: false
+            referencedRelation: 'plano_contas'
             referencedColumns: ['id']
           },
         ]
@@ -3189,6 +3525,66 @@ export type Database = {
           },
         ]
       }
+      plano_contas: {
+        Row: {
+          ativo: boolean | null
+          codigo: string
+          created_at: string | null
+          deleted_at: string | null
+          descricao: string
+          empresa_id: string
+          id: string
+          natureza: string | null
+          nivel: number | null
+          pai_id: string | null
+          tipo: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          ativo?: boolean | null
+          codigo: string
+          created_at?: string | null
+          deleted_at?: string | null
+          descricao: string
+          empresa_id: string
+          id?: string
+          natureza?: string | null
+          nivel?: number | null
+          pai_id?: string | null
+          tipo?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          ativo?: boolean | null
+          codigo?: string
+          created_at?: string | null
+          deleted_at?: string | null
+          descricao?: string
+          empresa_id?: string
+          id?: string
+          natureza?: string | null
+          nivel?: number | null
+          pai_id?: string | null
+          tipo?: string | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: 'plano_contas_empresa_id_fkey'
+            columns: ['empresa_id']
+            isOneToOne: false
+            referencedRelation: 'empresas'
+            referencedColumns: ['id']
+          },
+          {
+            foreignKeyName: 'plano_contas_pai_id_fkey'
+            columns: ['pai_id']
+            isOneToOne: false
+            referencedRelation: 'plano_contas'
+            referencedColumns: ['id']
+          },
+        ]
+      }
       planos: {
         Row: {
           ativo: boolean | null
@@ -3594,6 +3990,86 @@ export type Database = {
             columns: ['solicitante_id']
             isOneToOne: false
             referencedRelation: 'usuarios'
+            referencedColumns: ['id']
+          },
+        ]
+      }
+      rolagens_container: {
+        Row: {
+          aprovado_por: string | null
+          booking_novo_id: string
+          booking_original_id: string
+          container_id: string
+          created_at: string
+          custo_rolagem_usd: number | null
+          data_aprovacao: string | null
+          data_solicitacao: string | null
+          deleted_at: string | null
+          empresa_id: string
+          id: string
+          motivo_rolagem: Database['public']['Enums']['motivo_rolagem_enum']
+          status: Database['public']['Enums']['status_rolagem_enum'] | null
+          updated_at: string
+        }
+        Insert: {
+          aprovado_por?: string | null
+          booking_novo_id: string
+          booking_original_id: string
+          container_id: string
+          created_at?: string
+          custo_rolagem_usd?: number | null
+          data_aprovacao?: string | null
+          data_solicitacao?: string | null
+          deleted_at?: string | null
+          empresa_id: string
+          id?: string
+          motivo_rolagem: Database['public']['Enums']['motivo_rolagem_enum']
+          status?: Database['public']['Enums']['status_rolagem_enum'] | null
+          updated_at?: string
+        }
+        Update: {
+          aprovado_por?: string | null
+          booking_novo_id?: string
+          booking_original_id?: string
+          container_id?: string
+          created_at?: string
+          custo_rolagem_usd?: number | null
+          data_aprovacao?: string | null
+          data_solicitacao?: string | null
+          deleted_at?: string | null
+          empresa_id?: string
+          id?: string
+          motivo_rolagem?: Database['public']['Enums']['motivo_rolagem_enum']
+          status?: Database['public']['Enums']['status_rolagem_enum'] | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: 'rolagens_container_booking_novo_id_fkey'
+            columns: ['booking_novo_id']
+            isOneToOne: false
+            referencedRelation: 'bookings'
+            referencedColumns: ['id']
+          },
+          {
+            foreignKeyName: 'rolagens_container_booking_original_id_fkey'
+            columns: ['booking_original_id']
+            isOneToOne: false
+            referencedRelation: 'bookings'
+            referencedColumns: ['id']
+          },
+          {
+            foreignKeyName: 'rolagens_container_container_id_fkey'
+            columns: ['container_id']
+            isOneToOne: false
+            referencedRelation: 'containers'
+            referencedColumns: ['id']
+          },
+          {
+            foreignKeyName: 'rolagens_container_empresa_id_fkey'
+            columns: ['empresa_id']
+            isOneToOne: false
+            referencedRelation: 'empresas'
             referencedColumns: ['id']
           },
         ]
@@ -4489,8 +4965,21 @@ export type Database = {
       booking_status_enum: 'reservado' | 'confirmado' | 'em_transito' | 'concluido' | 'cancelado'
       invoice_incoterm_enum: 'fob' | 'cfr' | 'cif' | 'dap' | 'ddp'
       invoice_status_enum: 'rascunho' | 'emitida' | 'paga' | 'cancelada'
+      motivo_rolagem_enum: 'atraso_navio' | 'falta_espaco' | 'problema_documentacao' | 'outro'
       pallet_status: 'em_camara' | 'etiquetado' | 'reservado' | 'carregado' | 'descartado'
+      status_documento_enum: 'valido' | 'vencido' | 'pendente'
+      status_rolagem_enum: 'pendente' | 'aprovada' | 'executada' | 'cancelada'
       tipo_container_enum: 'dry_20' | 'dry_40' | 'reefer_20' | 'reefer_40' | 'hc_40' | 'outro'
+      tipo_documento_enum:
+        | 'bl'
+        | 'awb'
+        | 'co'
+        | 'phytosanitary'
+        | 'certificate_origin'
+        | 'fumigation'
+        | 'packing_list'
+        | 'commercial_invoice'
+        | 'other'
     }
     CompositeTypes: {
       [_ in never]: never
@@ -4619,8 +5108,22 @@ export const Constants = {
       booking_status_enum: ['reservado', 'confirmado', 'em_transito', 'concluido', 'cancelado'],
       invoice_incoterm_enum: ['fob', 'cfr', 'cif', 'dap', 'ddp'],
       invoice_status_enum: ['rascunho', 'emitida', 'paga', 'cancelada'],
+      motivo_rolagem_enum: ['atraso_navio', 'falta_espaco', 'problema_documentacao', 'outro'],
       pallet_status: ['em_camara', 'etiquetado', 'reservado', 'carregado', 'descartado'],
+      status_documento_enum: ['valido', 'vencido', 'pendente'],
+      status_rolagem_enum: ['pendente', 'aprovada', 'executada', 'cancelada'],
       tipo_container_enum: ['dry_20', 'dry_40', 'reefer_20', 'reefer_40', 'hc_40', 'outro'],
+      tipo_documento_enum: [
+        'bl',
+        'awb',
+        'co',
+        'phytosanitary',
+        'certificate_origin',
+        'fumigation',
+        'packing_list',
+        'commercial_invoice',
+        'other',
+      ],
     },
   },
 } as const
@@ -4635,6 +5138,22 @@ export const Constants = {
 // --- COLUMN TYPES (actual PostgreSQL types) ---
 // Use this to know the real database type when writing migrations.
 // "string" in TypeScript types above may be uuid, text, varchar, timestamptz, etc.
+// Table: adiantamentos_internacionais
+//   id: uuid (not null, default: gen_random_uuid())
+//   empresa_id: uuid (not null)
+//   cliente_id: uuid (not null)
+//   invoice_id: uuid (nullable)
+//   numero_adiantamento: text (not null)
+//   data_adiantamento: date (nullable)
+//   valor_usd: numeric (nullable, default: 0)
+//   valor_brl: numeric (nullable, default: 0)
+//   taxa_cambio: numeric (nullable, default: 1)
+//   data_prevista_reembolso: date (nullable)
+//   status: character varying (nullable, default: 'pendente'::character varying)
+//   observacoes: text (nullable)
+//   created_at: timestamp with time zone (nullable, default: now())
+//   updated_at: timestamp with time zone (nullable, default: now())
+//   deleted_at: timestamp with time zone (nullable)
 // Table: alertas
 //   id: uuid (not null, default: gen_random_uuid())
 //   empresa_id: uuid (not null)
@@ -4887,6 +5406,20 @@ export const Constants = {
 //   observacoes: text (nullable)
 //   itens: jsonb (nullable, default: '[]'::jsonb)
 //   pedido_gerado: boolean (nullable, default: false)
+// Table: conta_corrente_produtor
+//   id: uuid (not null, default: gen_random_uuid())
+//   empresa_id: uuid (not null)
+//   produtor_id: uuid (not null)
+//   safra_id: uuid (nullable)
+//   tipo_movimento: character varying (nullable)
+//   data_movimento: date (nullable)
+//   descricao: text (nullable)
+//   valor: numeric (nullable, default: 0)
+//   saldo: numeric (nullable, default: 0)
+//   documento: text (nullable)
+//   created_at: timestamp with time zone (nullable, default: now())
+//   updated_at: timestamp with time zone (nullable, default: now())
+//   deleted_at: timestamp with time zone (nullable)
 // Table: containers
 //   id: uuid (not null, default: gen_random_uuid())
 //   empresa_id: uuid (not null)
@@ -4908,6 +5441,21 @@ export const Constants = {
 //   aprovador_2_id: uuid (nullable)
 //   gate_in_data: timestamp with time zone (nullable)
 //   gate_out_data: timestamp with time zone (nullable)
+// Table: contas_bancarias
+//   id: uuid (not null, default: gen_random_uuid())
+//   empresa_id: uuid (not null)
+//   nome_banco: text (not null)
+//   agencia: text (nullable)
+//   conta: text (nullable)
+//   tipo: character varying (nullable)
+//   moeda: character varying (nullable)
+//   saldo_inicial: numeric (nullable, default: 0)
+//   saldo_atual: numeric (nullable, default: 0)
+//   data_saldo: date (nullable)
+//   ativo: boolean (nullable, default: true)
+//   created_at: timestamp with time zone (nullable, default: now())
+//   updated_at: timestamp with time zone (nullable, default: now())
+//   deleted_at: timestamp with time zone (nullable)
 // Table: cultivares
 //   id: uuid (not null, default: gen_random_uuid())
 //   empresa_id: uuid (not null)
@@ -4989,6 +5537,20 @@ export const Constants = {
 //   motivo: text (nullable)
 //   aprovado_por: uuid (nullable)
 //   status: text (nullable, default: 'pendente'::text)
+//   created_at: timestamp with time zone (not null, default: now())
+//   updated_at: timestamp with time zone (not null, default: now())
+//   deleted_at: timestamp with time zone (nullable)
+// Table: documentos_exportacao
+//   id: uuid (not null, default: gen_random_uuid())
+//   empresa_id: uuid (not null)
+//   container_id: uuid (nullable)
+//   tipo_documento: tipo_documento_enum (not null)
+//   numero_documento: text (nullable)
+//   data_emissao: date (nullable)
+//   data_validade: date (nullable)
+//   arquivo_url: text (nullable)
+//   status: status_documento_enum (nullable, default: 'pendente'::status_documento_enum)
+//   observacoes: text (nullable)
 //   created_at: timestamp with time zone (not null, default: now())
 //   updated_at: timestamp with time zone (not null, default: now())
 //   deleted_at: timestamp with time zone (nullable)
@@ -5089,6 +5651,17 @@ export const Constants = {
 //   created_at: timestamp with time zone (not null, default: now())
 //   updated_at: timestamp with time zone (not null, default: now())
 //   deleted_at: timestamp with time zone (nullable)
+//   conta_bancaria_id: uuid (nullable)
+//   plano_conta_id: uuid (nullable)
+//   data_lancamento: date (nullable, default: CURRENT_DATE)
+//   data_pagamento: date (nullable)
+//   documento: text (nullable)
+//   parcela: integer (nullable, default: 1)
+//   total_parcelas: integer (nullable, default: 1)
+//   fornecedor_id: uuid (nullable)
+//   cliente_id: uuid (nullable)
+//   centro_custo_id: uuid (nullable)
+//   observacoes: text (nullable)
 // Table: fornecedores
 //   id: uuid (not null, default: gen_random_uuid())
 //   empresa_id: uuid (not null)
@@ -5317,6 +5890,19 @@ export const Constants = {
 //   created_at: timestamp with time zone (nullable, default: now())
 //   updated_at: timestamp with time zone (nullable, default: now())
 //   deleted_at: timestamp with time zone (nullable)
+// Table: plano_contas
+//   id: uuid (not null, default: gen_random_uuid())
+//   empresa_id: uuid (not null)
+//   codigo: text (not null)
+//   descricao: text (not null)
+//   tipo: character varying (nullable)
+//   natureza: character varying (nullable)
+//   pai_id: uuid (nullable)
+//   nivel: integer (nullable, default: 1)
+//   ativo: boolean (nullable, default: true)
+//   created_at: timestamp with time zone (nullable, default: now())
+//   updated_at: timestamp with time zone (nullable, default: now())
+//   deleted_at: timestamp with time zone (nullable)
 // Table: planos
 //   id: uuid (not null, default: gen_random_uuid())
 //   nome: character varying (not null)
@@ -5407,6 +5993,21 @@ export const Constants = {
 //   data_aprovacao: timestamp with time zone (nullable)
 //   created_at: timestamp with time zone (nullable, default: now())
 //   updated_at: timestamp with time zone (nullable, default: now())
+// Table: rolagens_container
+//   id: uuid (not null, default: gen_random_uuid())
+//   empresa_id: uuid (not null)
+//   container_id: uuid (not null)
+//   booking_original_id: uuid (not null)
+//   booking_novo_id: uuid (not null)
+//   motivo_rolagem: motivo_rolagem_enum (not null)
+//   data_solicitacao: date (nullable, default: CURRENT_DATE)
+//   data_aprovacao: date (nullable)
+//   aprovado_por: uuid (nullable)
+//   custo_rolagem_usd: numeric (nullable, default: 0)
+//   status: status_rolagem_enum (nullable, default: 'pendente'::status_rolagem_enum)
+//   created_at: timestamp with time zone (not null, default: now())
+//   updated_at: timestamp with time zone (not null, default: now())
+//   deleted_at: timestamp with time zone (nullable)
 // Table: romaneios_venda
 //   id: uuid (not null, default: gen_random_uuid())
 //   empresa_id: uuid (not null)
@@ -5587,6 +6188,13 @@ export const Constants = {
 //   deleted_at: timestamp with time zone (nullable)
 
 // --- CONSTRAINTS ---
+// Table: adiantamentos_internacionais
+//   FOREIGN KEY adiantamentos_internacionais_cliente_id_fkey: FOREIGN KEY (cliente_id) REFERENCES clientes(id) ON DELETE CASCADE
+//   FOREIGN KEY adiantamentos_internacionais_empresa_id_fkey: FOREIGN KEY (empresa_id) REFERENCES empresas(id) ON DELETE CASCADE
+//   UNIQUE adiantamentos_internacionais_empresa_id_numero_adiantamento_key: UNIQUE (empresa_id, numero_adiantamento)
+//   FOREIGN KEY adiantamentos_internacionais_invoice_id_fkey: FOREIGN KEY (invoice_id) REFERENCES invoices_exportacao(id) ON DELETE SET NULL
+//   PRIMARY KEY adiantamentos_internacionais_pkey: PRIMARY KEY (id)
+//   CHECK adiantamentos_internacionais_status_check: CHECK (((status)::text = ANY ((ARRAY['pendente'::character varying, 'reembolsado'::character varying, 'parcial'::character varying, 'cancelado'::character varying])::text[])))
 // Table: alertas
 //   FOREIGN KEY alertas_empresa_id_fkey: FOREIGN KEY (empresa_id) REFERENCES empresas(id) ON DELETE CASCADE
 //   PRIMARY KEY alertas_pkey: PRIMARY KEY (id)
@@ -5664,6 +6272,12 @@ export const Constants = {
 //   PRIMARY KEY compras_requisicao_pkey: PRIMARY KEY (id)
 //   FOREIGN KEY compras_requisicao_safra_id_fkey: FOREIGN KEY (safra_id) REFERENCES safras(id) ON DELETE SET NULL
 //   FOREIGN KEY compras_requisicao_solicitante_id_fkey: FOREIGN KEY (solicitante_id) REFERENCES usuarios(id)
+// Table: conta_corrente_produtor
+//   FOREIGN KEY conta_corrente_produtor_empresa_id_fkey: FOREIGN KEY (empresa_id) REFERENCES empresas(id) ON DELETE CASCADE
+//   PRIMARY KEY conta_corrente_produtor_pkey: PRIMARY KEY (id)
+//   FOREIGN KEY conta_corrente_produtor_produtor_id_fkey: FOREIGN KEY (produtor_id) REFERENCES fornecedores(id) ON DELETE CASCADE
+//   FOREIGN KEY conta_corrente_produtor_safra_id_fkey: FOREIGN KEY (safra_id) REFERENCES safras(id) ON DELETE SET NULL
+//   CHECK conta_corrente_produtor_tipo_movimento_check: CHECK (((tipo_movimento)::text = ANY ((ARRAY['adiantamento'::character varying, 'entrega'::character varying, 'desconto'::character varying, 'pagamento'::character varying])::text[])))
 // Table: containers
 //   CHECK chk_container_weights: CHECK (((peso_liquido_kg IS NULL) OR (peso_bruto_kg IS NULL) OR (peso_liquido_kg < peso_bruto_kg)))
 //   FOREIGN KEY containers_aprovador_1_id_fkey: FOREIGN KEY (aprovador_1_id) REFERENCES auth.users(id) ON DELETE SET NULL
@@ -5671,6 +6285,11 @@ export const Constants = {
 //   FOREIGN KEY containers_booking_id_fkey: FOREIGN KEY (booking_id) REFERENCES bookings(id) ON DELETE SET NULL
 //   FOREIGN KEY containers_empresa_id_fkey: FOREIGN KEY (empresa_id) REFERENCES empresas(id) ON DELETE CASCADE
 //   PRIMARY KEY containers_pkey: PRIMARY KEY (id)
+// Table: contas_bancarias
+//   FOREIGN KEY contas_bancarias_empresa_id_fkey: FOREIGN KEY (empresa_id) REFERENCES empresas(id) ON DELETE CASCADE
+//   CHECK contas_bancarias_moeda_check: CHECK (((moeda)::text = ANY ((ARRAY['brl'::character varying, 'usd'::character varying, 'eur'::character varying])::text[])))
+//   PRIMARY KEY contas_bancarias_pkey: PRIMARY KEY (id)
+//   CHECK contas_bancarias_tipo_check: CHECK (((tipo)::text = ANY ((ARRAY['corrente'::character varying, 'poupanca'::character varying, 'aplicacao'::character varying, 'exterior'::character varying])::text[])))
 // Table: cultivares
 //   FOREIGN KEY cultivares_cultura_id_fkey: FOREIGN KEY (cultura_id) REFERENCES culturas(id) ON DELETE CASCADE
 //   FOREIGN KEY cultivares_empresa_id_fkey: FOREIGN KEY (empresa_id) REFERENCES empresas(id) ON DELETE CASCADE
@@ -5703,6 +6322,10 @@ export const Constants = {
 //   FOREIGN KEY divergencias_carregamento_sessao_id_fkey: FOREIGN KEY (sessao_id) REFERENCES sessoes_carregamento(id) ON DELETE CASCADE
 //   CHECK divergencias_carregamento_status_check: CHECK ((status = ANY (ARRAY['pendente'::text, 'aprovado'::text, 'rejeitado'::text])))
 //   CHECK divergencias_carregamento_tipo_divergencia_check: CHECK ((tipo_divergencia = ANY (ARRAY['peso'::text, 'quantidade'::text, 'qualidade'::text, 'produto_errado'::text])))
+// Table: documentos_exportacao
+//   FOREIGN KEY documentos_exportacao_container_id_fkey: FOREIGN KEY (container_id) REFERENCES containers(id) ON DELETE CASCADE
+//   FOREIGN KEY documentos_exportacao_empresa_id_fkey: FOREIGN KEY (empresa_id) REFERENCES empresas(id) ON DELETE CASCADE
+//   PRIMARY KEY documentos_exportacao_pkey: PRIMARY KEY (id)
 // Table: empresas
 //   UNIQUE empresas_cnpj_key: UNIQUE (cnpj)
 //   PRIMARY KEY empresas_pkey: PRIMARY KEY (id)
@@ -5731,8 +6354,13 @@ export const Constants = {
 //   FOREIGN KEY fazendas_empresa_id_fkey: FOREIGN KEY (empresa_id) REFERENCES empresas(id) ON DELETE CASCADE
 //   PRIMARY KEY fazendas_pkey: PRIMARY KEY (id)
 // Table: financeiro_lancamentos
+//   FOREIGN KEY financeiro_lancamentos_centro_custo_id_fkey: FOREIGN KEY (centro_custo_id) REFERENCES centros_custo(id) ON DELETE SET NULL
+//   FOREIGN KEY financeiro_lancamentos_cliente_id_fkey: FOREIGN KEY (cliente_id) REFERENCES clientes(id) ON DELETE SET NULL
+//   FOREIGN KEY financeiro_lancamentos_conta_bancaria_id_fkey: FOREIGN KEY (conta_bancaria_id) REFERENCES contas_bancarias(id) ON DELETE SET NULL
 //   FOREIGN KEY financeiro_lancamentos_empresa_id_fkey: FOREIGN KEY (empresa_id) REFERENCES empresas(id) ON DELETE CASCADE
+//   FOREIGN KEY financeiro_lancamentos_fornecedor_id_fkey: FOREIGN KEY (fornecedor_id) REFERENCES fornecedores(id) ON DELETE SET NULL
 //   PRIMARY KEY financeiro_lancamentos_pkey: PRIMARY KEY (id)
+//   FOREIGN KEY financeiro_lancamentos_plano_conta_id_fkey: FOREIGN KEY (plano_conta_id) REFERENCES plano_contas(id) ON DELETE SET NULL
 // Table: fornecedores
 //   FOREIGN KEY fornecedores_empresa_id_fkey: FOREIGN KEY (empresa_id) REFERENCES empresas(id) ON DELETE CASCADE
 //   PRIMARY KEY fornecedores_pkey: PRIMARY KEY (id)
@@ -5817,6 +6445,12 @@ export const Constants = {
 //   PRIMARY KEY planejamento_safra_pkey: PRIMARY KEY (id)
 //   FOREIGN KEY planejamento_safra_responsavel_id_fkey: FOREIGN KEY (responsavel_id) REFERENCES usuarios(id)
 //   FOREIGN KEY planejamento_safra_safra_id_fkey: FOREIGN KEY (safra_id) REFERENCES safras(id) ON DELETE CASCADE
+// Table: plano_contas
+//   FOREIGN KEY plano_contas_empresa_id_fkey: FOREIGN KEY (empresa_id) REFERENCES empresas(id) ON DELETE CASCADE
+//   CHECK plano_contas_natureza_check: CHECK (((natureza)::text = ANY ((ARRAY['sintetica'::character varying, 'analitica'::character varying])::text[])))
+//   FOREIGN KEY plano_contas_pai_id_fkey: FOREIGN KEY (pai_id) REFERENCES plano_contas(id) ON DELETE SET NULL
+//   PRIMARY KEY plano_contas_pkey: PRIMARY KEY (id)
+//   CHECK plano_contas_tipo_check: CHECK (((tipo)::text = ANY ((ARRAY['ativo'::character varying, 'passivo'::character varying, 'receita'::character varying, 'despesa'::character varying, 'custo'::character varying])::text[])))
 // Table: planos
 //   UNIQUE planos_nome_key: UNIQUE (nome)
 //   PRIMARY KEY planos_pkey: PRIMARY KEY (id)
@@ -5850,6 +6484,13 @@ export const Constants = {
 //   CHECK requisicoes_internas_quantidade_check: CHECK ((quantidade > (0)::numeric))
 //   FOREIGN KEY requisicoes_internas_solicitante_id_fkey: FOREIGN KEY (solicitante_id) REFERENCES usuarios(id) ON DELETE SET NULL
 //   CHECK requisicoes_internas_status_check: CHECK (((status)::text = ANY ((ARRAY['pendente'::character varying, 'aprovado'::character varying, 'recusado'::character varying])::text[])))
+// Table: rolagens_container
+//   FOREIGN KEY rolagens_container_aprovado_por_fkey: FOREIGN KEY (aprovado_por) REFERENCES auth.users(id) ON DELETE SET NULL
+//   FOREIGN KEY rolagens_container_booking_novo_id_fkey: FOREIGN KEY (booking_novo_id) REFERENCES bookings(id) ON DELETE CASCADE
+//   FOREIGN KEY rolagens_container_booking_original_id_fkey: FOREIGN KEY (booking_original_id) REFERENCES bookings(id) ON DELETE CASCADE
+//   FOREIGN KEY rolagens_container_container_id_fkey: FOREIGN KEY (container_id) REFERENCES containers(id) ON DELETE CASCADE
+//   FOREIGN KEY rolagens_container_empresa_id_fkey: FOREIGN KEY (empresa_id) REFERENCES empresas(id) ON DELETE CASCADE
+//   PRIMARY KEY rolagens_container_pkey: PRIMARY KEY (id)
 // Table: romaneios_venda
 //   FOREIGN KEY romaneios_venda_cliente_id_fkey: FOREIGN KEY (cliente_id) REFERENCES clientes(id)
 //   FOREIGN KEY romaneios_venda_container_id_fkey: FOREIGN KEY (container_id) REFERENCES containers(id) ON DELETE SET NULL
@@ -5919,6 +6560,10 @@ export const Constants = {
 //   PRIMARY KEY vendedores_pkey: PRIMARY KEY (id)
 
 // --- ROW LEVEL SECURITY POLICIES ---
+// Table: adiantamentos_internacionais
+//   Policy "adiantamentos_internacionais_empresa" (ALL, PERMISSIVE) roles={authenticated}
+//     USING: (empresa_id = get_user_empresa_id())
+//     WITH CHECK: (empresa_id = get_user_empresa_id())
 // Table: alertas
 //   Policy "alertas_empresa" (ALL, PERMISSIVE) roles={authenticated}
 //     USING: (empresa_id = ( SELECT usuarios.empresa_id    FROM usuarios   WHERE (usuarios.id = auth.uid())))
@@ -5991,8 +6636,16 @@ export const Constants = {
 //   Policy "compras_requisicao_empresa" (ALL, PERMISSIVE) roles={authenticated}
 //     USING: (empresa_id = ( SELECT usuarios.empresa_id    FROM usuarios   WHERE (usuarios.id = auth.uid())))
 //     WITH CHECK: (empresa_id = ( SELECT usuarios.empresa_id    FROM usuarios   WHERE (usuarios.id = auth.uid())))
+// Table: conta_corrente_produtor
+//   Policy "conta_corrente_produtor_empresa" (ALL, PERMISSIVE) roles={authenticated}
+//     USING: (empresa_id = get_user_empresa_id())
+//     WITH CHECK: (empresa_id = get_user_empresa_id())
 // Table: containers
 //   Policy "containers_empresa" (ALL, PERMISSIVE) roles={authenticated}
+//     USING: (empresa_id = get_user_empresa_id())
+//     WITH CHECK: (empresa_id = get_user_empresa_id())
+// Table: contas_bancarias
+//   Policy "contas_bancarias_empresa" (ALL, PERMISSIVE) roles={authenticated}
 //     USING: (empresa_id = get_user_empresa_id())
 //     WITH CHECK: (empresa_id = get_user_empresa_id())
 // Table: cultivares
@@ -6015,6 +6668,10 @@ export const Constants = {
 //     WITH CHECK: (empresa_id = ( SELECT usuarios.empresa_id    FROM usuarios   WHERE (usuarios.id = auth.uid())))
 // Table: divergencias_carregamento
 //   Policy "divergencias_empresa" (ALL, PERMISSIVE) roles={authenticated}
+//     USING: (empresa_id = get_user_empresa_id())
+//     WITH CHECK: (empresa_id = get_user_empresa_id())
+// Table: documentos_exportacao
+//   Policy "documentos_exportacao_empresa" (ALL, PERMISSIVE) roles={authenticated}
 //     USING: (empresa_id = get_user_empresa_id())
 //     WITH CHECK: (empresa_id = get_user_empresa_id())
 // Table: empresas
@@ -6101,6 +6758,10 @@ export const Constants = {
 // Table: planejamento_safra
 //   Policy "planejamento_safra_empresa" (ALL, PERMISSIVE) roles={public}
 //     USING: (empresa_id = ( SELECT usuarios.empresa_id    FROM usuarios   WHERE (usuarios.id = auth.uid())))
+// Table: plano_contas
+//   Policy "plano_contas_empresa" (ALL, PERMISSIVE) roles={authenticated}
+//     USING: (empresa_id = get_user_empresa_id())
+//     WITH CHECK: (empresa_id = get_user_empresa_id())
 // Table: planos
 //   Policy "planos_admin_all" (ALL, PERMISSIVE) roles={authenticated}
 //     USING: is_admin_saas()
@@ -6131,6 +6792,10 @@ export const Constants = {
 //   Policy "requisicoes_internas_empresa" (ALL, PERMISSIVE) roles={authenticated}
 //     USING: (empresa_id = ( SELECT usuarios.empresa_id    FROM usuarios   WHERE (usuarios.id = auth.uid())))
 //     WITH CHECK: (empresa_id = ( SELECT usuarios.empresa_id    FROM usuarios   WHERE (usuarios.id = auth.uid())))
+// Table: rolagens_container
+//   Policy "rolagens_container_empresa" (ALL, PERMISSIVE) roles={authenticated}
+//     USING: (empresa_id = get_user_empresa_id())
+//     WITH CHECK: (empresa_id = get_user_empresa_id())
 // Table: romaneios_venda
 //   Policy "romaneios_empresa" (ALL, PERMISSIVE) roles={authenticated}
 //     USING: (empresa_id = get_user_empresa_id())
@@ -6400,6 +7065,56 @@ export const Constants = {
 //           WHERE id = OLD.lote_muda_id;
 //       END IF;
 //       RETURN NEW;
+//   END;
+//   $function$
+//
+// FUNCTION atualizar_saldo_conta_bancaria()
+//   CREATE OR REPLACE FUNCTION public.atualizar_saldo_conta_bancaria()
+//    RETURNS trigger
+//    LANGUAGE plpgsql
+//   AS $function$
+//   DECLARE
+//       v_diff numeric := 0;
+//   BEGIN
+//       IF TG_OP = 'INSERT' THEN
+//           IF NEW.status IN ('pago', 'recebido') AND NEW.conta_bancaria_id IS NOT NULL THEN
+//               IF NEW.tipo IN ('receita', 'transferencia_entrada') THEN
+//                   v_diff := NEW.valor;
+//               ELSE
+//                   v_diff := -NEW.valor;
+//               END IF;
+//               UPDATE public.contas_bancarias SET saldo_atual = COALESCE(saldo_atual, 0) + v_diff WHERE id = NEW.conta_bancaria_id;
+//           END IF;
+//       ELSIF TG_OP = 'UPDATE' THEN
+//           IF OLD.status IN ('pago', 'recebido') AND OLD.conta_bancaria_id IS NOT NULL THEN
+//               IF OLD.tipo IN ('receita', 'transferencia_entrada') THEN
+//                   v_diff := -OLD.valor;
+//               ELSE
+//                   v_diff := OLD.valor;
+//               END IF;
+//               UPDATE public.contas_bancarias SET saldo_atual = COALESCE(saldo_atual, 0) + v_diff WHERE id = OLD.conta_bancaria_id;
+//           END IF;
+//
+//           IF NEW.status IN ('pago', 'recebido') AND NEW.conta_bancaria_id IS NOT NULL THEN
+//               IF NEW.tipo IN ('receita', 'transferencia_entrada') THEN
+//                   v_diff := NEW.valor;
+//               ELSE
+//                   v_diff := -NEW.valor;
+//               END IF;
+//               UPDATE public.contas_bancarias SET saldo_atual = COALESCE(saldo_atual, 0) + v_diff WHERE id = NEW.conta_bancaria_id;
+//           END IF;
+//       ELSIF TG_OP = 'DELETE' THEN
+//           IF OLD.status IN ('pago', 'recebido') AND OLD.conta_bancaria_id IS NOT NULL THEN
+//               IF OLD.tipo IN ('receita', 'transferencia_entrada') THEN
+//                   v_diff := -OLD.valor;
+//               ELSE
+//                   v_diff := OLD.valor;
+//               END IF;
+//               UPDATE public.contas_bancarias SET saldo_atual = COALESCE(saldo_atual, 0) + v_diff WHERE id = OLD.conta_bancaria_id;
+//           END IF;
+//       END IF;
+//
+//       RETURN NULL;
 //   END;
 //   $function$
 //
@@ -7058,6 +7773,17 @@ export const Constants = {
 //   END;
 //   $function$
 //
+// FUNCTION set_updated_at()
+//   CREATE OR REPLACE FUNCTION public.set_updated_at()
+//    RETURNS trigger
+//    LANGUAGE plpgsql
+//   AS $function$
+//   BEGIN
+//       NEW.updated_at = NOW();
+//       RETURN NEW;
+//   END;
+//   $function$
+//
 // FUNCTION transplantio_automations()
 //   CREATE OR REPLACE FUNCTION public.transplantio_automations()
 //    RETURNS trigger
@@ -7229,12 +7955,16 @@ export const Constants = {
 //   trigger_culturas_fenologia_updated_at: CREATE TRIGGER trigger_culturas_fenologia_updated_at BEFORE UPDATE ON public.culturas_fenologia FOR EACH ROW EXECUTE FUNCTION set_atualizado_em()
 // Table: custos_talhao
 //   trigger_check_limite_orcamentario: CREATE TRIGGER trigger_check_limite_orcamentario AFTER INSERT OR UPDATE ON public.custos_talhao FOR EACH ROW EXECUTE FUNCTION check_limite_orcamentario()
+// Table: documentos_exportacao
+//   trigger_documentos_exportacao_updated_at: CREATE TRIGGER trigger_documentos_exportacao_updated_at BEFORE UPDATE ON public.documentos_exportacao FOR EACH ROW EXECUTE FUNCTION set_updated_at()
 // Table: empresas
 //   trigger_empresas_updated_at: CREATE TRIGGER trigger_empresas_updated_at BEFORE UPDATE ON public.empresas FOR EACH ROW EXECUTE FUNCTION set_atualizado_em()
 // Table: estufas
 //   trg_estufas_updated_at: CREATE TRIGGER trg_estufas_updated_at BEFORE UPDATE ON public.estufas FOR EACH ROW EXECUTE FUNCTION set_atualizado_em()
 // Table: fazendas
 //   trigger_fazendas_updated_at: CREATE TRIGGER trigger_fazendas_updated_at BEFORE UPDATE ON public.fazendas FOR EACH ROW EXECUTE FUNCTION set_atualizado_em()
+// Table: financeiro_lancamentos
+//   trg_atualizar_saldo_conta_bancaria: CREATE TRIGGER trg_atualizar_saldo_conta_bancaria AFTER INSERT OR DELETE OR UPDATE ON public.financeiro_lancamentos FOR EACH ROW EXECUTE FUNCTION atualizar_saldo_conta_bancaria()
 // Table: lotes_estoque
 //   trg_audit_lotes_estoque: CREATE TRIGGER trg_audit_lotes_estoque AFTER UPDATE ON public.lotes_estoque FOR EACH ROW EXECUTE FUNCTION audit_lotes_estoque_updates()
 //   trigger_check_estoque_critico: CREATE TRIGGER trigger_check_estoque_critico AFTER INSERT OR DELETE OR UPDATE ON public.lotes_estoque FOR EACH ROW EXECUTE FUNCTION check_estoque_critico()
@@ -7268,6 +7998,8 @@ export const Constants = {
 // Table: requisicoes_internas
 //   trigger_aprovar_requisicao_interna: CREATE TRIGGER trigger_aprovar_requisicao_interna BEFORE UPDATE ON public.requisicoes_internas FOR EACH ROW EXECUTE FUNCTION processa_aprovacao_requisicao_interna()
 //   trigger_requisicoes_internas_updated_at: CREATE TRIGGER trigger_requisicoes_internas_updated_at BEFORE UPDATE ON public.requisicoes_internas FOR EACH ROW EXECUTE FUNCTION set_atualizado_em()
+// Table: rolagens_container
+//   trigger_rolagens_container_updated_at: CREATE TRIGGER trigger_rolagens_container_updated_at BEFORE UPDATE ON public.rolagens_container FOR EACH ROW EXECUTE FUNCTION set_updated_at()
 // Table: romaneios_venda
 //   trg_generate_romaneio_number: CREATE TRIGGER trg_generate_romaneio_number BEFORE INSERT ON public.romaneios_venda FOR EACH ROW EXECUTE FUNCTION generate_romaneio_number()
 // Table: safras
@@ -7290,6 +8022,8 @@ export const Constants = {
 //   trigger_usuarios_updated_at: CREATE TRIGGER trigger_usuarios_updated_at BEFORE UPDATE ON public.usuarios FOR EACH ROW EXECUTE FUNCTION set_atualizado_em()
 
 // --- INDEXES ---
+// Table: adiantamentos_internacionais
+//   CREATE UNIQUE INDEX adiantamentos_internacionais_empresa_id_numero_adiantamento_key ON public.adiantamentos_internacionais USING btree (empresa_id, numero_adiantamento)
 // Table: audit_logs
 //   CREATE INDEX idx_audit_logs_empresa ON public.audit_logs USING btree (empresa_id)
 // Table: balanco_massas

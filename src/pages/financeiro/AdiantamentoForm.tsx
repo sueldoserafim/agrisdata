@@ -22,6 +22,7 @@ export default function AdiantamentoForm() {
 
   const [loading, setLoading] = useState(false)
   const [clientes, setClientes] = useState<any[]>([])
+  const [invoices, setInvoices] = useState<any[]>([])
 
   const [formData, setFormData] = useState<any>({
     data_adiantamento: new Date().toISOString().split('T')[0],
@@ -38,6 +39,13 @@ export default function AdiantamentoForm() {
         .select('id, nome')
         .eq('empresa_id', empresa.id)
         .then(({ data }) => setClientes(data || []))
+
+      supabase
+        .from('invoices_exportacao')
+        .select('id, numero_invoice')
+        .eq('empresa_id', empresa.id)
+        .then(({ data }) => setInvoices(data || []))
+
       if (id) {
         supabase
           .from('adiantamentos_internacionais' as any)
@@ -119,23 +127,46 @@ export default function AdiantamentoForm() {
           </div>
         </div>
 
-        <div className="space-y-2">
-          <Label>Cliente Internacional</Label>
-          <Select
-            value={formData.cliente_id || ''}
-            onValueChange={(val) => setFormData({ ...formData, cliente_id: val })}
-          >
-            <SelectTrigger>
-              <SelectValue placeholder="Selecione o importador" />
-            </SelectTrigger>
-            <SelectContent>
-              {clientes.map((c) => (
-                <SelectItem key={c.id} value={c.id}>
-                  {c.nome}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+        <div className="grid grid-cols-2 gap-4">
+          <div className="space-y-2">
+            <Label>Cliente Internacional</Label>
+            <Select
+              value={formData.cliente_id || ''}
+              onValueChange={(val) => setFormData({ ...formData, cliente_id: val })}
+            >
+              <SelectTrigger>
+                <SelectValue placeholder="Selecione o importador" />
+              </SelectTrigger>
+              <SelectContent>
+                {clientes.map((c) => (
+                  <SelectItem key={c.id} value={c.id}>
+                    {c.nome}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+          <div className="space-y-2">
+            <Label>Invoice de Exportação (Opcional)</Label>
+            <Select
+              value={formData.invoice_id || 'none'}
+              onValueChange={(val) =>
+                setFormData({ ...formData, invoice_id: val === 'none' ? null : val })
+              }
+            >
+              <SelectTrigger>
+                <SelectValue placeholder="Selecione a Invoice" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="none">Nenhuma</SelectItem>
+                {invoices.map((inv) => (
+                  <SelectItem key={inv.id} value={inv.id}>
+                    {inv.numero_invoice}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
         </div>
 
         <div className="grid grid-cols-3 gap-4 p-4 bg-muted/30 rounded border">

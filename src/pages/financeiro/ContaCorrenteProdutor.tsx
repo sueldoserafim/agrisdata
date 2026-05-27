@@ -25,7 +25,9 @@ import { toast } from 'sonner'
 export default function ContaCorrenteProdutor() {
   const { empresa } = useEmpresa()
   const [produtores, setProdutores] = useState<any[]>([])
+  const [safras, setSafras] = useState<any[]>([])
   const [selectedProdutor, setSelectedProdutor] = useState<string>('')
+  const [selectedSafra, setSelectedSafra] = useState<string>('todas')
   const [movimentos, setMovimentos] = useState<any[]>([])
   const [saldoFinal, setSaldoFinal] = useState(0)
 
@@ -36,13 +38,24 @@ export default function ContaCorrenteProdutor() {
   })
 
   useEffect(() => {
-    if (empresa) loadProdutores()
+    if (empresa) {
+      loadProdutores()
+      loadSafras()
+    }
   }, [empresa])
 
   useEffect(() => {
     if (selectedProdutor) loadMovimentos()
     else setMovimentos([])
-  }, [selectedProdutor])
+  }, [selectedProdutor, selectedSafra])
+
+  const loadSafras = async () => {
+    const { data } = await supabase
+      .from('safras')
+      .select('id, nome_safra')
+      .eq('empresa_id', empresa?.id)
+    if (data) setSafras(data)
+  }
 
   const loadProdutores = async () => {
     const { data } = await supabase
@@ -54,12 +67,18 @@ export default function ContaCorrenteProdutor() {
   }
 
   const loadMovimentos = async () => {
-    const { data } = await supabase
+    let q = supabase
       .from('conta_corrente_produtor' as any)
       .select('*, safras(nome_safra)')
       .eq('produtor_id', selectedProdutor)
       .order('data_movimento', { ascending: true })
       .order('created_at', { ascending: true })
+
+    if (selectedSafra !== 'todas') {
+      q = q.eq('safra_id', selectedSafra)
+    }
+
+    const { data } = await q
 
     if (data) {
       let calcSaldo = 0
@@ -106,8 +125,8 @@ export default function ContaCorrenteProdutor() {
         </div>
       </div>
 
-      <div className="bg-card border p-4 rounded-lg flex items-end gap-4">
-        <div className="space-y-2 flex-1 max-w-md">
+      <div className="bg-card border p-4 rounded-lg flex flex-wrap items-end gap-4">
+        <div className="space-y-2 flex-1 max-w-md min-w-[200px]">
           <Label>Selecione o Produtor</Label>
           <Select value={selectedProdutor} onValueChange={setSelectedProdutor}>
             <SelectTrigger>
@@ -117,6 +136,22 @@ export default function ContaCorrenteProdutor() {
               {produtores.map((p) => (
                 <SelectItem key={p.id} value={p.id}>
                   {p.nome}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+        <div className="space-y-2 flex-1 max-w-[200px]">
+          <Label>Filtrar por Safra</Label>
+          <Select value={selectedSafra} onValueChange={setSelectedSafra}>
+            <SelectTrigger>
+              <SelectValue placeholder="Todas as Safras" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="todas">Todas</SelectItem>
+              {safras.map((s) => (
+                <SelectItem key={s.id} value={s.id}>
+                  {s.nome_safra}
                 </SelectItem>
               ))}
             </SelectContent>
@@ -204,6 +239,27 @@ export default function ContaCorrenteProdutor() {
             <DialogTitle>Registrar Movimento</DialogTitle>
           </DialogHeader>
           <div className="space-y-4 py-4">
+            <div className="space-y-2">
+              <Label>Safra (Opcional)</Label>
+              <Select
+                value={formData.safra_id || 'none'}
+                onValueChange={(val) =>
+                  setFormData({ ...formData, safra_id: val === 'none' ? null : val })
+                }
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Nenhuma" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="none">Nenhuma</SelectItem>
+                  {safras.map((s) => (
+                    <SelectItem key={s.id} value={s.id}>
+                      {s.nome_safra}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label>Data</Label>

@@ -41,6 +41,7 @@ export default function ContasBancariasList() {
     moeda: 'brl',
     saldo_atual: 0,
   })
+  const [editingId, setEditingId] = useState<string | null>(null)
 
   useEffect(() => {
     if (empresa) loadContas()
@@ -62,11 +63,28 @@ export default function ContasBancariasList() {
       return
     }
 
-    const { error } = await supabase.from('contas_bancarias' as any).insert({
-      empresa_id: empresa?.id,
-      ...formData,
-      saldo_inicial: formData.saldo_atual || 0,
-    })
+    let error
+    if (editingId) {
+      const { error: updateError } = await supabase
+        .from('contas_bancarias' as any)
+        .update({
+          nome_banco: formData.nome_banco,
+          agencia: formData.agencia,
+          conta: formData.conta,
+          tipo: formData.tipo,
+          moeda: formData.moeda,
+          saldo_atual: formData.saldo_atual,
+        })
+        .eq('id', editingId)
+      error = updateError
+    } else {
+      const { error: insertError } = await supabase.from('contas_bancarias' as any).insert({
+        empresa_id: empresa?.id,
+        ...formData,
+        saldo_inicial: formData.saldo_atual || 0,
+      })
+      error = insertError
+    }
 
     if (error) {
       toast.error('Erro ao salvar conta bancária')
@@ -75,7 +93,14 @@ export default function ContasBancariasList() {
       setOpen(false)
       loadContas()
       setFormData({ tipo: 'corrente', moeda: 'brl', saldo_atual: 0 })
+      setEditingId(null)
     }
+  }
+
+  const handleEdit = (conta: ContaBancaria) => {
+    setFormData(conta)
+    setEditingId(conta.id)
+    setOpen(true)
   }
 
   const handleDelete = async (id: string) => {
@@ -104,16 +129,38 @@ export default function ContasBancariasList() {
     }).format(val || 0)
   }
 
+  const calcularTotalBRL = () => {
+    // Estimativa simples para dashboard/relatório
+    return contas.reduce((acc, c) => {
+      let rate = 1
+      if (c.moeda === 'usd') rate = 5.0
+      if (c.moeda === 'eur') rate = 5.4
+      return acc + (c.saldo_atual || 0) * rate
+    }, 0)
+  }
+
   return (
     <div className="p-6 space-y-6">
-      <div className="flex justify-between items-center">
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
         <div>
           <h1 className="text-3xl font-bold tracking-tight">Contas Bancárias</h1>
           <p className="text-muted-foreground">Gerencie saldos e contas da empresa.</p>
         </div>
-        <Button onClick={() => setOpen(true)}>
-          <Plus className="w-4 h-4 mr-2" /> Nova Conta
-        </Button>
+        <div className="flex items-center gap-4">
+          <div className="bg-muted px-4 py-2 rounded-lg text-sm hidden md:block">
+            Saldo Total Estimado:{' '}
+            <span className="font-bold text-lg">{formatCurrency(calcularTotalBRL(), 'BRL')}</span>
+          </div>
+          <Button
+            onClick={() => {
+              setFormData({ tipo: 'corrente', moeda: 'brl', saldo_atual: 0 })
+              setEditingId(null)
+              setOpen(true)
+            }}
+          >
+            <Plus className="w-4 h-4 mr-2" /> Nova Conta
+          </Button>
+        </div>
       </div>
 
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
@@ -124,14 +171,24 @@ export default function ContasBancariasList() {
                 <Landmark className="w-4 h-4 text-blue-500" />
                 {conta.nome_banco}
               </CardTitle>
-              <Button
-                variant="ghost"
-                size="icon"
-                className="text-red-500 h-6 w-6"
-                onClick={() => handleDelete(conta.id)}
-              >
-                <Trash2 className="w-3 h-3" />
-              </Button>
+              <div className="flex items-center">
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="h-6 w-6"
+                  onClick={() => handleEdit(conta)}
+                >
+                  <Landmark className="w-3 h-3" />
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="text-red-500 h-6 w-6 ml-1"
+                  onClick={() => handleDelete(conta.id)}
+                >
+                  <Trash2 className="w-3 h-3" />
+                </Button>
+              </div>
             </CardHeader>
             <CardContent>
               <div className="text-sm text-muted-foreground mb-2 capitalize">
@@ -153,7 +210,7 @@ export default function ContasBancariasList() {
       <Dialog open={open} onOpenChange={setOpen}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Nova Conta Bancária</DialogTitle>
+            <DialogTitle>{editingId ? 'Editar Conta Bancária' : 'Nova Conta Bancária'}</DialogTitle>
           </DialogHeader>
           <div className="space-y-4 py-4">
             <div className="space-y-2">
