@@ -82,7 +82,7 @@ BEGIN
     NEW.custo_total := NEW.quantidade * NEW.custo_unitario;
     RETURN NEW;
 END;
-$;
+$$;
 
 DROP TRIGGER IF EXISTS trg_calcular_custo_total_item_transplantio ON public.transplantio_itens;
 CREATE TRIGGER trg_calcular_custo_total_item_transplantio
@@ -112,7 +112,7 @@ BEGIN
     END IF;
     RETURN NEW;
 END;
-$;
+$$;
 
 DROP TRIGGER IF EXISTS trg_atualizar_quantidade_viva_transplantio ON public.transplantios;
 CREATE TRIGGER trg_atualizar_quantidade_viva_transplantio
