@@ -45,6 +45,8 @@ import ProdutoList from './pages/produtos/ProdutoList'
 import ProdutoForm from './pages/produtos/ProdutoForm'
 import LotesMudasList from './pages/mudas/LotesMudasList'
 import LotesMudasForm from './pages/mudas/LotesMudasForm'
+import EstufasList from './pages/estufas/EstufasList'
+import EstufasAnalytics from './pages/estufas/EstufasAnalytics'
 import TransplantioList from './pages/estufas/TransplantioList'
 import TransplantioWizard from './pages/estufas/TransplantioWizard'
 import TransplantioDetail from './pages/estufas/TransplantioDetail'
@@ -127,6 +129,9 @@ const App = () => (
                 <Route path="/app/fazendas" element={<FazendaList />} />
                 <Route path="/app/fazendas/new" element={<FazendaForm />} />
                 <Route path="/app/fazendas/:id" element={<FazendaForm />} />
+
+                <Route path="/app/estufas" element={<EstufasList />} />
+                <Route path="/app/estufas/analytics" element={<EstufasAnalytics />} />
 
                 <Route path="/app/talhoes" element={<TalhaoList />} />
                 <Route path="/app/talhoes/new" element={<TalhaoForm />} />

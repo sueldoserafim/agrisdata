@@ -100,10 +100,15 @@ export default function EstufasList() {
           <h1 className="text-3xl font-bold tracking-tight">Estufas & Viveiros</h1>
           <p className="text-muted-foreground mt-1">Gerencie os ambientes de produção de mudas</p>
         </div>
-        <Button onClick={() => navigate('/app/estufas/nova')}>
-          <Plus className="mr-2 h-4 w-4" />
-          Nova Estufa
-        </Button>
+        <div className="flex gap-2">
+          <Button variant="outline" onClick={() => navigate('/app/estufas/analytics')}>
+            Analytics
+          </Button>
+          <Button onClick={() => navigate('/app/estufas/nova')}>
+            <Plus className="mr-2 h-4 w-4" />
+            Nova Estufa
+          </Button>
+        </div>
       </div>
 
       <div className="relative w-full sm:max-w-md mb-6">

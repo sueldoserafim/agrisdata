@@ -58,10 +58,15 @@ export default function TransplantioList() {
             Histórico de transferências de mudas para o campo
           </p>
         </div>
-        <Button onClick={() => navigate('/app/transplantios/novo')}>
-          <Plus className="mr-2 h-4 w-4" />
-          Registrar Transplantio
-        </Button>
+        <div className="flex gap-2">
+          <Button variant="outline" onClick={() => navigate('/app/estufas/analytics')}>
+            Analytics
+          </Button>
+          <Button onClick={() => navigate('/app/transplantios/novo')}>
+            <Plus className="mr-2 h-4 w-4" />
+            Registrar Transplantio
+          </Button>
+        </div>
       </div>
 
       <Card>
