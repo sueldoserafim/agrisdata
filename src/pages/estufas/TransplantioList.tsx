@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
-import { Plus, Leaf, Sprout } from 'lucide-react'
+import { Plus, Leaf, Sprout, Eye } from 'lucide-react'
 import { supabase } from '@/lib/supabase/client'
 import { useEmpresa } from '@/hooks/use-empresa'
 import { Button } from '@/components/ui/button'
@@ -85,6 +85,7 @@ export default function TransplantioList() {
                   <TableHead className="text-right">Qtd. Plantada</TableHead>
                   <TableHead className="text-right">Qtd. Replantio</TableHead>
                   <TableHead className="text-right">Custo Transferido</TableHead>
+                  <TableHead className="text-right">Ações</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -114,6 +115,13 @@ export default function TransplantioList() {
                         style: 'currency',
                         currency: 'BRL',
                       }).format(t.custo_transferido || 0)}
+                    </TableCell>
+                    <TableCell className="text-right space-x-2">
+                      <Button variant="ghost" size="icon" asChild>
+                        <Link to={`/app/transplantios/${t.id}`}>
+                          <Eye className="h-4 w-4" />
+                        </Link>
+                      </Button>
                     </TableCell>
                   </TableRow>
                 ))}

@@ -45,6 +45,9 @@ import ProdutoList from './pages/produtos/ProdutoList'
 import ProdutoForm from './pages/produtos/ProdutoForm'
 import LotesMudasList from './pages/mudas/LotesMudasList'
 import LotesMudasForm from './pages/mudas/LotesMudasForm'
+import TransplantioList from './pages/estufas/TransplantioList'
+import TransplantioWizard from './pages/estufas/TransplantioWizard'
+import TransplantioDetail from './pages/estufas/TransplantioDetail'
 import AlmoxarifadoDashboard from './pages/estoque/AlmoxarifadoDashboard'
 import RequisicoesInternasList from './pages/estoque/RequisicoesInternasList'
 import RequisicoesInternasForm from './pages/estoque/RequisicoesInternasForm'
@@ -163,6 +166,10 @@ const App = () => (
                 <Route path="/app/mudas" element={<LotesMudasList />} />
                 <Route path="/app/mudas/novo" element={<LotesMudasForm />} />
                 <Route path="/app/mudas/:id" element={<LotesMudasForm />} />
+
+                <Route path="/app/transplantios" element={<TransplantioList />} />
+                <Route path="/app/transplantios/novo" element={<TransplantioWizard />} />
+                <Route path="/app/transplantios/:id" element={<TransplantioDetail />} />
 
                 <Route path="/app/safras" element={<SafraDashboard />} />
                 <Route path="/app/safras/new" element={<SafraForm />} />
