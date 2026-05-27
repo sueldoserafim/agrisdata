@@ -97,6 +97,10 @@ import ConciliacaoBancaria from './pages/financeiro/ConciliacaoBancaria'
 import ContaCorrenteProdutor from './pages/financeiro/ContaCorrenteProdutor'
 import AdiantamentosList from './pages/financeiro/AdiantamentosList'
 import AdiantamentoForm from './pages/financeiro/AdiantamentoForm'
+import AccountSalesList from './pages/financeiro/AccountSalesList'
+import AccountSalesForm from './pages/financeiro/AccountSalesForm'
+import HistoricoContainer from './pages/financeiro/HistoricoContainer'
+import FormacaoPreco from './pages/financeiro/FormacaoPreco'
 import RastreabilidadeDetail from './pages/producao/colheita/RastreabilidadeDetail'
 import PackingDashboard from './pages/packing/PackingDashboard'
 import PackingRecepcoesList from './pages/packing/PackingRecepcoesList'
@@ -318,6 +322,14 @@ const App = () => (
                 <Route path="/app/financeiro/adiantamentos/novo" element={<AdiantamentoForm />} />
                 <Route path="/app/financeiro/adiantamentos/:id" element={<AdiantamentoForm />} />
                 <Route path="/app/financeiro/rentabilidade" element={<RentabilidadeList />} />
+                <Route path="/app/financeiro/account-sales" element={<AccountSalesList />} />
+                <Route path="/app/financeiro/account-sales/novo" element={<AccountSalesForm />} />
+                <Route path="/app/financeiro/account-sales/:id" element={<AccountSalesForm />} />
+                <Route
+                  path="/app/financeiro/historico-container"
+                  element={<HistoricoContainer />}
+                />
+                <Route path="/app/financeiro/formacao-preco" element={<FormacaoPreco />} />
                 <Route
                   path="/app/producao/colheita/rastreabilidade/:id"
                   element={<RastreabilidadeDetail />}

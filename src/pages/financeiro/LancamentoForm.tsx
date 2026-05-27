@@ -97,6 +97,20 @@ export default function LancamentoForm() {
       return
     }
 
+    if (formData.valor <= 0) {
+      toast.error('O valor deve ser maior que zero')
+      return
+    }
+
+    if (
+      (formData.status === 'pago' || formData.status === 'recebido') &&
+      formData.data_pagamento &&
+      formData.data_pagamento < formData.data_lancamento
+    ) {
+      toast.error('Data de pagamento não pode ser anterior à data de lançamento')
+      return
+    }
+
     setLoading(true)
 
     const payload = {

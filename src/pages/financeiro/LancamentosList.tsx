@@ -20,6 +20,7 @@ export default function LancamentosList() {
   const [filterTipo, setFilterTipo] = useState<string>('todos')
   const [filterStatus, setFilterStatus] = useState<string>('todos')
   const [filterConta, setFilterConta] = useState<string>('todas')
+  const [filterPeriodo, setFilterPeriodo] = useState<string>('30d')
   const [contas, setContas] = useState<any[]>([])
 
   useEffect(() => {
@@ -27,7 +28,7 @@ export default function LancamentosList() {
       loadLancamentos()
       loadContas()
     }
-  }, [empresa, filterTipo, filterStatus, filterConta])
+  }, [empresa, filterTipo, filterStatus, filterConta, filterPeriodo])
 
   const loadContas = async () => {
     const { data } = await supabase
@@ -47,6 +48,17 @@ export default function LancamentosList() {
 
     if (filterTipo !== 'todos') {
       q = q.eq('tipo', filterTipo)
+    }
+
+    if (filterPeriodo !== 'todos') {
+      const today = new Date()
+      let start = new Date()
+      if (filterPeriodo === '30d') {
+        start.setDate(today.getDate() - 30)
+      } else if (filterPeriodo === '90d') {
+        start.setDate(today.getDate() - 90)
+      }
+      q = q.gte('data_vencimento', start.toISOString().split('T')[0])
     }
     if (filterStatus !== 'todos') {
       q = q.eq('status', filterStatus)
@@ -127,6 +139,17 @@ export default function LancamentosList() {
                   {c.nome_banco}
                 </SelectItem>
               ))}
+            </SelectContent>
+          </Select>
+
+          <Select value={filterPeriodo} onValueChange={setFilterPeriodo}>
+            <SelectTrigger className="w-[140px]">
+              <SelectValue placeholder="Período" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="todos">Todo o Período</SelectItem>
+              <SelectItem value="30d">Últimos 30 dias</SelectItem>
+              <SelectItem value="90d">Últimos 90 dias</SelectItem>
             </SelectContent>
           </Select>
 

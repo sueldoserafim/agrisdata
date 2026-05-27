@@ -73,6 +73,11 @@ export default function AdiantamentoForm() {
       return
     }
 
+    if (formData.taxa_cambio <= 0) {
+      toast.error('Taxa de câmbio deve ser maior que zero')
+      return
+    }
+
     setLoading(true)
     const payload = { ...formData, empresa_id: empresa?.id }
 

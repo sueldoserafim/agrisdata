@@ -2314,6 +2314,7 @@ export type Database = {
           empresa_id: string
           fornecedor_id: string | null
           id: string
+          invoice_id: string | null
           observacoes: string | null
           parcela: number | null
           plano_conta_id: string | null
@@ -2337,6 +2338,7 @@ export type Database = {
           empresa_id: string
           fornecedor_id?: string | null
           id?: string
+          invoice_id?: string | null
           observacoes?: string | null
           parcela?: number | null
           plano_conta_id?: string | null
@@ -2360,6 +2362,7 @@ export type Database = {
           empresa_id?: string
           fornecedor_id?: string | null
           id?: string
+          invoice_id?: string | null
           observacoes?: string | null
           parcela?: number | null
           plano_conta_id?: string | null
@@ -2403,6 +2406,13 @@ export type Database = {
             columns: ['fornecedor_id']
             isOneToOne: false
             referencedRelation: 'fornecedores'
+            referencedColumns: ['id']
+          },
+          {
+            foreignKeyName: 'financeiro_lancamentos_invoice_id_fkey'
+            columns: ['invoice_id']
+            isOneToOne: false
+            referencedRelation: 'invoices_exportacao'
             referencedColumns: ['id']
           },
           {
@@ -5662,6 +5672,7 @@ export const Constants = {
 //   cliente_id: uuid (nullable)
 //   centro_custo_id: uuid (nullable)
 //   observacoes: text (nullable)
+//   invoice_id: uuid (nullable)
 // Table: fornecedores
 //   id: uuid (not null, default: gen_random_uuid())
 //   empresa_id: uuid (not null)
@@ -6359,6 +6370,7 @@ export const Constants = {
 //   FOREIGN KEY financeiro_lancamentos_conta_bancaria_id_fkey: FOREIGN KEY (conta_bancaria_id) REFERENCES contas_bancarias(id) ON DELETE SET NULL
 //   FOREIGN KEY financeiro_lancamentos_empresa_id_fkey: FOREIGN KEY (empresa_id) REFERENCES empresas(id) ON DELETE CASCADE
 //   FOREIGN KEY financeiro_lancamentos_fornecedor_id_fkey: FOREIGN KEY (fornecedor_id) REFERENCES fornecedores(id) ON DELETE SET NULL
+//   FOREIGN KEY financeiro_lancamentos_invoice_id_fkey: FOREIGN KEY (invoice_id) REFERENCES invoices_exportacao(id) ON DELETE SET NULL
 //   PRIMARY KEY financeiro_lancamentos_pkey: PRIMARY KEY (id)
 //   FOREIGN KEY financeiro_lancamentos_plano_conta_id_fkey: FOREIGN KEY (plano_conta_id) REFERENCES plano_contas(id) ON DELETE SET NULL
 // Table: fornecedores
@@ -8043,6 +8055,8 @@ export const Constants = {
 //   CREATE UNIQUE INDEX empresas_cnpj_key ON public.empresas USING btree (cnpj)
 //   CREATE UNIQUE INDEX empresas_slug_key ON public.empresas USING btree (slug)
 //   CREATE INDEX idx_empresas_slug ON public.empresas USING btree (slug) WHERE (deleted_at IS NULL)
+// Table: financeiro_lancamentos
+//   CREATE INDEX idx_financeiro_lancamentos_invoice_id ON public.financeiro_lancamentos USING btree (invoice_id)
 // Table: graus_dia
 //   CREATE UNIQUE INDEX graus_dia_safra_id_data_key ON public.graus_dia USING btree (safra_id, data)
 // Table: invoices_exportacao
