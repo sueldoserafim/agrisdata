@@ -13,13 +13,14 @@ import {
 } from '@/components/ui/table'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
-import { ArrowLeft, CheckCircle2, DollarSign, Sprout, Target } from 'lucide-react'
+import { ArrowLeft, CheckCircle2, DollarSign, Sprout, Target, RotateCcw } from 'lucide-react'
 
 export default function TransplantioDetail() {
   const { id } = useParams()
   const { empresa } = useEmpresa()
   const [transplantio, setTransplantio] = useState<any>(null)
   const [itens, setItens] = useState<any[]>([])
+  const [replantios, setReplantios] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
@@ -49,6 +50,14 @@ export default function TransplantioDetail() {
         .select('*, produtos(nome)')
         .eq('transplantio_id', id)
       setItens(iData || [])
+
+      const { data: rData } = await supabase
+        .from('replantios')
+        .select('*')
+        .eq('transplantio_id', id)
+        .is('deleted_at', null)
+        .order('data_replantio', { ascending: false })
+      setReplantios(rData || [])
     }
     setLoading(false)
   }
@@ -59,6 +68,17 @@ export default function TransplantioDetail() {
 
   const formatCurrency = (val: number) =>
     new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(val || 0)
+
+  const motivoLabel = (motivo: string) => {
+    const map: any = {
+      falha_germinacao: 'Falha na Germinação',
+      pragas: 'Pragas',
+      doencas: 'Doenças',
+      clima: 'Clima',
+      outro: 'Outro',
+    }
+    return map[motivo] || motivo
+  }
 
   return (
     <div className="p-6 max-w-5xl mx-auto space-y-6">
@@ -166,6 +186,57 @@ export default function TransplantioDetail() {
                     </TableCell>
                     <TableCell className="text-right font-medium">
                       {formatCurrency(item.custo_total)}
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          )}
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader className="flex flex-row items-center justify-between">
+          <div>
+            <CardTitle>Histórico de Replantios</CardTitle>
+            <CardDescription>
+              Mudas adicionadas após o transplantio inicial devido a perdas.
+            </CardDescription>
+          </div>
+          <Button variant="outline" size="sm" asChild>
+            <Link to={`/app/replantios/novo?transplantio=${id}`}>
+              <RotateCcw className="h-4 w-4 mr-2" />
+              Novo Replantio
+            </Link>
+          </Button>
+        </CardHeader>
+        <CardContent>
+          {replantios.length === 0 ? (
+            <div className="text-center py-6 text-muted-foreground">
+              Nenhum replantio registrado.
+            </div>
+          ) : (
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Data</TableHead>
+                  <TableHead>Motivo</TableHead>
+                  <TableHead>Observações</TableHead>
+                  <TableHead className="text-right">Quantidade</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {replantios.map((r) => (
+                  <TableRow key={r.id}>
+                    <TableCell>{new Date(r.data_replantio).toLocaleDateString('pt-BR')}</TableCell>
+                    <TableCell>
+                      <Badge variant="secondary">{motivoLabel(r.motivo)}</Badge>
+                    </TableCell>
+                    <TableCell className="max-w-xs truncate" title={r.observacoes}>
+                      {r.observacoes || '-'}
+                    </TableCell>
+                    <TableCell className="text-right font-medium text-amber-600">
+                      +{r.quantidade_replantada}
                     </TableCell>
                   </TableRow>
                 ))}
