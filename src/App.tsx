@@ -88,6 +88,14 @@ import EquipamentoList from './pages/equipamentos/EquipamentoList'
 import EquipamentoForm from './pages/equipamentos/EquipamentoForm'
 import EquipamentoDetail from './pages/equipamentos/EquipamentoDetail'
 import RentabilidadeList from './pages/financeiro/RentabilidadeList'
+import FinanceiroDashboard from './pages/financeiro/FinanceiroDashboard'
+import PlanoContasList from './pages/financeiro/PlanoContasList'
+import ContasBancariasList from './pages/financeiro/ContasBancariasList'
+import LancamentosList from './pages/financeiro/LancamentosList'
+import LancamentoForm from './pages/financeiro/LancamentoForm'
+import ContaCorrenteProdutor from './pages/financeiro/ContaCorrenteProdutor'
+import AdiantamentosList from './pages/financeiro/AdiantamentosList'
+import AdiantamentoForm from './pages/financeiro/AdiantamentoForm'
 import RastreabilidadeDetail from './pages/producao/colheita/RastreabilidadeDetail'
 import PackingDashboard from './pages/packing/PackingDashboard'
 import PackingRecepcoesList from './pages/packing/PackingRecepcoesList'
@@ -297,10 +305,16 @@ const App = () => (
                 <Route path="/app/exportacao/rolagem" element={<RolagensList />} />
                 <Route path="/app/exportacao/rolagem/nova" element={<RolagemForm />} />
                 <Route path="/app/exportacao/rolagem/:id" element={<RolagemForm />} />
-                <Route
-                  path="/app/financeiro"
-                  element={<div className="p-8 font-semibold text-xl">Financeiro</div>}
-                />
+                <Route path="/app/financeiro" element={<FinanceiroDashboard />} />
+                <Route path="/app/financeiro/plano-contas" element={<PlanoContasList />} />
+                <Route path="/app/financeiro/contas" element={<ContasBancariasList />} />
+                <Route path="/app/financeiro/lancamentos" element={<LancamentosList />} />
+                <Route path="/app/financeiro/lancamentos/novo" element={<LancamentoForm />} />
+                <Route path="/app/financeiro/lancamentos/:id" element={<LancamentoForm />} />
+                <Route path="/app/financeiro/produtores" element={<ContaCorrenteProdutor />} />
+                <Route path="/app/financeiro/adiantamentos" element={<AdiantamentosList />} />
+                <Route path="/app/financeiro/adiantamentos/novo" element={<AdiantamentoForm />} />
+                <Route path="/app/financeiro/adiantamentos/:id" element={<AdiantamentoForm />} />
                 <Route path="/app/financeiro/rentabilidade" element={<RentabilidadeList />} />
                 <Route
                   path="/app/producao/colheita/rastreabilidade/:id"

@@ -279,7 +279,42 @@ export const allMenuItems: MenuItemRaw[] = [
         icon: CircleDollarSign,
         label: 'Financeiro',
         subItems: [
-          { icon: CircleDollarSign, label: 'Geral', path: '/app/financeiro', module: 'financeiro' },
+          {
+            icon: LayoutDashboard,
+            label: 'Dashboard',
+            path: '/app/financeiro',
+            module: 'financeiro',
+          },
+          {
+            icon: BookOpen,
+            label: 'Plano de Contas',
+            path: '/app/financeiro/plano-contas',
+            module: 'financeiro',
+          },
+          {
+            icon: Briefcase,
+            label: 'Contas Bancárias',
+            path: '/app/financeiro/contas',
+            module: 'financeiro',
+          },
+          {
+            icon: ClipboardList,
+            label: 'Lançamentos',
+            path: '/app/financeiro/lancamentos',
+            module: 'financeiro',
+          },
+          {
+            icon: Users,
+            label: 'C/C Produtores',
+            path: '/app/financeiro/produtores',
+            module: 'financeiro',
+          },
+          {
+            icon: Globe,
+            label: 'Adiantamentos (Intl)',
+            path: '/app/financeiro/adiantamentos',
+            module: 'financeiro',
+          },
           {
             icon: LineChart,
             label: 'Rentabilidade de Lotes',
