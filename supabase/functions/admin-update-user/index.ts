@@ -16,17 +16,14 @@ Deno.serve(async (req: Request) => {
     const supabaseClient = createClient(
       Deno.env.get('SUPABASE_URL') ?? '',
       Deno.env.get('SUPABASE_ANON_KEY') ?? '',
-      { global: { headers: { Authorization: authHeader } } },
+      { global: { headers: { Authorization: authHeader } } }
     )
-
-    const {
-      data: { user },
-      error: userError,
-    } = await supabaseClient.auth.getUser()
+    
+    const { data: { user }, error: userError } = await supabaseClient.auth.getUser()
     if (userError || !user) {
       throw new Error(`Unauthorized: ${userError?.message || 'User not found'}`)
     }
-
+    
     const { data: profile, error: profileError } = await supabaseClient
       .from('usuarios')
       .select('perfil, empresa_id')
@@ -36,7 +33,7 @@ Deno.serve(async (req: Request) => {
     if (profileError || !profile) {
       throw new Error('Forbidden: Profile not found')
     }
-
+    
     if (profile.perfil !== 'admin' && profile.perfil !== 'admin_saas') {
       throw new Error('Forbidden: Only admins can update users.')
     }
@@ -44,7 +41,7 @@ Deno.serve(async (req: Request) => {
     const supabaseAdmin = createClient(
       Deno.env.get('SUPABASE_URL') ?? '',
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? '',
-      { auth: { persistSession: false } },
+      { auth: { persistSession: false } }
     )
 
     const payload = await req.json()
@@ -60,10 +57,7 @@ Deno.serve(async (req: Request) => {
     if (nome) updateData.user_metadata = { name: nome }
 
     if (Object.keys(updateData).length > 0) {
-      const { data: authData, error: authError } = await supabaseAdmin.auth.admin.updateUserById(
-        id,
-        updateData,
-      )
+      const { data: authData, error: authError } = await supabaseAdmin.auth.admin.updateUserById(id, updateData)
       if (authError) {
         throw new Error(`Error updating user in auth: ${authError.message}`)
       }
@@ -85,12 +79,12 @@ Deno.serve(async (req: Request) => {
     }
 
     return new Response(JSON.stringify({ success: true }), {
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' }
     })
   } catch (err: any) {
     return new Response(JSON.stringify({ error: err.message }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      status: 400,
+      status: 400
     })
   }
 })
