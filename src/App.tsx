@@ -93,6 +93,11 @@ import PackingDashboard from './pages/packing/PackingDashboard'
 import PackingRecepcoesList from './pages/packing/PackingRecepcoesList'
 import PackingRecepcaoForm from './pages/packing/PackingRecepcaoForm'
 import PalletList from './pages/packing/PalletList'
+import RomaneioList from './pages/packing/RomaneioList'
+import RomaneioForm from './pages/packing/RomaneioForm'
+import RomaneioDetail from './pages/packing/RomaneioDetail'
+import SessaoCarregamentoList from './pages/packing/SessaoCarregamentoList'
+import SessaoCarregamentoApp from './pages/packing/SessaoCarregamentoApp'
 
 const App = () => (
   <BrowserRouter future={{ v7_startTransition: false, v7_relativeSplatPath: false }}>
@@ -256,6 +261,11 @@ const App = () => (
                 <Route path="/app/packing/recepcao/nova" element={<PackingRecepcaoForm />} />
                 <Route path="/app/packing/recepcao/:id" element={<PackingRecepcaoForm />} />
                 <Route path="/app/packing/pallets" element={<PalletList />} />
+                <Route path="/app/packing/romaneios" element={<RomaneioList />} />
+                <Route path="/app/packing/romaneios/novo" element={<RomaneioForm />} />
+                <Route path="/app/packing/romaneios/:id" element={<RomaneioDetail />} />
+                <Route path="/app/packing/expedicao" element={<SessaoCarregamentoList />} />
+                <Route path="/app/packing/expedicao/:id" element={<SessaoCarregamentoApp />} />
                 <Route
                   path="/app/exportacao"
                   element={<div className="p-8 font-semibold text-xl">Exportação</div>}

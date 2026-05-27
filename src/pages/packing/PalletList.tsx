@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { Plus, Printer } from 'lucide-react'
 import { useEmpresa } from '@/hooks/use-empresa'
+import { useAuth } from '@/hooks/use-auth'
 import { supabase } from '@/lib/supabase/client'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
@@ -14,30 +15,67 @@ import {
 } from '@/components/ui/table'
 import { Badge } from '@/components/ui/badge'
 import { useToast } from '@/hooks/use-toast'
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from '@/components/ui/dialog'
+import { Label } from '@/components/ui/label'
+import { Input } from '@/components/ui/input'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
 
 export default function PalletList() {
   const { empresa } = useEmpresa()
+  const { user } = useAuth()
   const { toast } = useToast()
   const [items, setItems] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
+
+  const [recepcoes, setRecepcoes] = useState<any[]>([])
+  const [produtos, setProdutos] = useState<any[]>([])
+  const [openModal, setOpenModal] = useState(false)
+  const [form, setForm] = useState({
+    recepcao_id: '',
+    produto_id: '',
+    peso_liquido_kg: '',
+    quantidade_caixas: '',
+    calibre: '',
+    temperatura_camara: '',
+  })
 
   const loadData = async () => {
     if (!empresa?.id) return
     setLoading(true)
     const { data, error } = await supabase
       .from('pallets')
-      .select(`
-        id, codigo, peso_kg, status, conformidade_percentual, destino, created_at,
-        safra:safras(nome_safra)
-      `)
+      .select(
+        `id, codigo_pallet, peso_liquido_kg, quantidade_caixas, status, created_at, produto:produtos(nome)`,
+      )
       .eq('empresa_id', empresa.id)
       .order('created_at', { ascending: false })
 
-    if (error) {
-      toast({ title: 'Erro', description: error.message, variant: 'destructive' })
-    } else {
-      setItems(data || [])
-    }
+    if (error) toast({ title: 'Erro', description: error.message, variant: 'destructive' })
+    else setItems(data || [])
+
+    // Fetch dropdowns
+    const [{ data: rData }, { data: pData }] = await Promise.all([
+      supabase
+        .from('packing_recepcoes')
+        .select('id, data_recepcao, colheita:colheita_registros(lote_producao)')
+        .eq('empresa_id', empresa.id),
+      supabase.from('produtos').select('id, nome').eq('empresa_id', empresa.id),
+    ])
+    setRecepcoes(rData || [])
+    setProdutos(pData || [])
+
     setLoading(false)
   }
 
@@ -45,11 +83,47 @@ export default function PalletList() {
     loadData()
   }, [empresa?.id])
 
-  const printLabel = (codigo: string) => {
+  const handleCreate = async () => {
+    if (!empresa?.id) return
+    const { data, error } = await supabase
+      .from('pallets')
+      .insert({
+        empresa_id: empresa.id,
+        recepcao_id: form.recepcao_id || null,
+        produto_id: form.produto_id || null,
+        peso_liquido_kg: Number(form.peso_liquido_kg) || 0,
+        quantidade_caixas: Number(form.quantidade_caixas) || 0,
+        calibre: form.calibre,
+        temperatura_camara: Number(form.temperatura_camara) || null,
+        status: 'em_camara',
+      })
+      .select()
+      .single()
+
+    if (error) {
+      toast({ title: 'Erro', description: error.message, variant: 'destructive' })
+    } else {
+      toast({ title: 'Sucesso', description: 'Pallet criado com sucesso.' })
+      setOpenModal(false)
+      loadData()
+    }
+  }
+
+  const printLabel = async (pallet: any) => {
     toast({
-      title: 'Etiqueta ZPL Gerada',
-      description: `Enviando para impressora - Pallet: ${codigo}`,
+      title: 'Gerando Etiqueta',
+      description: `Enviando ZPL do Pallet: ${pallet.codigo_pallet} para impressora...`,
     })
+
+    if (empresa?.id && user?.id) {
+      await supabase.from('etiquetas_impressas').insert({
+        empresa_id: empresa.id,
+        pallet_id: pallet.id,
+        numero_etiqueta: pallet.codigo_pallet,
+        impresso_por: user.id,
+      })
+      await supabase.from('pallets').update({ etiqueta_impressa: true }).eq('id', pallet.id)
+    }
   }
 
   return (
@@ -57,21 +131,98 @@ export default function PalletList() {
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
           <h1 className="text-3xl font-bold tracking-tight">Gestão de Pallets</h1>
-          <p className="text-muted-foreground">
-            Controle de pallets formados no packing house e seus destinos logísticos
-          </p>
+          <p className="text-muted-foreground">Controle de pallets formados no packing house.</p>
         </div>
-        <Button
-          onClick={() =>
-            toast({
-              title: 'Em breve',
-              description: 'A criação manual de pallets estará disponível em breve.',
-            })
-          }
-        >
-          <Plus className="w-4 h-4 mr-2" />
-          Novo Pallet
-        </Button>
+
+        <Dialog open={openModal} onOpenChange={setOpenModal}>
+          <DialogTrigger asChild>
+            <Button>
+              <Plus className="w-4 h-4 mr-2" /> Novo Pallet
+            </Button>
+          </DialogTrigger>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Criar Novo Pallet</DialogTitle>
+            </DialogHeader>
+            <div className="space-y-4 pt-4">
+              <div className="space-y-2">
+                <Label>Recepção (Lote)</Label>
+                <Select
+                  value={form.recepcao_id}
+                  onValueChange={(v) => setForm({ ...form, recepcao_id: v })}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Selecione..." />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {recepcoes.map((r) => (
+                      <SelectItem key={r.id} value={r.id}>
+                        {r.colheita?.lote_producao} -{' '}
+                        {new Date(r.data_recepcao).toLocaleDateString()}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-2">
+                <Label>Produto</Label>
+                <Select
+                  value={form.produto_id}
+                  onValueChange={(v) => setForm({ ...form, produto_id: v })}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Selecione..." />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {produtos.map((p) => (
+                      <SelectItem key={p.id} value={p.id}>
+                        {p.nome}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label>Peso Líquido (kg)</Label>
+                  <Input
+                    type="number"
+                    value={form.peso_liquido_kg}
+                    onChange={(e) => setForm({ ...form, peso_liquido_kg: e.target.value })}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label>Qtd Caixas</Label>
+                  <Input
+                    type="number"
+                    value={form.quantidade_caixas}
+                    onChange={(e) => setForm({ ...form, quantidade_caixas: e.target.value })}
+                  />
+                </div>
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label>Calibre</Label>
+                  <Input
+                    value={form.calibre}
+                    onChange={(e) => setForm({ ...form, calibre: e.target.value })}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label>Temp. Câmara (°C)</Label>
+                  <Input
+                    type="number"
+                    value={form.temperatura_camara}
+                    onChange={(e) => setForm({ ...form, temperatura_camara: e.target.value })}
+                  />
+                </div>
+              </div>
+              <Button className="w-full" onClick={handleCreate}>
+                Salvar Pallet
+              </Button>
+            </div>
+          </DialogContent>
+        </Dialog>
       </div>
 
       <Card className="shadow-subtle border-none">
@@ -83,11 +234,10 @@ export default function PalletList() {
             <TableHeader>
               <TableRow>
                 <TableHead>Código</TableHead>
-                <TableHead>Safra</TableHead>
+                <TableHead>Produto</TableHead>
                 <TableHead>Data Formação</TableHead>
-                <TableHead>Peso (kg)</TableHead>
-                <TableHead>Conformidade</TableHead>
-                <TableHead>Destino</TableHead>
+                <TableHead>Peso Líq (kg)</TableHead>
+                <TableHead>Caixas</TableHead>
                 <TableHead>Status</TableHead>
                 <TableHead className="text-right">Ações</TableHead>
               </TableRow>
@@ -95,26 +245,20 @@ export default function PalletList() {
             <TableBody>
               {items.length === 0 && !loading && (
                 <TableRow>
-                  <TableCell colSpan={8} className="text-center text-muted-foreground py-8">
+                  <TableCell colSpan={7} className="text-center py-8">
                     Nenhum pallet registrado.
                   </TableCell>
                 </TableRow>
               )}
               {items.map((item) => (
                 <TableRow key={item.id}>
-                  <TableCell className="font-mono font-semibold">{item.codigo}</TableCell>
-                  <TableCell>{item.safra?.nome_safra}</TableCell>
-                  <TableCell>{new Date(item.created_at).toLocaleDateString('pt-BR')}</TableCell>
-                  <TableCell>{item.peso_kg}</TableCell>
-                  <TableCell>{item.conformidade_percentual}%</TableCell>
-                  <TableCell className="capitalize">{item.destino?.replace('_', ' ')}</TableCell>
+                  <TableCell className="font-mono font-semibold">{item.codigo_pallet}</TableCell>
+                  <TableCell>{item.produto?.nome || 'N/A'}</TableCell>
+                  <TableCell>{new Date(item.created_at).toLocaleDateString()}</TableCell>
+                  <TableCell>{item.peso_liquido_kg}</TableCell>
+                  <TableCell>{item.quantidade_caixas}</TableCell>
                   <TableCell>
-                    <Badge
-                      variant={item.status === 'embarcado' ? 'default' : 'secondary'}
-                      className={
-                        item.status === 'embarcado' ? 'bg-emerald-100 text-emerald-800' : ''
-                      }
-                    >
+                    <Badge variant="outline" className="capitalize">
                       {item.status?.replace('_', ' ')}
                     </Badge>
                   </TableCell>
@@ -122,8 +266,8 @@ export default function PalletList() {
                     <Button
                       variant="ghost"
                       size="icon"
-                      title="Gerar Etiqueta ZPL"
-                      onClick={() => printLabel(item.codigo)}
+                      title="Imprimir Etiqueta ZPL"
+                      onClick={() => printLabel(item)}
                     >
                       <Printer className="w-4 h-4 text-muted-foreground" />
                     </Button>

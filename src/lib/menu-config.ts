@@ -207,6 +207,13 @@ export const allMenuItems: MenuItemRaw[] = [
             module: 'packing',
           },
           { icon: Package, label: 'Pallets', path: '/app/packing/pallets', module: 'packing' },
+          {
+            icon: ClipboardList,
+            label: 'Romaneios',
+            path: '/app/packing/romaneios',
+            module: 'packing',
+          },
+          { icon: Truck, label: 'Expedição', path: '/app/packing/expedicao', module: 'packing' },
         ],
         module: 'packing',
       },
