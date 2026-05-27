@@ -93,6 +93,7 @@ import PlanoContasList from './pages/financeiro/PlanoContasList'
 import ContasBancariasList from './pages/financeiro/ContasBancariasList'
 import LancamentosList from './pages/financeiro/LancamentosList'
 import LancamentoForm from './pages/financeiro/LancamentoForm'
+import ConciliacaoBancaria from './pages/financeiro/ConciliacaoBancaria'
 import ContaCorrenteProdutor from './pages/financeiro/ContaCorrenteProdutor'
 import AdiantamentosList from './pages/financeiro/AdiantamentosList'
 import AdiantamentoForm from './pages/financeiro/AdiantamentoForm'
@@ -311,6 +312,7 @@ const App = () => (
                 <Route path="/app/financeiro/lancamentos" element={<LancamentosList />} />
                 <Route path="/app/financeiro/lancamentos/novo" element={<LancamentoForm />} />
                 <Route path="/app/financeiro/lancamentos/:id" element={<LancamentoForm />} />
+                <Route path="/app/financeiro/conciliacao" element={<ConciliacaoBancaria />} />
                 <Route path="/app/financeiro/produtores" element={<ContaCorrenteProdutor />} />
                 <Route path="/app/financeiro/adiantamentos" element={<AdiantamentosList />} />
                 <Route path="/app/financeiro/adiantamentos/novo" element={<AdiantamentoForm />} />

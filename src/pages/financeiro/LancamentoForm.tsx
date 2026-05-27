@@ -27,6 +27,7 @@ export default function LancamentoForm() {
   const [fornecedores, setFornecedores] = useState<any[]>([])
   const [clientes, setClientes] = useState<any[]>([])
   const [centrosCusto, setCentrosCusto] = useState<any[]>([])
+  const [invoices, setInvoices] = useState<any[]>([])
 
   const [formData, setFormData] = useState<any>({
     tipo: 'despesa',
@@ -46,7 +47,7 @@ export default function LancamentoForm() {
   }, [empresa, id])
 
   const loadDependencies = async () => {
-    const [cRes, pRes, fRes, clRes, ccRes] = await Promise.all([
+    const [cRes, pRes, fRes, clRes, ccRes, iRes] = await Promise.all([
       supabase
         .from('contas_bancarias' as any)
         .select('id, nome_banco, moeda')
@@ -60,8 +61,13 @@ export default function LancamentoForm() {
       supabase.from('fornecedores').select('id, nome').eq('empresa_id', empresa?.id),
       supabase.from('clientes').select('id, nome').eq('empresa_id', empresa?.id),
       supabase.from('centros_custo').select('id, nome').eq('empresa_id', empresa?.id),
+      supabase
+        .from('invoices_exportacao')
+        .select('id, numero_invoice')
+        .eq('empresa_id', empresa?.id),
     ])
     if (cRes.data) setContas(cRes.data)
+    if (iRes.data) setInvoices(iRes.data)
     if (pRes.data) setPlanoContas(pRes.data)
     if (fRes.data) setFornecedores(fRes.data)
     if (clRes.data) setClientes(clRes.data)
@@ -99,6 +105,7 @@ export default function LancamentoForm() {
       fornecedor_id: formData.fornecedor_id || null,
       cliente_id: formData.cliente_id || null,
       centro_custo_id: formData.centro_custo_id || null,
+      invoice_id: formData.invoice_id || null,
     }
 
     if (payload.status === 'pago' || payload.status === 'recebido') {
@@ -321,6 +328,27 @@ export default function LancamentoForm() {
                 </SelectContent>
               </Select>
             )}
+          </div>
+          <div className="space-y-2">
+            <Label>Exportação (Invoice)</Label>
+            <Select
+              value={formData.invoice_id || 'none'}
+              onValueChange={(val) =>
+                setFormData({ ...formData, invoice_id: val === 'none' ? null : val })
+              }
+            >
+              <SelectTrigger>
+                <SelectValue placeholder="Selecione (Opcional)" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="none">Nenhuma</SelectItem>
+                {invoices.map((inv) => (
+                  <SelectItem key={inv.id} value={inv.id}>
+                    {inv.numero_invoice}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
           <div className="space-y-2">
             <Label>Centro de Custo</Label>

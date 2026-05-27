@@ -37,6 +37,8 @@ import {
   Ship,
   Anchor,
   CircleDollarSign,
+  Globe,
+  RefreshCcw,
   UserPlus,
   Sliders,
   ShieldAlert,
@@ -301,6 +303,12 @@ export const allMenuItems: MenuItemRaw[] = [
             icon: ClipboardList,
             label: 'Lançamentos',
             path: '/app/financeiro/lancamentos',
+            module: 'financeiro',
+          },
+          {
+            icon: RefreshCcw,
+            label: 'Conciliação Bancária',
+            path: '/app/financeiro/conciliacao',
             module: 'financeiro',
           },
           {

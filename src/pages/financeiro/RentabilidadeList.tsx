@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { supabase } from '@/lib/supabase/client'
 import { useEmpresa } from '@/hooks/use-empresa'
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import {
   Table,
   TableBody,
@@ -10,196 +10,188 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table'
-import { Button } from '@/components/ui/button'
-import { Link } from 'react-router-dom'
-import { FileText, Loader2, DollarSign, TrendingUp, Package } from 'lucide-react'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
 
 export default function RentabilidadeList() {
   const { empresa } = useEmpresa()
-  const [items, setItems] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
+  const [data, setData] = useState<any[]>([])
+
+  const [clientes, setClientes] = useState<any[]>([])
+  const [navios, setNavios] = useState<any[]>([])
+
+  const [filterCliente, setFilterCliente] = useState<string>('todos')
+  const [filterNavio, setFilterNavio] = useState<string>('todos')
 
   useEffect(() => {
-    if (empresa?.id) loadData()
-  }, [empresa?.id])
+    if (empresa) {
+      loadDependencies()
+      loadData()
+    }
+  }, [empresa, filterCliente, filterNavio])
+
+  const loadDependencies = async () => {
+    const [clRes, nRes] = await Promise.all([
+      supabase.from('clientes').select('id, nome').eq('empresa_id', empresa?.id),
+      supabase.from('navios').select('id, nome_navio').eq('empresa_id', empresa?.id),
+    ])
+    if (clRes.data) setClientes(clRes.data)
+    if (nRes.data) setNavios(nRes.data)
+  }
 
   const loadData = async () => {
     setLoading(true)
-    const { data, error } = await supabase
-      .from('colheita_registros')
+    let query = supabase
+      .from('invoices_exportacao')
       .select(`
-        id,
-        lote_producao,
-        producao_liquida_ton,
-        producao_bruta_ton,
-        quantidade_colhida_kg,
-        area_colhida_ha,
-        data_colheita,
-        safra:safras!inner (
-          id,
-          nome_safra,
-          status,
-          custos_talhao ( valor )
-        )
+        id, 
+        numero_invoice, 
+        data_emissao,
+        cliente_id,
+        clientes(nome),
+        container_id,
+        containers(navio_id, navios(nome_navio)),
+        financeiro_lancamentos(id, tipo, valor, status)
       `)
       .eq('empresa_id', empresa?.id)
-      .in('safra.status', ['em_colheita', 'encerrada'])
 
-    if (data && data.length > 0) {
-      const mapped = data.map((c: any) => {
-        const safraTotalCost =
-          c.safra?.custos_talhao?.reduce(
-            (acc: number, val: any) => acc + (Number(val.valor) || 0),
-            0,
-          ) || 0
-        const lotProd =
-          Number(c.producao_liquida_ton) ||
-          Number(c.producao_bruta_ton) ||
-          Number(c.quantidade_colhida_kg) / 1000 ||
-          0
-        const area = Number(c.area_colhida_ha) || 1
+    if (filterCliente !== 'todos') {
+      query = query.eq('cliente_id', filterCliente)
+    }
 
-        const yieldTonHa = lotProd / area
-        const costPerTon = lotProd > 0 ? safraTotalCost / lotProd : 0
+    const { data: invoices } = await query
+
+    if (invoices) {
+      let filteredInvoices = invoices
+
+      if (filterNavio !== 'todos') {
+        filteredInvoices = filteredInvoices.filter(
+          (inv: any) => inv.containers?.navio_id === filterNavio,
+        )
+      }
+
+      const processed = filteredInvoices.map((inv: any) => {
+        let receitas = 0
+        let despesas = 0
+
+        inv.financeiro_lancamentos?.forEach((lanc: any) => {
+          if (lanc.tipo === 'receita') receitas += Number(lanc.valor)
+          if (lanc.tipo === 'despesa' || lanc.tipo === 'custo') despesas += Number(lanc.valor)
+        })
+
+        const lucro = receitas - despesas
+        const margem = receitas > 0 ? (lucro / receitas) * 100 : 0
 
         return {
-          id: c.id,
-          lote: c.lote_producao || `Lote #${c.id.substring(0, 6)}`,
-          safra: c.safra?.nome_safra || 'N/A',
-          data: c.data_colheita,
-          lotProd,
-          yieldTonHa,
-          costPerTon,
-          totalInvestment: safraTotalCost,
+          id: inv.id,
+          numero: inv.numero_invoice,
+          cliente: inv.clientes?.nome || 'N/A',
+          navio: inv.containers?.navios?.nome_navio || 'N/A',
+          receitas,
+          despesas,
+          lucro,
+          margem,
         }
       })
-      setItems(mapped)
-    } else {
-      setItems([
-        {
-          id: 'mock-1',
-          lote: 'LOTE-2026-A1',
-          safra: 'Safra Verão 2026',
-          data: '2026-03-15',
-          lotProd: 120.5,
-          yieldTonHa: 4.2,
-          costPerTon: 850.4,
-          totalInvestment: 102473.2,
-        },
-        {
-          id: 'mock-2',
-          lote: 'LOTE-2026-B2',
-          safra: 'Safra Inverno 2026',
-          data: '2026-08-20',
-          lotProd: 85.0,
-          yieldTonHa: 3.8,
-          costPerTon: 910.0,
-          totalInvestment: 77350.0,
-        },
-      ])
+      setData(processed)
     }
     setLoading(false)
   }
 
-  const formatCurrency = (value: number) =>
-    new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(value)
-  const formatNumber = (value: number) =>
-    new Intl.NumberFormat('pt-BR', { maximumFractionDigits: 2 }).format(value)
-
-  const totalLots = items.length
-  const avgCostPerTon = items.reduce((acc, curr) => acc + curr.costPerTon, 0) / (totalLots || 1)
-  const totalInvested = items.reduce((acc, curr) => acc + curr.totalInvestment, 0)
+  const formatCurrency = (val: number) => {
+    return new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(val)
+  }
 
   return (
-    <div className="p-8 max-w-7xl mx-auto space-y-6">
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-        <div>
-          <h1 className="text-3xl font-bold tracking-tight">Rentabilidade de Lotes</h1>
-          <p className="text-muted-foreground">
-            Análise financeira cruzada entre produção e custos operacionais.
-          </p>
-        </div>
+    <div className="p-6 space-y-6">
+      <div>
+        <h1 className="text-3xl font-bold tracking-tight">Rentabilidade por Exportação</h1>
+        <p className="text-muted-foreground">Análise de lucro por Invoice (Receitas vs Custos).</p>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <Card className="shadow-subtle border-none">
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium">Lotes Analisados</CardTitle>
-            <Package className="w-4 h-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{totalLots}</div>
-          </CardContent>
-        </Card>
-        <Card className="shadow-subtle border-none">
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium">Custo Médio / Ton</CardTitle>
-            <TrendingUp className="w-4 h-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{formatCurrency(avgCostPerTon)}</div>
-          </CardContent>
-        </Card>
-        <Card className="shadow-subtle border-none">
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium">Investimento Total</CardTitle>
-            <DollarSign className="w-4 h-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{formatCurrency(totalInvested)}</div>
-          </CardContent>
-        </Card>
+      <div className="flex gap-4">
+        <Select value={filterCliente} onValueChange={setFilterCliente}>
+          <SelectTrigger className="w-[200px]">
+            <SelectValue placeholder="Cliente" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="todos">Todos Clientes</SelectItem>
+            {clientes.map((c) => (
+              <SelectItem key={c.id} value={c.id}>
+                {c.nome}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+
+        <Select value={filterNavio} onValueChange={setFilterNavio}>
+          <SelectTrigger className="w-[200px]">
+            <SelectValue placeholder="Navio" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="todos">Todos Navios</SelectItem>
+            {navios.map((n) => (
+              <SelectItem key={n.id} value={n.id}>
+                {n.nome_navio}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
       </div>
 
-      <Card className="shadow-subtle border-none">
-        <CardHeader>
-          <CardTitle>Detalhamento por Lote</CardTitle>
-          <CardDescription>Relação de custos totais e produção por lote colhido</CardDescription>
-        </CardHeader>
-        <CardContent>
-          {loading ? (
-            <div className="flex justify-center p-8">
-              <Loader2 className="w-6 h-6 animate-spin text-primary" />
-            </div>
-          ) : (
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Lote de Produção</TableHead>
-                  <TableHead>Safra</TableHead>
-                  <TableHead className="text-right">Produção (Ton)</TableHead>
-                  <TableHead className="text-right">Produtividade (Ton/ha)</TableHead>
-                  <TableHead className="text-right">Custo / Ton</TableHead>
-                  <TableHead className="text-right">Investimento Total</TableHead>
-                  <TableHead className="text-center">Ações</TableHead>
+      <Card>
+        <CardContent className="p-0">
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>Invoice</TableHead>
+                <TableHead>Cliente</TableHead>
+                <TableHead>Navio</TableHead>
+                <TableHead className="text-right">Receitas</TableHead>
+                <TableHead className="text-right">Custos/Despesas</TableHead>
+                <TableHead className="text-right">Lucro Líquido</TableHead>
+                <TableHead className="text-right">Margem (%)</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {data.map((row) => (
+                <TableRow key={row.id}>
+                  <TableCell className="font-medium">{row.numero}</TableCell>
+                  <TableCell>{row.cliente}</TableCell>
+                  <TableCell>{row.navio}</TableCell>
+                  <TableCell className="text-right text-green-600">
+                    {formatCurrency(row.receitas)}
+                  </TableCell>
+                  <TableCell className="text-right text-red-600">
+                    {formatCurrency(row.despesas)}
+                  </TableCell>
+                  <TableCell
+                    className={`text-right font-bold ${row.lucro >= 0 ? 'text-green-600' : 'text-red-600'}`}
+                  >
+                    {formatCurrency(row.lucro)}
+                  </TableCell>
+                  <TableCell
+                    className={`text-right ${row.margem >= 0 ? 'text-green-600' : 'text-red-600'}`}
+                  >
+                    {row.margem.toFixed(2)}%
+                  </TableCell>
                 </TableRow>
-              </TableHeader>
-              <TableBody>
-                {items.map((item) => (
-                  <TableRow key={item.id}>
-                    <TableCell className="font-semibold">{item.lote}</TableCell>
-                    <TableCell>{item.safra}</TableCell>
-                    <TableCell className="text-right">{formatNumber(item.lotProd)}</TableCell>
-                    <TableCell className="text-right">{formatNumber(item.yieldTonHa)}</TableCell>
-                    <TableCell className="text-right text-destructive font-medium">
-                      {formatCurrency(item.costPerTon)}
-                    </TableCell>
-                    <TableCell className="text-right font-medium">
-                      {formatCurrency(item.totalInvestment)}
-                    </TableCell>
-                    <TableCell className="text-center">
-                      <Button variant="ghost" size="sm" asChild>
-                        <Link to={`/app/producao/colheita/rastreabilidade/${item.id}`}>
-                          <FileText className="w-4 h-4 mr-2" />
-                          Rastreabilidade
-                        </Link>
-                      </Button>
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          )}
+              ))}
+              {data.length === 0 && !loading && (
+                <TableRow>
+                  <TableCell colSpan={7} className="text-center py-4 text-muted-foreground">
+                    Nenhuma rentabilidade calculada para os filtros selecionados.
+                  </TableCell>
+                </TableRow>
+              )}
+            </TableBody>
+          </Table>
         </CardContent>
       </Card>
     </div>
