@@ -6,7 +6,7 @@ import * as z from 'zod'
 import { ArrowLeft, Leaf, Plus, Trash2 } from 'lucide-react'
 import { supabase } from '@/lib/supabase/client'
 import { useEmpresa } from '@/hooks/use-empresa'
-import { useToast } from '@/components/ui/use-toast'
+import { useToast } from '@/hooks/use-toast'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import {
@@ -44,6 +44,7 @@ const formSchema = z.object({
   quantidade_transplantada: z.coerce.number().min(1, 'Mínimo de 1 muda'),
   quantidade_replantio: z.coerce.number().min(0).default(0),
   area_plantada_ha: z.coerce.number().min(0.01).optional(),
+  densidade_plantio: z.coerce.number().min(0).optional(),
   itens: z.array(itemSchema).default([]),
 })
 
@@ -65,6 +66,7 @@ export default function TransplantioWizard() {
       data_transplantio: new Date().toISOString().split('T')[0],
       quantidade_transplantada: 0,
       quantidade_replantio: 0,
+      densidade_plantio: 0,
       itens: [],
     },
   })
@@ -75,6 +77,8 @@ export default function TransplantioWizard() {
   })
 
   const watchLote = form.watch('lote_muda_id')
+  const watchQtd = form.watch('quantidade_transplantada')
+  const watchArea = form.watch('area_plantada_ha')
 
   useEffect(() => {
     if (empresa) {
@@ -95,6 +99,14 @@ export default function TransplantioWizard() {
     }
   }, [watchLote, lotes])
 
+  useEffect(() => {
+    if (watchQtd && watchArea) {
+      form.setValue('densidade_plantio', Math.round(watchQtd / watchArea))
+    } else {
+      form.setValue('densidade_plantio', 0)
+    }
+  }, [watchQtd, watchArea, form])
+
   const loadDependencies = async () => {
     const [resLotes, resSafras, resTalhoes] = await Promise.all([
       supabase
@@ -107,18 +119,25 @@ export default function TransplantioWizard() {
         .from('safras')
         .select('id, nome_safra, codigo_safra')
         .eq('empresa_id', empresa!.id)
-        .in('status', ['planejada', 'em_andamento'])
+        .in('status', ['planejada', 'em_andamento', 'em_plantio'])
         .is('deleted_at', null),
       supabase
         .from('talhoes')
-        .select('id, nome')
+        .select('id, nome, status_atual')
         .eq('empresa_id', empresa!.id)
         .is('deleted_at', null),
     ])
 
     if (resLotes.data) setLotes(resLotes.data)
     if (resSafras.data) setSafras(resSafras.data)
-    if (resTalhoes.data) setTalhoes(resTalhoes.data)
+    if (resTalhoes.data) {
+      // Filtrar apenas disponíveis ou em repouso
+      setTalhoes(
+        resTalhoes.data.filter(
+          (t) => !t.status_atual || t.status_atual === 'disponível' || t.status_atual === 'repouso',
+        ),
+      )
+    }
   }
 
   const loadProdutos = async () => {
@@ -136,10 +155,26 @@ export default function TransplantioWizard() {
     if (totalMudadasUsadas > selectedLote.quantidade_viva) {
       toast({
         title: 'Quantidade Excedida',
-        description: 'A soma de transplantio e replantio é maior que o saldo vivo do lote.',
+        description: `A soma de transplantio e replantio (${totalMudadasUsadas}) é maior que o saldo vivo do lote (${selectedLote.quantidade_viva}).`,
         variant: 'destructive',
       })
       return
+    }
+
+    if (selectedLote.data_prevista_transplantio) {
+      const dataPrevista = new Date(selectedLote.data_prevista_transplantio).getTime()
+      const dataTransplantio = new Date(values.data_transplantio).getTime()
+      const diffDays = (dataTransplantio - dataPrevista) / (1000 * 3600 * 24)
+
+      if (diffDays < -7) {
+        toast({
+          title: 'Data Inválida',
+          description:
+            'A data do transplantio não pode ser anterior à data prevista em mais de 7 dias.',
+          variant: 'destructive',
+        })
+        return
+      }
     }
 
     setLoading(true)
@@ -245,23 +280,33 @@ export default function TransplantioWizard() {
               />
 
               {selectedLote && (
-                <div className="bg-muted p-4 rounded-md text-sm grid grid-cols-2 gap-2">
+                <div className="bg-muted/50 p-4 rounded-md text-sm grid grid-cols-2 md:grid-cols-4 gap-4 border">
                   <div>
-                    <span className="font-semibold">Cultura:</span> {selectedLote.culturas?.nome}
+                    <p className="text-muted-foreground text-xs uppercase mb-1">Cultura</p>
+                    <p className="font-semibold">{selectedLote.culturas?.nome}</p>
                   </div>
                   <div>
-                    <span className="font-semibold">Semeado em:</span>{' '}
-                    {selectedLote.data_semeadura
-                      ? new Date(selectedLote.data_semeadura).toLocaleDateString('pt-BR')
-                      : '-'}
+                    <p className="text-muted-foreground text-xs uppercase mb-1">Semeado em</p>
+                    <p className="font-semibold">
+                      {selectedLote.data_semeadura
+                        ? new Date(selectedLote.data_semeadura).toLocaleDateString('pt-BR')
+                        : '-'}
+                    </p>
                   </div>
                   <div>
-                    <span className="font-semibold">Mudas Disponíveis:</span>{' '}
-                    {selectedLote.quantidade_viva}
+                    <p className="text-muted-foreground text-xs uppercase mb-1">
+                      Mudas Disponíveis
+                    </p>
+                    <p className="font-semibold text-emerald-600">{selectedLote.quantidade_viva}</p>
                   </div>
                   <div>
-                    <span className="font-semibold">Custo/Muda:</span> R${' '}
-                    {selectedLote.custo_por_muda}
+                    <p className="text-muted-foreground text-xs uppercase mb-1">Custo Un.</p>
+                    <p className="font-semibold">
+                      {new Intl.NumberFormat('pt-BR', {
+                        style: 'currency',
+                        currency: 'BRL',
+                      }).format(selectedLote.custo_por_muda || 0)}
+                    </p>
                   </div>
                 </div>
               )}
@@ -271,6 +316,9 @@ export default function TransplantioWizard() {
           <Card>
             <CardHeader>
               <CardTitle>2. Destino (Campo)</CardTitle>
+              <CardDescription>
+                Apenas talhões com status "disponível" ou "repouso" podem receber mudas.
+              </CardDescription>
             </CardHeader>
             <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <FormField
@@ -329,7 +377,7 @@ export default function TransplantioWizard() {
             <CardHeader>
               <CardTitle>3. Dados Operacionais</CardTitle>
             </CardHeader>
-            <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <CardContent className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <FormField
                 control={form.control}
                 name="data_transplantio"
@@ -367,7 +415,27 @@ export default function TransplantioWizard() {
                     <FormControl>
                       <Input type="number" {...field} />
                     </FormControl>
-                    <FormDescription>Quantidade de mudas transferidas.</FormDescription>
+                    <FormDescription>Transferidas.</FormDescription>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="densidade_plantio"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Densidade (Mudas/ha)</FormLabel>
+                    <FormControl>
+                      <Input
+                        type="number"
+                        {...field}
+                        readOnly
+                        className="bg-muted text-muted-foreground"
+                      />
+                    </FormControl>
+                    <FormDescription>Calculado auto.</FormDescription>
                     <FormMessage />
                   </FormItem>
                 )}
@@ -382,7 +450,7 @@ export default function TransplantioWizard() {
                     <FormControl>
                       <Input type="number" {...field} />
                     </FormControl>
-                    <FormDescription>Mudas usadas para cobrir falhas.</FormDescription>
+                    <FormDescription>Usadas p/ falhas.</FormDescription>
                     <FormMessage />
                   </FormItem>
                 )}
@@ -394,8 +462,7 @@ export default function TransplantioWizard() {
             <CardHeader>
               <CardTitle>4. Custos Operacionais (Opcional)</CardTitle>
               <CardDescription>
-                Adicione os insumos, mão de obra, água ou energia utilizados na operação do
-                transplantio.
+                Adicione insumos, mão de obra, água ou energia da operação.
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">

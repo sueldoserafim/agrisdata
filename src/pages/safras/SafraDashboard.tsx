@@ -176,7 +176,7 @@ export default function SafraDashboard() {
   const normalizeStatus = (status: string | null) => {
     if (!status) return 'planejada'
     const s = status.toLowerCase()
-    if (s.includes('andamento') || s === 'em_andamento') return 'em_andamento'
+    if (s.includes('andamento') || s === 'em_andamento' || s === 'em_plantio') return 'em_andamento'
     if (s.includes('encerra') || s.includes('finaliza')) return 'finalizada'
     return 'planejada'
   }

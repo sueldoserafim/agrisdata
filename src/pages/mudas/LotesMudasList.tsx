@@ -1,7 +1,15 @@
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
-import { Plus, Edit } from 'lucide-react'
+import { Plus, Edit, Search } from 'lucide-react'
 import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
 import {
   Table,
   TableBody,
@@ -18,6 +26,8 @@ export default function LotesMudasList() {
   const { empresa } = useEmpresa()
   const [lotes, setLotes] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
+  const [search, setSearch] = useState('')
+  const [statusFilter, setStatusFilter] = useState('all')
 
   useEffect(() => {
     if (empresa?.id) loadLotes()
@@ -38,7 +48,7 @@ export default function LotesMudasList() {
   const statusColors: Record<string, string> = {
     germinando: 'bg-blue-100 text-blue-800',
     em_desenvolvimento: 'bg-yellow-100 text-yellow-800',
-    pronto: 'bg-green-100 text-green-800',
+    pronto: 'bg-emerald-100 text-emerald-800',
     transplantado: 'bg-purple-100 text-purple-800',
     descartado: 'bg-red-100 text-red-800',
   }
@@ -46,10 +56,19 @@ export default function LotesMudasList() {
   const statusLabels: Record<string, string> = {
     germinando: 'Germinando',
     em_desenvolvimento: 'Em Desenvolvimento',
-    pronto: 'Pronto',
+    pronto: 'Pronto p/ Campo',
     transplantado: 'Transplantado',
     descartado: 'Descartado',
   }
+
+  const filteredLotes = lotes.filter((lote) => {
+    const matchSearch =
+      lote.nome_lote?.toLowerCase().includes(search.toLowerCase()) ||
+      lote.culturas?.nome?.toLowerCase().includes(search.toLowerCase()) ||
+      lote.estufas?.nome?.toLowerCase().includes(search.toLowerCase())
+    const matchStatus = statusFilter === 'all' || lote.status === statusFilter
+    return matchSearch && matchStatus
+  })
 
   return (
     <div className="p-6 space-y-6">
@@ -68,18 +87,43 @@ export default function LotesMudasList() {
         </Button>
       </div>
 
+      <div className="flex flex-col sm:flex-row gap-4">
+        <div className="relative flex-1 max-w-sm">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+          <Input
+            placeholder="Buscar por lote, cultura ou estufa..."
+            className="pl-9"
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+          />
+        </div>
+        <Select value={statusFilter} onValueChange={setStatusFilter}>
+          <SelectTrigger className="w-[200px]">
+            <SelectValue placeholder="Filtrar por Status" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">Todos os Status</SelectItem>
+            <SelectItem value="germinando">Germinando</SelectItem>
+            <SelectItem value="em_desenvolvimento">Em Desenvolvimento</SelectItem>
+            <SelectItem value="pronto">Pronto p/ Campo</SelectItem>
+            <SelectItem value="transplantado">Transplantado</SelectItem>
+            <SelectItem value="descartado">Descartado</SelectItem>
+          </SelectContent>
+        </Select>
+      </div>
+
       <div className="border rounded-md bg-card">
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead>Lote</TableHead>
+              <TableHead>Identificação do Lote</TableHead>
               <TableHead>Cultura / Cultivar</TableHead>
               <TableHead>Estufa</TableHead>
               <TableHead className="text-right">Qtd. Inicial</TableHead>
               <TableHead className="text-right">Qtd. Viva</TableHead>
               <TableHead className="text-right">Custo / Muda</TableHead>
               <TableHead>Status</TableHead>
-              <TableHead className="w-[100px]"></TableHead>
+              <TableHead className="w-[60px]"></TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -89,14 +133,14 @@ export default function LotesMudasList() {
                   Carregando...
                 </TableCell>
               </TableRow>
-            ) : lotes.length === 0 ? (
+            ) : filteredLotes.length === 0 ? (
               <TableRow>
                 <TableCell colSpan={8} className="text-center py-8 text-muted-foreground">
                   Nenhum lote de mudas encontrado.
                 </TableCell>
               </TableRow>
             ) : (
-              lotes.map((lote) => (
+              filteredLotes.map((lote) => (
                 <TableRow key={lote.id}>
                   <TableCell className="font-medium">{lote.nome_lote}</TableCell>
                   <TableCell>
