@@ -199,12 +199,14 @@ export const allMenuItems: MenuItemRaw[] = [
         icon: Box,
         label: 'Packing',
         subItems: [
+          { icon: Box, label: 'Dashboard', path: '/app/packing', module: 'packing' },
           {
-            icon: Box,
-            label: 'Dashboard de Estoque',
-            path: '/app/packing/estoque',
+            icon: ArrowDownToLine,
+            label: 'Recepção',
+            path: '/app/packing/recepcao',
             module: 'packing',
           },
+          { icon: Package, label: 'Pallets', path: '/app/packing/pallets', module: 'packing' },
         ],
         module: 'packing',
       },

@@ -57,7 +57,7 @@ export default function PackingDashboard() {
           safra: 'Safra Verão 2026',
           data: '2026-03-16T10:00:00Z',
           quantidade_ton: 45.2,
-          status: 'pendente',
+          status: 'em_recebimento',
         },
         {
           id: 'p-2',
@@ -65,7 +65,7 @@ export default function PackingDashboard() {
           safra: 'Safra Inverno 2026',
           data: '2026-03-17T08:30:00Z',
           quantidade_ton: 30.0,
-          status: 'processado',
+          status: 'concluido',
         },
         {
           id: 'p-3',
@@ -84,28 +84,30 @@ export default function PackingDashboard() {
     new Intl.NumberFormat('pt-BR', { maximumFractionDigits: 2 }).format(value)
 
   const totalPendente = items
-    .filter((i) => i.status === 'pendente')
-    .reduce((a, b) => a + Number(b.quantidade_ton), 0)
+    .filter((i) => ['em_recebimento', 'recebido'].includes(i.status))
+    .reduce((a, b) => a + Number(b.quantidade_ton || 0), 0)
   const totalProcessado = items
-    .filter((i) => i.status === 'processado')
-    .reduce((a, b) => a + Number(b.quantidade_ton), 0)
+    .filter((i) => ['em_packing', 'concluido'].includes(i.status))
+    .reduce((a, b) => a + Number(b.quantidade_ton || 0), 0)
   const totalExpedido = items
     .filter((i) => i.status === 'expedido')
-    .reduce((a, b) => a + Number(b.quantidade_ton), 0)
+    .reduce((a, b) => a + Number(b.quantidade_ton || 0), 0)
   const totalFacility = totalPendente + totalProcessado
 
   const getStatusBadge = (status: string) => {
     switch (status) {
-      case 'pendente':
+      case 'em_recebimento':
+      case 'recebido':
         return (
           <Badge variant="secondary" className="bg-amber-100 text-amber-800 hover:bg-amber-100">
-            Recebido
+            {status === 'em_recebimento' ? 'Em Recepção' : 'Recebido'}
           </Badge>
         )
-      case 'processado':
+      case 'em_packing':
+      case 'concluido':
         return (
           <Badge variant="secondary" className="bg-blue-100 text-blue-800 hover:bg-blue-100">
-            Processado
+            {status === 'em_packing' ? 'Em Packing' : 'Concluído'}
           </Badge>
         )
       case 'expedido':

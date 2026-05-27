@@ -90,6 +90,9 @@ import EquipamentoDetail from './pages/equipamentos/EquipamentoDetail'
 import RentabilidadeList from './pages/financeiro/RentabilidadeList'
 import RastreabilidadeDetail from './pages/producao/colheita/RastreabilidadeDetail'
 import PackingDashboard from './pages/packing/PackingDashboard'
+import PackingRecepcoesList from './pages/packing/PackingRecepcoesList'
+import PackingRecepcaoForm from './pages/packing/PackingRecepcaoForm'
+import PalletList from './pages/packing/PalletList'
 
 const App = () => (
   <BrowserRouter future={{ v7_startTransition: false, v7_relativeSplatPath: false }}>
@@ -249,6 +252,10 @@ const App = () => (
                 <Route path="/app/equipamentos/:id" element={<EquipamentoDetail />} />
                 <Route path="/app/packing" element={<PackingDashboard />} />
                 <Route path="/app/packing/estoque" element={<PackingDashboard />} />
+                <Route path="/app/packing/recepcao" element={<PackingRecepcoesList />} />
+                <Route path="/app/packing/recepcao/nova" element={<PackingRecepcaoForm />} />
+                <Route path="/app/packing/recepcao/:id" element={<PackingRecepcaoForm />} />
+                <Route path="/app/packing/pallets" element={<PalletList />} />
                 <Route
                   path="/app/exportacao"
                   element={<div className="p-8 font-semibold text-xl">Exportação</div>}
