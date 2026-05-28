@@ -50,57 +50,49 @@ export async function saveCliente(empresa_id: string, id: string | null, data: a
 
   await supabase.from('enderecos_entidade').delete().eq('entidade_id', clienteId)
   if (enderecos?.length)
-    await supabase
-      .from('enderecos_entidade')
-      .insert(
-        enderecos.map((e: any) => ({
-          ...e,
-          entidade_id: clienteId,
-          entidade_tipo: 'cliente',
-          empresa_id,
-        })),
-      )
+    await supabase.from('enderecos_entidade').insert(
+      enderecos.map((e: any) => ({
+        ...e,
+        entidade_id: clienteId,
+        entidade_tipo: 'cliente',
+        empresa_id,
+      })),
+    )
 
   await supabase.from('contatos_entidade').delete().eq('entidade_id', clienteId)
   if (contatos?.length)
-    await supabase
-      .from('contatos_entidade')
-      .insert(
-        contatos.map((c: any) => ({
-          ...c,
-          entidade_id: clienteId,
-          entidade_tipo: 'cliente',
-          empresa_id,
-        })),
-      )
+    await supabase.from('contatos_entidade').insert(
+      contatos.map((c: any) => ({
+        ...c,
+        entidade_id: clienteId,
+        entidade_tipo: 'cliente',
+        empresa_id,
+      })),
+    )
 
   await supabase.from('contas_bancarias_entidade').delete().eq('entidade_id', clienteId)
   if (bancos?.length)
-    await supabase
-      .from('contas_bancarias_entidade')
-      .insert(
-        bancos.map((b: any) => ({
-          ...b,
-          entidade_id: clienteId,
-          entidade_tipo: 'cliente',
-          empresa_id,
-        })),
-      )
+    await supabase.from('contas_bancarias_entidade').insert(
+      bancos.map((b: any) => ({
+        ...b,
+        entidade_id: clienteId,
+        entidade_tipo: 'cliente',
+        empresa_id,
+      })),
+    )
 
   await supabase.from('documentos_entidade').delete().eq('entidade_id', clienteId)
   if (documentos?.length)
-    await supabase
-      .from('documentos_entidade')
-      .insert(
-        documentos.map((d: any) => ({
-          ...d,
-          entidade_id: clienteId,
-          entidade_tipo: 'cliente',
-          empresa_id,
-          data_emissao: d.data_emissao || null,
-          data_validade: d.data_validade || null,
-        })),
-      )
+    await supabase.from('documentos_entidade').insert(
+      documentos.map((d: any) => ({
+        ...d,
+        entidade_id: clienteId,
+        entidade_tipo: 'cliente',
+        empresa_id,
+        data_emissao: d.data_emissao || null,
+        data_validade: d.data_validade || null,
+      })),
+    )
 
   if (core.acesso_portal && core.email) {
     const { data: existingUser } = await supabase
