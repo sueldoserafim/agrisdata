@@ -1081,8 +1081,10 @@ export type Database = {
           cnpj_cpf: string | null
           created_at: string | null
           deleted_at: string | null
+          desconto_padrao: number | null
           email: string | null
           empresa_id: string
+          forma_pagamento_padrao: string | null
           id: string
           indicador_ie: string | null
           inscricao_estadual: string | null
@@ -1090,11 +1092,15 @@ export type Database = {
           limite_credito: number | null
           nome: string
           nome_fantasia: string | null
+          observacoes_comerciais: string | null
           pais: string | null
+          prazo_dias: string | null
+          preset_prazo: string | null
           telefone: string | null
           tipo_cliente: string | null
           tipo_pessoa: string | null
           updated_at: string | null
+          usuario_vinculado: string | null
           vendedor_id: string | null
         }
         Insert: {
@@ -1102,8 +1108,10 @@ export type Database = {
           cnpj_cpf?: string | null
           created_at?: string | null
           deleted_at?: string | null
+          desconto_padrao?: number | null
           email?: string | null
           empresa_id: string
+          forma_pagamento_padrao?: string | null
           id?: string
           indicador_ie?: string | null
           inscricao_estadual?: string | null
@@ -1111,11 +1119,15 @@ export type Database = {
           limite_credito?: number | null
           nome: string
           nome_fantasia?: string | null
+          observacoes_comerciais?: string | null
           pais?: string | null
+          prazo_dias?: string | null
+          preset_prazo?: string | null
           telefone?: string | null
           tipo_cliente?: string | null
           tipo_pessoa?: string | null
           updated_at?: string | null
+          usuario_vinculado?: string | null
           vendedor_id?: string | null
         }
         Update: {
@@ -1123,8 +1135,10 @@ export type Database = {
           cnpj_cpf?: string | null
           created_at?: string | null
           deleted_at?: string | null
+          desconto_padrao?: number | null
           email?: string | null
           empresa_id?: string
+          forma_pagamento_padrao?: string | null
           id?: string
           indicador_ie?: string | null
           inscricao_estadual?: string | null
@@ -1132,11 +1146,15 @@ export type Database = {
           limite_credito?: number | null
           nome?: string
           nome_fantasia?: string | null
+          observacoes_comerciais?: string | null
           pais?: string | null
+          prazo_dias?: string | null
+          preset_prazo?: string | null
           telefone?: string | null
           tipo_cliente?: string | null
           tipo_pessoa?: string | null
           updated_at?: string | null
+          usuario_vinculado?: string | null
           vendedor_id?: string | null
         }
         Relationships: [
@@ -7330,6 +7348,12 @@ export const Constants = {
 //   vendedor_id: uuid (nullable)
 //   limite_credito: numeric (nullable)
 //   acesso_portal: boolean (nullable, default: false)
+//   forma_pagamento_padrao: text (nullable)
+//   desconto_padrao: numeric (nullable, default: 0)
+//   preset_prazo: text (nullable)
+//   prazo_dias: text (nullable)
+//   observacoes_comerciais: text (nullable)
+//   usuario_vinculado: text (nullable)
 // Table: colheita_registros
 //   id: uuid (not null, default: gen_random_uuid())
 //   empresa_id: uuid (not null)

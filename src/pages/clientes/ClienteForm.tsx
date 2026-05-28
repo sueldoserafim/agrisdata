@@ -12,6 +12,7 @@ import { getCliente, saveCliente, checkClienteDuplicado } from '@/services/clien
 import { clienteSchema, type ClienteFormValues } from './schema'
 import { ToastAction } from '@/components/ui/toast'
 import { ClienteCore } from './components/ClienteCore'
+import { ClienteComercial } from './components/ClienteComercial'
 import { ClienteEnderecos } from './components/ClienteEnderecos'
 import { ClienteContatos } from './components/ClienteContatos'
 import { ClienteBancos } from './components/ClienteBancos'
@@ -44,6 +45,12 @@ export default function ClienteForm() {
       vendedor_id: '',
       limite_credito: 0,
       acesso_portal: false,
+      forma_pagamento_padrao: '',
+      desconto_padrao: 0,
+      preset_prazo: '',
+      prazo_dias: '',
+      observacoes_comerciais: '',
+      usuario_vinculado: '',
       enderecos: [],
       contatos: [],
       bancos: [],
@@ -275,6 +282,12 @@ export default function ClienteForm() {
                 Principal
               </TabsTrigger>
               <TabsTrigger
+                value="comerciais"
+                className="data-[state=active]:border-b-2 data-[state=active]:border-primary rounded-none py-3"
+              >
+                Dados Comerciais
+              </TabsTrigger>
+              <TabsTrigger
                 value="enderecos"
                 className="data-[state=active]:border-b-2 data-[state=active]:border-primary rounded-none py-3"
               >
@@ -315,6 +328,9 @@ export default function ClienteForm() {
                   onSearchCnpj={handleSearchCnpj}
                   isFetchingCnpj={isFetchingCnpj}
                 />
+              </TabsContent>
+              <TabsContent value="comerciais" className="m-0">
+                <ClienteComercial form={form} />
               </TabsContent>
               <TabsContent value="enderecos" className="m-0">
                 <ClienteEnderecos form={form} />

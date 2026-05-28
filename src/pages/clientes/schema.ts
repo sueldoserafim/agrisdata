@@ -18,6 +18,12 @@ export const clienteSchema = z.object({
   vendedor_id: z.string().optional().nullable(),
   limite_credito: z.coerce.number().optional().nullable(),
   acesso_portal: z.boolean().default(false),
+  forma_pagamento_padrao: z.string().optional().nullable(),
+  desconto_padrao: z.coerce.number().optional().nullable(),
+  preset_prazo: z.string().optional().nullable(),
+  prazo_dias: z.string().optional().nullable(),
+  observacoes_comerciais: z.string().optional().nullable(),
+  usuario_vinculado: z.string().optional().nullable(),
   enderecos: z.array(
     z.object({
       tipo_endereco: z.string(),
