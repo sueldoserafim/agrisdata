@@ -151,11 +151,43 @@ export default function ClienteForm() {
     if (!empresa) return
     setLoading(true)
     try {
-      await saveCliente(empresa.id, id || null, values)
+      // Data Sanitization Engine
+      const sanitizedCnpjCpf = values.cnpj_cpf?.replace(/\D/g, '') || ''
+      const sanitizedTelefone = values.telefone?.replace(/\D/g, '') || null
+
+      if (sanitizedCnpjCpf && sanitizedCnpjCpf.length > 20) {
+        throw new Error(
+          'O CNPJ/CPF excede o limite máximo de 20 caracteres permitidos após a formatação.',
+        )
+      }
+      if (sanitizedTelefone && sanitizedTelefone.length > 30) {
+        throw new Error(
+          'O telefone excede o limite máximo de 30 caracteres permitidos após a formatação.',
+        )
+      }
+
+      const sanitizedValues = {
+        ...values,
+        cnpj_cpf: sanitizedCnpjCpf,
+        telefone: sanitizedTelefone,
+        enderecos:
+          values.enderecos?.map((endereco: any) => ({
+            ...endereco,
+            cep: endereco.cep?.replace(/\D/g, '') || null,
+          })) || [],
+        contatos:
+          values.contatos?.map((contato: any) => ({
+            ...contato,
+            telefone: contato.telefone?.replace(/\D/g, '') || null,
+            whatsapp: contato.whatsapp?.replace(/\D/g, '') || null,
+          })) || [],
+      }
+
+      await saveCliente(empresa.id, id || null, sanitizedValues)
       toast({ title: 'Sucesso', description: 'Cliente salvo com sucesso.' })
       navigate('/app/clientes')
     } catch (error: any) {
-      toast({ title: 'Erro', description: error.message, variant: 'destructive' })
+      toast({ title: 'Erro ao salvar cliente', description: error.message, variant: 'destructive' })
     } finally {
       setLoading(false)
     }

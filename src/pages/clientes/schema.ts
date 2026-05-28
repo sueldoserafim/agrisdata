@@ -3,13 +3,17 @@ import { z } from 'zod'
 export const clienteSchema = z.object({
   nome: z.string().min(1, 'Obrigatório'),
   nome_fantasia: z.string().optional().nullable(),
-  cnpj_cpf: z.string().min(1, 'Obrigatório'),
+  cnpj_cpf: z.string().min(1, 'Obrigatório').max(30, 'O documento não pode exceder 30 caracteres'),
   email: z.string().optional().nullable(),
-  telefone: z.string().optional().nullable(),
+  telefone: z.string().max(30, 'O telefone não pode exceder 30 caracteres').optional().nullable(),
   tipo_cliente: z.string().optional().nullable(),
   tipo_pessoa: z.string().optional().nullable(),
   indicador_ie: z.string().optional().nullable(),
-  inscricao_estadual: z.string().optional().nullable(),
+  inscricao_estadual: z
+    .string()
+    .max(30, 'A inscrição estadual não pode exceder 30 caracteres')
+    .optional()
+    .nullable(),
   inscricao_municipal: z.string().optional().nullable(),
   vendedor_id: z.string().optional().nullable(),
   limite_credito: z.coerce.number().optional().nullable(),
@@ -23,7 +27,7 @@ export const clienteSchema = z.object({
       bairro: z.string().optional().nullable(),
       cidade: z.string().optional().nullable(),
       estado: z.string().optional().nullable(),
-      cep: z.string().optional().nullable(),
+      cep: z.string().max(20, 'O CEP não pode exceder 20 caracteres').optional().nullable(),
       pais: z.string().optional().nullable(),
       receiver: z.string().optional().nullable(),
     }),
@@ -31,10 +35,18 @@ export const clienteSchema = z.object({
   contatos: z.array(
     z.object({
       nome: z.string(),
-      telefone: z.string().optional().nullable(),
+      telefone: z
+        .string()
+        .max(30, 'O telefone não pode exceder 30 caracteres')
+        .optional()
+        .nullable(),
       email: z.string().optional().nullable(),
       cargo: z.string().optional().nullable(),
-      whatsapp: z.string().optional().nullable(),
+      whatsapp: z
+        .string()
+        .max(30, 'O whatsapp não pode exceder 30 caracteres')
+        .optional()
+        .nullable(),
     }),
   ),
   bancos: z.array(

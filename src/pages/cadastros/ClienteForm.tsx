@@ -66,8 +66,24 @@ export default function ClienteForm() {
     try {
       setLoading(true)
 
+      const sanitizedCnpjCpf = formData.cnpj_cpf?.replace(/\D/g, '') || ''
+      const sanitizedTelefone = formData.telefone?.replace(/\D/g, '') || null
+
+      if (sanitizedCnpjCpf && sanitizedCnpjCpf.length > 20) {
+        throw new Error(
+          'O CNPJ/CPF excede o limite máximo de 20 caracteres permitidos após a formatação.',
+        )
+      }
+      if (sanitizedTelefone && sanitizedTelefone.length > 30) {
+        throw new Error(
+          'O telefone excede o limite máximo de 30 caracteres permitidos após a formatação.',
+        )
+      }
+
       const payload = {
         ...formData,
+        cnpj_cpf: sanitizedCnpjCpf,
+        telefone: sanitizedTelefone,
         empresa_id: empresa.id,
       }
 
