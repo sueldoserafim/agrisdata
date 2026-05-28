@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useRef } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
@@ -22,6 +22,8 @@ export default function ClienteForm() {
   const { empresa } = useEmpresa()
   const { toast } = useToast()
   const [loading, setLoading] = useState(false)
+  const [isFetchingCnpj, setIsFetchingCnpj] = useState(false)
+  const lastFetchedCnpj = useRef<string>('')
 
   const form = useForm<ClienteFormValues>({
     resolver: zodResolver(clienteSchema),
@@ -60,6 +62,82 @@ export default function ClienteForm() {
     }
   }, [id, empresa, form])
 
+  const cnpjCpf = form.watch('cnpj_cpf')
+
+  useEffect(() => {
+    const cleanCnpj = cnpjCpf?.replace(/\D/g, '') || ''
+
+    if (cleanCnpj.length === 14 && cleanCnpj !== lastFetchedCnpj.current) {
+      const fetchCnpj = async () => {
+        setIsFetchingCnpj(true)
+        try {
+          const res = await fetch(`https://brasilapi.com.br/api/cnpj/v1/${cleanCnpj}`)
+          if (!res.ok) throw new Error('CNPJ não encontrado ou erro na API.')
+          const data = await res.json()
+
+          form.setValue('nome', data.razao_social || '', { shouldValidate: true })
+          if (data.nome_fantasia) {
+            form.setValue('nome_fantasia', data.nome_fantasia, { shouldValidate: true })
+          } else {
+            form.setValue('nome_fantasia', data.razao_social || '', { shouldValidate: true })
+          }
+
+          const logradouroPrefix = data.descricao_tipo_de_logradouro
+            ? `${data.descricao_tipo_de_logradouro} `
+            : ''
+          const logradouroFull = `${logradouroPrefix}${data.logradouro || ''}`.trim()
+
+          const enderecos = form.getValues('enderecos') || []
+          const hasFaturamento = enderecos.some((e: any) => e.tipo_endereco === 'Faturamento')
+          if (!hasFaturamento) {
+            form.setValue(
+              'enderecos',
+              [
+                ...enderecos,
+                {
+                  tipo_endereco: 'Faturamento',
+                  logradouro: logradouroFull,
+                  numero: data.numero || '',
+                  complemento: data.complemento || '',
+                  bairro: data.bairro || '',
+                  cidade: data.municipio || '',
+                  estado: data.uf || '',
+                  cep: data.cep?.replace(/\D/g, '') || '',
+                  pais: 'Brasil',
+                  receiver: data.razao_social || '',
+                },
+              ],
+              { shouldValidate: true },
+            )
+          }
+
+          let indicador_ie = '9'
+          if (data.inscricao_estadual && data.inscricao_estadual.trim() !== '') {
+            indicador_ie = '1'
+            form.setValue('inscricao_estadual', data.inscricao_estadual, { shouldValidate: true })
+          }
+          form.setValue('indicador_ie', indicador_ie, { shouldValidate: true })
+
+          toast({
+            title: 'CNPJ Encontrado',
+            description: 'Os dados foram preenchidos automaticamente.',
+          })
+        } catch (err: any) {
+          toast({
+            title: 'Erro na busca de CNPJ',
+            description: err.message,
+            variant: 'destructive',
+          })
+        } finally {
+          setIsFetchingCnpj(false)
+          lastFetchedCnpj.current = cleanCnpj
+        }
+      }
+
+      fetchCnpj()
+    }
+  }, [cnpjCpf, form, toast])
+
   const onSubmit = async (values: ClienteFormValues) => {
     if (!empresa) return
     setLoading(true)
@@ -84,6 +162,12 @@ export default function ClienteForm() {
           <h1 className="text-3xl font-bold tracking-tight">
             {id ? 'Editar Cliente' : 'Novo Cliente'}
           </h1>
+          {isFetchingCnpj && (
+            <span className="text-sm text-muted-foreground animate-pulse flex items-center">
+              <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+              Buscando dados do CNPJ...
+            </span>
+          )}
         </div>
         <Button onClick={form.handleSubmit(onSubmit)} disabled={loading}>
           {loading ? (
