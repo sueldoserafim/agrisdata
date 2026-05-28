@@ -16,6 +16,8 @@ import { ClienteEnderecos } from './components/ClienteEnderecos'
 import { ClienteContatos } from './components/ClienteContatos'
 import { ClienteBancos } from './components/ClienteBancos'
 import { ClienteDocumentos } from './components/ClienteDocumentos'
+import { ClienteHistorico } from './components/ClienteHistorico'
+import { supabase } from '@/lib/supabase/client'
 
 export default function ClienteForm() {
   const { id } = useParams()
@@ -106,10 +108,20 @@ export default function ClienteForm() {
 
     setIsFetchingCnpj(true)
     try {
-      const res = await fetch(`https://brasilapi.com.br/api/cnpj/v1/${cleanCnpj}`)
-      if (!res.ok)
-        throw new Error('CNPJ não encontrado. Verifique os dados ou preencha manualmente.')
-      const data = await res.json()
+      let data
+      try {
+        const res = await fetch(`https://brasilapi.com.br/api/cnpj/v1/${cleanCnpj}`)
+        if (!res.ok) throw new Error('Failed to fetch')
+        data = await res.json()
+      } catch (err: any) {
+        const { data: edgeData, error } = await supabase.functions.invoke('fetch-cnpj', {
+          body: { cnpj: cleanCnpj },
+        })
+        if (error || !edgeData) {
+          throw new Error('Serviço temporariamente indisponível. Preencha os dados manualmente.')
+        }
+        data = edgeData
+      }
 
       form.setValue('nome', data.razao_social || '', { shouldValidate: true })
       form.setValue('nome_fantasia', data.nome_fantasia || data.razao_social || '', {
@@ -286,6 +298,14 @@ export default function ClienteForm() {
               >
                 Documentos
               </TabsTrigger>
+              {id && (
+                <TabsTrigger
+                  value="historico"
+                  className="data-[state=active]:border-b-2 data-[state=active]:border-primary rounded-none py-3"
+                >
+                  Histórico
+                </TabsTrigger>
+              )}
             </TabsList>
 
             <div className="mt-6 bg-white p-6 rounded-lg border shadow-sm">
@@ -306,8 +326,13 @@ export default function ClienteForm() {
                 <ClienteBancos form={form} />
               </TabsContent>
               <TabsContent value="documentos" className="m-0">
-                <ClienteDocumentos form={form} />
+                <ClienteDocumentos form={form} clienteId={id} />
               </TabsContent>
+              {id && (
+                <TabsContent value="historico" className="m-0">
+                  <ClienteHistorico clienteId={id} />
+                </TabsContent>
+              )}
             </div>
           </Tabs>
         </form>

@@ -1,11 +1,34 @@
 import { supabase } from '@/lib/supabase/client'
 
 export async function getClientes(empresa_id: string) {
-  return await supabase
+  const { data: clientes, error } = await supabase
     .from('clientes')
     .select('*')
     .eq('empresa_id', empresa_id)
     .is('deleted_at', null)
+
+  if (error) throw error
+
+  // Buscar endereços para os filtros
+  const { data: enderecos } = await supabase
+    .from('enderecos_entidade')
+    .select('entidade_id, cidade, estado')
+    .eq('empresa_id', empresa_id)
+    .eq('entidade_tipo', 'cliente')
+    .eq('tipo_endereco', 'Faturamento')
+
+  if (clientes && enderecos) {
+    const endMap = enderecos.reduce((acc: any, e: any) => ({ ...acc, [e.entidade_id]: e }), {})
+    return {
+      data: clientes.map((c) => ({
+        ...c,
+        cidade: endMap[c.id]?.cidade,
+        estado: endMap[c.id]?.estado,
+      })),
+    }
+  }
+
+  return { data: clientes }
 }
 
 export async function checkClienteDuplicado(
