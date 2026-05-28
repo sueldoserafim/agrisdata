@@ -166,8 +166,15 @@ export default function ClienteForm() {
         )
       }
 
+      const cleanValues = { ...values } as Record<string, any>
+      Object.keys(cleanValues).forEach((key) => {
+        if (cleanValues[key] === '') {
+          cleanValues[key] = null
+        }
+      })
+
       const sanitizedValues = {
-        ...values,
+        ...cleanValues,
         cnpj_cpf: sanitizedCnpjCpf,
         telefone: sanitizedTelefone,
         enderecos:
