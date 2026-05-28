@@ -240,15 +240,20 @@ export function AppSidebar() {
   }
 
   return (
-    <Sidebar className="border-r border-sidebar-border bg-sidebar">
-      <SidebarHeader className="p-6">
-        <Link to="/app" className="flex items-center gap-2 text-primary">
-          <Hexagon className="size-8 fill-primary text-primary" />
+    <Sidebar className="border-r border-sidebar-border bg-sidebar shadow-xl lg:shadow-none">
+      <SidebarHeader className="p-4 md:p-6 border-b border-sidebar-border/50 bg-slate-50/30 dark:bg-slate-900/10">
+        <Link
+          to="/app"
+          className="flex items-center gap-3 text-primary hover:opacity-90 transition-opacity"
+        >
+          <div className="bg-gradient-to-br from-primary to-blue-600 rounded-lg p-1.5 shadow-md">
+            <Hexagon className="size-6 md:size-7 fill-white text-white" />
+          </div>
           <span className="text-xl font-bold text-foreground tracking-tight">AgriSaaS</span>
         </Link>
       </SidebarHeader>
 
-      <SidebarContent className="px-3">
+      <SidebarContent className="px-3 pt-4">
         {loading ? (
           <div className="flex justify-center p-4">
             <Loader2 className="animate-spin text-primary size-6" />
@@ -260,14 +265,14 @@ export function AppSidebar() {
         )}
       </SidebarContent>
 
-      <SidebarFooter className="p-4">
+      <SidebarFooter className="p-4 border-t border-sidebar-border/50 bg-slate-50/30 dark:bg-slate-900/10">
         <SidebarMenu>
           <SidebarMenuItem>
             <SidebarMenuButton
               asChild
-              className="h-11 px-4 text-base font-medium text-destructive hover:bg-red-50 hover:text-destructive rounded-xl transition-all group cursor-pointer"
+              className="h-11 px-4 text-sm md:text-base font-medium text-destructive hover:bg-red-50 dark:hover:bg-red-950/30 hover:text-destructive rounded-xl transition-all group cursor-pointer"
             >
-              <button onClick={signOut}>
+              <button onClick={signOut} className="w-full flex justify-start items-center">
                 <LogOut className="size-5 mr-3 group-hover:scale-110 transition-transform" />
                 <span>Log out</span>
               </button>

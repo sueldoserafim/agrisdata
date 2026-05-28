@@ -1090,10 +1090,12 @@ export type Database = {
           inscricao_estadual: string | null
           inscricao_municipal: string | null
           limite_credito: number | null
+          moeda_id: string | null
           nome: string
           nome_fantasia: string | null
           observacoes_comerciais: string | null
           pais: string | null
+          porto_destino_id: string | null
           prazo_dias: string | null
           preset_prazo: string | null
           telefone: string | null
@@ -1117,10 +1119,12 @@ export type Database = {
           inscricao_estadual?: string | null
           inscricao_municipal?: string | null
           limite_credito?: number | null
+          moeda_id?: string | null
           nome: string
           nome_fantasia?: string | null
           observacoes_comerciais?: string | null
           pais?: string | null
+          porto_destino_id?: string | null
           prazo_dias?: string | null
           preset_prazo?: string | null
           telefone?: string | null
@@ -1144,10 +1148,12 @@ export type Database = {
           inscricao_estadual?: string | null
           inscricao_municipal?: string | null
           limite_credito?: number | null
+          moeda_id?: string | null
           nome?: string
           nome_fantasia?: string | null
           observacoes_comerciais?: string | null
           pais?: string | null
+          porto_destino_id?: string | null
           prazo_dias?: string | null
           preset_prazo?: string | null
           telefone?: string | null
@@ -1163,6 +1169,20 @@ export type Database = {
             columns: ['empresa_id']
             isOneToOne: false
             referencedRelation: 'empresas'
+            referencedColumns: ['id']
+          },
+          {
+            foreignKeyName: 'clientes_moeda_id_fkey'
+            columns: ['moeda_id']
+            isOneToOne: false
+            referencedRelation: 'moedas'
+            referencedColumns: ['id']
+          },
+          {
+            foreignKeyName: 'clientes_porto_destino_id_fkey'
+            columns: ['porto_destino_id']
+            isOneToOne: false
+            referencedRelation: 'portos'
             referencedColumns: ['id']
           },
           {
@@ -3834,6 +3854,47 @@ export type Database = {
             columns: ['estufa_id']
             isOneToOne: false
             referencedRelation: 'estufas'
+            referencedColumns: ['id']
+          },
+        ]
+      }
+      moedas: {
+        Row: {
+          codigo: string
+          created_at: string | null
+          deleted_at: string | null
+          empresa_id: string
+          id: string
+          nome: string
+          simbolo: string
+          updated_at: string | null
+        }
+        Insert: {
+          codigo: string
+          created_at?: string | null
+          deleted_at?: string | null
+          empresa_id: string
+          id?: string
+          nome: string
+          simbolo: string
+          updated_at?: string | null
+        }
+        Update: {
+          codigo?: string
+          created_at?: string | null
+          deleted_at?: string | null
+          empresa_id?: string
+          id?: string
+          nome?: string
+          simbolo?: string
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: 'moedas_empresa_id_fkey'
+            columns: ['empresa_id']
+            isOneToOne: false
+            referencedRelation: 'empresas'
             referencedColumns: ['id']
           },
         ]
@@ -7354,6 +7415,8 @@ export const Constants = {
 //   prazo_dias: text (nullable)
 //   observacoes_comerciais: text (nullable)
 //   usuario_vinculado: text (nullable)
+//   moeda_id: uuid (nullable)
+//   porto_destino_id: uuid (nullable)
 // Table: colheita_registros
 //   id: uuid (not null, default: gen_random_uuid())
 //   empresa_id: uuid (not null)
@@ -7924,6 +7987,15 @@ export const Constants = {
 //   custo_por_muda: numeric (nullable, default: 0)
 //   status: text (nullable, default: 'germinando'::text)
 //   observacoes: text (nullable)
+//   created_at: timestamp with time zone (nullable, default: now())
+//   updated_at: timestamp with time zone (nullable, default: now())
+//   deleted_at: timestamp with time zone (nullable)
+// Table: moedas
+//   id: uuid (not null, default: gen_random_uuid())
+//   empresa_id: uuid (not null)
+//   nome: text (not null)
+//   codigo: text (not null)
+//   simbolo: text (not null)
 //   created_at: timestamp with time zone (nullable, default: now())
 //   updated_at: timestamp with time zone (nullable, default: now())
 //   deleted_at: timestamp with time zone (nullable)
@@ -8660,7 +8732,9 @@ export const Constants = {
 //   PRIMARY KEY certificacoes_modelos_pkey: PRIMARY KEY (id)
 // Table: clientes
 //   FOREIGN KEY clientes_empresa_id_fkey: FOREIGN KEY (empresa_id) REFERENCES empresas(id) ON DELETE CASCADE
+//   FOREIGN KEY clientes_moeda_id_fkey: FOREIGN KEY (moeda_id) REFERENCES moedas(id) ON DELETE SET NULL
 //   PRIMARY KEY clientes_pkey: PRIMARY KEY (id)
+//   FOREIGN KEY clientes_porto_destino_id_fkey: FOREIGN KEY (porto_destino_id) REFERENCES portos(id) ON DELETE SET NULL
 //   FOREIGN KEY clientes_vendedor_id_fkey: FOREIGN KEY (vendedor_id) REFERENCES vendedores(id)
 // Table: colheita_registros
 //   FOREIGN KEY colheita_registros_empresa_id_fkey: FOREIGN KEY (empresa_id) REFERENCES empresas(id) ON DELETE CASCADE
@@ -8860,6 +8934,9 @@ export const Constants = {
 //   FOREIGN KEY lotes_mudas_estufa_id_fkey: FOREIGN KEY (estufa_id) REFERENCES estufas(id) ON DELETE CASCADE
 //   PRIMARY KEY lotes_mudas_pkey: PRIMARY KEY (id)
 //   CHECK lotes_mudas_status_check: CHECK ((status = ANY (ARRAY['germinando'::text, 'em_desenvolvimento'::text, 'pronto'::text, 'transplantado'::text, 'descartado'::text])))
+// Table: moedas
+//   FOREIGN KEY moedas_empresa_id_fkey: FOREIGN KEY (empresa_id) REFERENCES empresas(id) ON DELETE CASCADE
+//   PRIMARY KEY moedas_pkey: PRIMARY KEY (id)
 // Table: monitoramento_pragas
 //   FOREIGN KEY monitoramento_pragas_empresa_id_fkey: FOREIGN KEY (empresa_id) REFERENCES empresas(id) ON DELETE CASCADE
 //   PRIMARY KEY monitoramento_pragas_pkey: PRIMARY KEY (id)
@@ -9356,6 +9433,10 @@ export const Constants = {
 //     WITH CHECK: (empresa_id = ( SELECT usuarios.empresa_id    FROM usuarios   WHERE (usuarios.id = auth.uid())))
 // Table: lotes_mudas
 //   Policy "lotes_mudas_empresa" (ALL, PERMISSIVE) roles={authenticated}
+//     USING: (empresa_id = get_user_empresa_id())
+//     WITH CHECK: (empresa_id = get_user_empresa_id())
+// Table: moedas
+//   Policy "moedas_empresa" (ALL, PERMISSIVE) roles={authenticated}
 //     USING: (empresa_id = get_user_empresa_id())
 //     WITH CHECK: (empresa_id = get_user_empresa_id())
 // Table: monitoramento_pragas

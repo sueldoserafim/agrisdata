@@ -3,6 +3,7 @@ import { useNavigate, useParams } from 'react-router-dom'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import * as z from 'zod'
+import { Building2, Save, X } from 'lucide-react'
 import { getEmpresa, saveEmpresa, createTenant } from '@/services/admin/empresas'
 import { getPlanos } from '@/services/admin/planos'
 import { Button } from '@/components/ui/button'
@@ -23,7 +24,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
 import { Checkbox } from '@/components/ui/checkbox'
 import { useToast } from '@/hooks/use-toast'
 
@@ -119,120 +120,199 @@ export default function AdminEmpresasForm() {
   }
 
   return (
-    <div className="max-w-4xl mx-auto space-y-6">
-      <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold">{id ? 'Editar Empresa' : 'Nova Empresa'}</h1>
-        <Button variant="outline" onClick={() => navigate('/admin/empresas')}>
-          Cancelar
-        </Button>
+    <div className="max-w-5xl mx-auto space-y-6 md:space-y-8 pb-10">
+      {/* Gradient Header */}
+      <div className="bg-gradient-to-r from-blue-600 to-indigo-700 rounded-2xl p-6 md:p-8 text-white shadow-card flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+        <div className="flex items-center gap-4">
+          <div className="p-3 bg-white/10 rounded-xl backdrop-blur-sm">
+            <Building2 className="h-8 w-8 text-white" />
+          </div>
+          <div>
+            <h1 className="text-2xl md:text-3xl font-bold tracking-tight">
+              {id ? 'Editar Empresa' : 'Nova Empresa'}
+            </h1>
+            <p className="text-blue-100 text-sm md:text-base mt-1">
+              {id
+                ? 'Atualize os dados e configurações do tenant'
+                : 'Crie um novo tenant e seu primeiro administrador'}
+            </p>
+          </div>
+        </div>
+        <div className="flex gap-3 w-full md:w-auto mt-4 md:mt-0">
+          <Button
+            variant="secondary"
+            className="flex-1 md:flex-none bg-white/20 text-white hover:bg-white/30 border-0"
+            onClick={() => navigate('/admin/empresas')}
+          >
+            <X className="mr-2 h-4 w-4" /> Cancelar
+          </Button>
+          <Button
+            className="flex-1 md:flex-none bg-white text-blue-700 hover:bg-blue-50 shadow-sm"
+            onClick={form.handleSubmit(onSubmit)}
+            disabled={loading}
+          >
+            <Save className="mr-2 h-4 w-4" /> {loading ? 'Salvando...' : 'Salvar'}
+          </Button>
+        </div>
       </div>
 
       <Form {...form}>
-        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-          <Card>
-            <CardHeader>
-              <CardTitle>Dados da Empresa</CardTitle>
+        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6 md:space-y-8">
+          <Card className="overflow-hidden border-none shadow-card">
+            <CardHeader className="bg-slate-50/50 dark:bg-slate-900/50 border-b pb-4">
+              <CardTitle className="text-xl text-primary flex items-center gap-2">
+                <span className="bg-primary/10 p-2 rounded-lg">
+                  <Building2 className="h-5 w-5" />
+                </span>
+                Dados da Empresa
+              </CardTitle>
+              <CardDescription>Informações cadastrais e contato da empresa.</CardDescription>
             </CardHeader>
-            <CardContent className="grid grid-cols-2 gap-4">
-              <FormField
-                control={form.control}
-                name="nome"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Nome da Empresa *</FormLabel>
-                    <FormControl>
-                      <Input {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={form.control}
-                name="slug"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Slug (URL amigável) *</FormLabel>
-                    <FormControl>
-                      <Input {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={form.control}
-                name="cnpj"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>CNPJ</FormLabel>
-                    <FormControl>
-                      <Input
-                        {...field}
-                        value={field.value || ''}
-                        placeholder="00.000.000/0000-00"
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={form.control}
-                name="email"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Email de Contato</FormLabel>
-                    <FormControl>
-                      <Input type="email" {...field} value={field.value || ''} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={form.control}
-                name="telefone"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Telefone</FormLabel>
-                    <FormControl>
-                      <Input {...field} value={field.value || ''} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={form.control}
-                name="ativo"
-                render={({ field }) => (
-                  <FormItem className="flex items-center gap-2 pt-8">
-                    <FormControl>
-                      <Switch checked={field.value} onCheckedChange={field.onChange} />
-                    </FormControl>
-                    <FormLabel className="!mt-0">Empresa Ativa</FormLabel>
-                  </FormItem>
-                )}
-              />
+            <CardContent className="p-6 md:p-8">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-8">
+                <FormField
+                  control={form.control}
+                  name="nome"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="font-semibold text-slate-700 dark:text-slate-300">
+                        Nome da Empresa *
+                      </FormLabel>
+                      <FormControl>
+                        <Input
+                          placeholder="Agro Indústria S.A."
+                          className="bg-white dark:bg-slate-950"
+                          {...field}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="slug"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="font-semibold text-slate-700 dark:text-slate-300">
+                        Slug (URL amigável) *
+                      </FormLabel>
+                      <FormControl>
+                        <Input
+                          placeholder="agro-industria"
+                          className="bg-white dark:bg-slate-950"
+                          {...field}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="cnpj"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="font-semibold text-slate-700 dark:text-slate-300">
+                        CNPJ
+                      </FormLabel>
+                      <FormControl>
+                        <Input
+                          {...field}
+                          value={field.value || ''}
+                          className="bg-white dark:bg-slate-950"
+                          placeholder="00.000.000/0000-00"
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="email"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="font-semibold text-slate-700 dark:text-slate-300">
+                        Email de Contato
+                      </FormLabel>
+                      <FormControl>
+                        <Input
+                          type="email"
+                          placeholder="contato@empresa.com"
+                          className="bg-white dark:bg-slate-950"
+                          {...field}
+                          value={field.value || ''}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="telefone"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="font-semibold text-slate-700 dark:text-slate-300">
+                        Telefone
+                      </FormLabel>
+                      <FormControl>
+                        <Input
+                          placeholder="(00) 00000-0000"
+                          className="bg-white dark:bg-slate-950"
+                          {...field}
+                          value={field.value || ''}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="ativo"
+                  render={({ field }) => (
+                    <FormItem className="flex flex-row items-center justify-between rounded-xl border p-4 shadow-sm bg-slate-50/50 dark:bg-slate-900/20">
+                      <div className="space-y-0.5">
+                        <FormLabel className="text-base font-semibold">Empresa Ativa</FormLabel>
+                        <p className="text-sm text-muted-foreground">
+                          Define se os usuários podem acessar o sistema.
+                        </p>
+                      </div>
+                      <FormControl>
+                        <Switch checked={field.value} onCheckedChange={field.onChange} />
+                      </FormControl>
+                    </FormItem>
+                  )}
+                />
+              </div>
             </CardContent>
           </Card>
 
-          <Card>
-            <CardHeader>
-              <CardTitle>Plano e Acessos</CardTitle>
+          <Card className="overflow-hidden border-none shadow-card">
+            <CardHeader className="bg-slate-50/50 dark:bg-slate-900/50 border-b pb-4">
+              <CardTitle className="text-xl text-primary flex items-center gap-2">
+                <span className="bg-primary/10 p-2 rounded-lg">📦</span>
+                Plano e Acessos
+              </CardTitle>
+              <CardDescription>
+                Configure o plano de assinatura e as permissões do tenant.
+              </CardDescription>
             </CardHeader>
-            <CardContent className="grid grid-cols-2 gap-6">
-              <div className="space-y-4">
+            <CardContent className="p-6 md:p-8 grid grid-cols-1 lg:grid-cols-2 gap-8">
+              <div className="space-y-6">
                 <FormField
                   control={form.control}
                   name="plano_id"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Plano SaaS *</FormLabel>
+                      <FormLabel className="font-semibold text-slate-700 dark:text-slate-300">
+                        Plano SaaS *
+                      </FormLabel>
                       <Select onValueChange={field.onChange} value={field.value || ''}>
                         <FormControl>
-                          <SelectTrigger>
+                          <SelectTrigger className="bg-white dark:bg-slate-950">
                             <SelectValue placeholder="Selecione um plano" />
                           </SelectTrigger>
                         </FormControl>
@@ -253,9 +333,11 @@ export default function AdminEmpresasForm() {
                   name="limite_usuarios"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Limite de Usuários *</FormLabel>
+                      <FormLabel className="font-semibold text-slate-700 dark:text-slate-300">
+                        Limite de Usuários *
+                      </FormLabel>
                       <FormControl>
-                        <Input type="number" {...field} />
+                        <Input type="number" className="bg-white dark:bg-slate-950" {...field} />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -263,41 +345,50 @@ export default function AdminEmpresasForm() {
                 />
               </div>
 
-              <div>
+              <div className="bg-slate-50/50 dark:bg-slate-900/20 p-5 rounded-xl border">
                 <FormField
                   control={form.control}
                   name="modulos_habilitados"
                   render={() => (
                     <FormItem>
                       <div className="mb-4">
-                        <FormLabel>Módulos Habilitados</FormLabel>
+                        <FormLabel className="text-base font-semibold text-slate-800 dark:text-slate-200">
+                          Módulos Habilitados
+                        </FormLabel>
+                        <p className="text-sm text-muted-foreground mt-1">
+                          Selecione quais áreas do sistema esta empresa terá acesso.
+                        </p>
                       </div>
-                      {MODULOS_DISPONIVEIS.map((modulo) => (
-                        <FormField
-                          key={modulo.id}
-                          control={form.control}
-                          name="modulos_habilitados"
-                          render={({ field }) => {
-                            return (
-                              <FormItem className="flex flex-row items-start space-x-3 space-y-0 mb-2">
-                                <FormControl>
-                                  <Checkbox
-                                    checked={field.value?.includes(modulo.id)}
-                                    onCheckedChange={(checked) => {
-                                      return checked
-                                        ? field.onChange([...field.value, modulo.id])
-                                        : field.onChange(
-                                            field.value?.filter((value) => value !== modulo.id),
-                                          )
-                                    }}
-                                  />
-                                </FormControl>
-                                <FormLabel className="font-normal">{modulo.label}</FormLabel>
-                              </FormItem>
-                            )
-                          }}
-                        />
-                      ))}
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mt-4">
+                        {MODULOS_DISPONIVEIS.map((modulo) => (
+                          <FormField
+                            key={modulo.id}
+                            control={form.control}
+                            name="modulos_habilitados"
+                            render={({ field }) => {
+                              return (
+                                <FormItem className="flex flex-row items-center space-x-3 space-y-0 p-3 rounded-lg border bg-white dark:bg-slate-950 shadow-sm hover:border-primary/50 transition-colors cursor-pointer">
+                                  <FormControl>
+                                    <Checkbox
+                                      checked={field.value?.includes(modulo.id)}
+                                      onCheckedChange={(checked) => {
+                                        return checked
+                                          ? field.onChange([...field.value, modulo.id])
+                                          : field.onChange(
+                                              field.value?.filter((value) => value !== modulo.id),
+                                            )
+                                      }}
+                                    />
+                                  </FormControl>
+                                  <FormLabel className="font-medium cursor-pointer w-full">
+                                    {modulo.label}
+                                  </FormLabel>
+                                </FormItem>
+                              )
+                            }}
+                          />
+                        ))}
+                      </div>
                     </FormItem>
                   )}
                 />
@@ -306,69 +397,114 @@ export default function AdminEmpresasForm() {
           </Card>
 
           {!id && (
-            <Card>
-              <CardHeader>
-                <CardTitle>Primeiro Administrador</CardTitle>
+            <Card className="overflow-hidden border-none shadow-card">
+              <CardHeader className="bg-slate-50/50 dark:bg-slate-900/50 border-b pb-4">
+                <CardTitle className="text-xl text-primary flex items-center gap-2">
+                  <span className="bg-primary/10 p-2 rounded-lg">👤</span>
+                  Primeiro Administrador
+                </CardTitle>
+                <CardDescription>
+                  Usuário master que receberá o acesso inicial ao tenant.
+                </CardDescription>
               </CardHeader>
-              <CardContent className="grid grid-cols-2 gap-4">
-                <FormField
-                  control={form.control}
-                  name="admin_nome"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Nome do Administrador *</FormLabel>
-                      <FormControl>
-                        <Input {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <FormField
-                  control={form.control}
-                  name="admin_email"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Email do Administrador *</FormLabel>
-                      <FormControl>
-                        <Input type="email" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <FormField
-                  control={form.control}
-                  name="admin_senha"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Senha Temporária</FormLabel>
-                      <FormControl>
-                        <Input {...field} readOnly className="bg-muted" />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <FormField
-                  control={form.control}
-                  name="admin_troca_senha"
-                  render={({ field }) => (
-                    <FormItem className="flex items-center gap-2 pt-8">
-                      <FormControl>
-                        <Switch checked={field.value} onCheckedChange={field.onChange} />
-                      </FormControl>
-                      <FormLabel className="!mt-0">Exigir Troca de Senha</FormLabel>
-                    </FormItem>
-                  )}
-                />
+              <CardContent className="p-6 md:p-8">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-8">
+                  <FormField
+                    control={form.control}
+                    name="admin_nome"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel className="font-semibold text-slate-700 dark:text-slate-300">
+                          Nome do Administrador *
+                        </FormLabel>
+                        <FormControl>
+                          <Input
+                            placeholder="João da Silva"
+                            className="bg-white dark:bg-slate-950"
+                            {...field}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={form.control}
+                    name="admin_email"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel className="font-semibold text-slate-700 dark:text-slate-300">
+                          Email do Administrador *
+                        </FormLabel>
+                        <FormControl>
+                          <Input
+                            type="email"
+                            placeholder="joao@empresa.com"
+                            className="bg-white dark:bg-slate-950"
+                            {...field}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={form.control}
+                    name="admin_senha"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel className="font-semibold text-slate-700 dark:text-slate-300">
+                          Senha Temporária
+                        </FormLabel>
+                        <FormControl>
+                          <Input
+                            {...field}
+                            readOnly
+                            className="bg-muted font-mono text-center tracking-widest text-lg"
+                          />
+                        </FormControl>
+                        <p className="text-xs text-muted-foreground mt-1">
+                          Copie esta senha e envie ao administrador.
+                        </p>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={form.control}
+                    name="admin_troca_senha"
+                    render={({ field }) => (
+                      <FormItem className="flex flex-row items-center justify-between rounded-xl border p-4 shadow-sm bg-slate-50/50 dark:bg-slate-900/20 h-[fit-content] md:mt-8">
+                        <div className="space-y-0.5">
+                          <FormLabel className="text-base font-semibold">
+                            Exigir Troca de Senha
+                          </FormLabel>
+                          <p className="text-sm text-muted-foreground">
+                            Força a alteração no primeiro login.
+                          </p>
+                        </div>
+                        <FormControl>
+                          <Switch checked={field.value} onCheckedChange={field.onChange} />
+                        </FormControl>
+                      </FormItem>
+                    )}
+                  />
+                </div>
               </CardContent>
             </Card>
           )}
 
-          <Button type="submit" className="w-full" disabled={loading}>
-            {loading ? 'Salvando...' : id ? 'Salvar Alterações' : 'Criar Empresa e Administrador'}
-          </Button>
+          <div className="flex justify-end pt-4 pb-12 md:pb-0">
+            <Button
+              type="submit"
+              size="lg"
+              className="w-full md:w-auto shadow-md"
+              disabled={loading}
+            >
+              <Save className="mr-2 h-5 w-5" />
+              {loading ? 'Salvando...' : id ? 'Salvar Alterações' : 'Criar Empresa e Administrador'}
+            </Button>
+          </div>
         </form>
       </Form>
     </div>
