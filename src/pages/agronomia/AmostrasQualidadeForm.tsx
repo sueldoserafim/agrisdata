@@ -130,7 +130,6 @@ export default function AmostrasQualidadeForm() {
     }
   }
 
-  // Update Talhão when Safra changes
   useEffect(() => {
     if (watchSafraId && safras.length) {
       const safra = safras.find((s) => s.id === watchSafraId)
@@ -138,7 +137,6 @@ export default function AmostrasQualidadeForm() {
     }
   }, [watchSafraId, safras])
 
-  // Phenology Calc
   useEffect(() => {
     if (watchSafraId && watchDataColeta && safras.length && phenologies.length) {
       const safra = safras.find((s) => s.id === watchSafraId)
@@ -154,7 +152,6 @@ export default function AmostrasQualidadeForm() {
     }
   }, [watchSafraId, watchDataColeta, safras, phenologies])
 
-  // Ratio Calc
   useEffect(() => {
     if (watchBrixMedio && watchAcidez && watchAcidez > 0) {
       form.setValue('ratio_brix_acidez', Number((watchBrixMedio / watchAcidez).toFixed(2)))
@@ -216,7 +213,7 @@ export default function AmostrasQualidadeForm() {
   }
 
   return (
-    <div className="p-6 max-w-5xl mx-auto space-y-6">
+    <div className="p-6 w-full mx-auto space-y-6">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-4">
           <Button
@@ -230,7 +227,11 @@ export default function AmostrasQualidadeForm() {
             {id ? 'Editar Amostra' : 'Nova Amostra de Qualidade'}
           </h1>
         </div>
-        <Button onClick={form.handleSubmit(onSubmit)} disabled={loading}>
+        <Button
+          onClick={form.handleSubmit(onSubmit)}
+          disabled={loading}
+          className="w-full md:w-auto mt-4 md:mt-0"
+        >
           {loading ? (
             'Salvando...'
           ) : (
@@ -244,13 +245,13 @@ export default function AmostrasQualidadeForm() {
 
       <Form {...form}>
         <form className="space-y-6">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
             {/* IDENTIFICAÇÃO */}
-            <Card className="col-span-1 md:col-span-2">
+            <Card className="col-span-1 xl:col-span-2">
               <CardHeader>
                 <CardTitle>Identificação da Amostra</CardTitle>
               </CardHeader>
-              <CardContent className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <CardContent className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
                 <FormField
                   control={form.control}
                   name="safra_id"
@@ -334,11 +335,11 @@ export default function AmostrasQualidadeForm() {
             </Card>
 
             {/* BRIX E QUÍMICOS */}
-            <Card>
+            <Card className="col-span-1">
               <CardHeader>
                 <CardTitle>Brix & Parâmetros Químicos</CardTitle>
               </CardHeader>
-              <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <CardContent className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
                 <FormField
                   control={form.control}
                   name="brix_minimo"
@@ -426,7 +427,7 @@ export default function AmostrasQualidadeForm() {
                   control={form.control}
                   name="ratio_brix_acidez"
                   render={({ field }) => (
-                    <FormItem className="col-span-2">
+                    <FormItem className="md:col-span-2 lg:col-span-2">
                       <FormLabel className="flex items-center">
                         Ratio Brix/Acidez (Auto)
                         <HelpPopover
@@ -464,11 +465,11 @@ export default function AmostrasQualidadeForm() {
             </Card>
 
             {/* FÍSICOS */}
-            <Card>
+            <Card className="col-span-1">
               <CardHeader>
                 <CardTitle>Parâmetros Físicos</CardTitle>
               </CardHeader>
-              <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <CardContent className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
                 <FormField
                   control={form.control}
                   name="firmeza_media"
@@ -556,52 +557,53 @@ export default function AmostrasQualidadeForm() {
             </Card>
 
             {/* DECISÃO E EVIDÊNCIAS */}
-            <Card className="col-span-1 md:col-span-2">
+            <Card className="col-span-1 xl:col-span-2">
               <CardHeader>
                 <CardTitle>Decisão de Colheita e Evidências</CardTitle>
               </CardHeader>
-              <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <CardContent className="grid grid-cols-1 lg:grid-cols-2 gap-6 md:gap-8">
                 <div className="space-y-4">
-                  <FormField
-                    control={form.control}
-                    name="apto_colheita"
-                    render={({ field }) => (
-                      <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
-                        <div className="space-y-0.5">
-                          <FormLabel className="text-base">Apto para Colheita?</FormLabel>
-                          <FormDescription>
-                            A qualidade atual permite o envio para o packing?
-                          </FormDescription>
-                          {meetsBrixCriteria && (
-                            <Badge className="mt-2 bg-green-500 hover:bg-green-600">
-                              Atingiu Brix Mínimo Ideal ({brixMinimoIdeal})
-                            </Badge>
-                          )}
-                        </div>
-                        <FormControl>
-                          <Switch checked={field.value} onCheckedChange={field.onChange} />
-                        </FormControl>
-                      </FormItem>
-                    )}
-                  />
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <FormField
+                      control={form.control}
+                      name="apto_colheita"
+                      render={({ field }) => (
+                        <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4 shadow-sm bg-slate-50/50">
+                          <div className="space-y-0.5">
+                            <FormLabel className="text-base">Apto para Colheita?</FormLabel>
+                            <FormDescription>A qualidade permite o envio?</FormDescription>
+                            {meetsBrixCriteria && (
+                              <Badge className="mt-2 bg-green-500 hover:bg-green-600">
+                                Brix Atingido ({brixMinimoIdeal})
+                              </Badge>
+                            )}
+                          </div>
+                          <FormControl>
+                            <Switch checked={field.value} onCheckedChange={field.onChange} />
+                          </FormControl>
+                        </FormItem>
+                      )}
+                    />
 
-                  <FormField
-                    control={form.control}
-                    name="data_estimada_colheita"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Data Estimada de Colheita</FormLabel>
-                        <FormControl>
-                          <Input
-                            type="date"
-                            value={field.value || ''}
-                            onChange={(e) => field.onChange(e.target.value || null)}
-                          />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
+                    <FormField
+                      control={form.control}
+                      name="data_estimada_colheita"
+                      render={({ field }) => (
+                        <FormItem className="rounded-lg border p-4 shadow-sm bg-slate-50/50">
+                          <FormLabel>Data Estimada de Colheita</FormLabel>
+                          <FormControl>
+                            <Input
+                              type="date"
+                              value={field.value || ''}
+                              onChange={(e) => field.onChange(e.target.value || null)}
+                              className="mt-2"
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  </div>
 
                   <FormField
                     control={form.control}
@@ -625,7 +627,7 @@ export default function AmostrasQualidadeForm() {
 
                 <div>
                   <FormLabel className="block mb-2">Fotos da Amostra</FormLabel>
-                  <div className="border-2 border-dashed rounded-lg p-6 flex flex-col items-center justify-center bg-gray-50 text-center">
+                  <div className="border-2 border-dashed rounded-lg p-6 flex flex-col items-center justify-center bg-gray-50 text-center h-[180px]">
                     <UploadCloud className="h-10 w-10 text-gray-400 mb-2" />
                     <p className="text-sm text-gray-600 mb-4">
                       Clique para fazer upload de evidências (Max 5MB/foto)
@@ -649,13 +651,13 @@ export default function AmostrasQualidadeForm() {
                   </div>
 
                   {watchFotos.length > 0 && (
-                    <div className="mt-4 grid grid-cols-3 gap-2">
+                    <div className="mt-4 grid grid-cols-2 md:grid-cols-4 lg:grid-cols-3 xl:grid-cols-4 gap-3">
                       {watchFotos.map((url, i) => (
-                        <div key={i} className="relative group">
+                        <div key={i} className="relative group aspect-square">
                           <img
                             src={url}
                             alt={`Foto ${i + 1}`}
-                            className="w-full h-24 object-cover rounded-md border"
+                            className="w-full h-full object-cover rounded-md border"
                           />
                           <button
                             type="button"
@@ -671,6 +673,22 @@ export default function AmostrasQualidadeForm() {
                 </div>
               </CardContent>
             </Card>
+          </div>
+          <div className="flex justify-end pt-4 pb-12 md:pb-0">
+            <Button
+              onClick={form.handleSubmit(onSubmit)}
+              disabled={loading}
+              className="w-full md:w-auto"
+            >
+              {loading ? (
+                'Salvando...'
+              ) : (
+                <>
+                  <Save className="h-4 w-4 mr-2" />
+                  Salvar Alterações
+                </>
+              )}
+            </Button>
           </div>
         </form>
       </Form>

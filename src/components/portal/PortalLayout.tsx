@@ -12,7 +12,7 @@ export function PortalLayout() {
           <h1 className="font-bold text-lg text-slate-800">Portal do Parceiro</h1>
         </div>
       </header>
-      <main className="flex-1 p-4 md:p-8 max-w-7xl mx-auto w-full">
+      <main className="flex-1 p-4 md:p-8 w-full">
         <Outlet />
       </main>
       <footer className="bg-white border-t border-slate-200 py-6 text-center text-slate-500 text-sm">

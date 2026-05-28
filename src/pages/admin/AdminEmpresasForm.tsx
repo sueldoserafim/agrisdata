@@ -120,7 +120,7 @@ export default function AdminEmpresasForm() {
   }
 
   return (
-    <div className="max-w-5xl mx-auto space-y-6 md:space-y-8 pb-10">
+    <div className="w-full space-y-6 md:space-y-8 pb-10">
       {/* Gradient Header */}
       <div className="bg-gradient-to-r from-blue-600 to-indigo-700 rounded-2xl p-6 md:p-8 text-white shadow-card flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
         <div className="flex items-center gap-4">
@@ -169,7 +169,7 @@ export default function AdminEmpresasForm() {
               <CardDescription>Informações cadastrais e contato da empresa.</CardDescription>
             </CardHeader>
             <CardContent className="p-6 md:p-8">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-8">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8">
                 <FormField
                   control={form.control}
                   name="nome"
@@ -300,8 +300,8 @@ export default function AdminEmpresasForm() {
                 Configure o plano de assinatura e as permissões do tenant.
               </CardDescription>
             </CardHeader>
-            <CardContent className="p-6 md:p-8 grid grid-cols-1 lg:grid-cols-2 gap-8">
-              <div className="space-y-6">
+            <CardContent className="p-6 md:p-8 grid grid-cols-1 xl:grid-cols-2 gap-8">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 h-fit">
                 <FormField
                   control={form.control}
                   name="plano_id"
@@ -359,7 +359,7 @@ export default function AdminEmpresasForm() {
                           Selecione quais áreas do sistema esta empresa terá acesso.
                         </p>
                       </div>
-                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mt-4">
+                      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 mt-4">
                         {MODULOS_DISPONIVEIS.map((modulo) => (
                           <FormField
                             key={modulo.id}
@@ -408,7 +408,7 @@ export default function AdminEmpresasForm() {
                 </CardDescription>
               </CardHeader>
               <CardContent className="p-6 md:p-8">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-8">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 md:gap-8">
                   <FormField
                     control={form.control}
                     name="admin_nome"
@@ -474,7 +474,7 @@ export default function AdminEmpresasForm() {
                     control={form.control}
                     name="admin_troca_senha"
                     render={({ field }) => (
-                      <FormItem className="flex flex-row items-center justify-between rounded-xl border p-4 shadow-sm bg-slate-50/50 dark:bg-slate-900/20 h-[fit-content] md:mt-8">
+                      <FormItem className="flex flex-row items-center justify-between rounded-xl border p-4 shadow-sm bg-slate-50/50 dark:bg-slate-900/20 h-[fit-content] md:mt-8 lg:mt-8">
                         <div className="space-y-0.5">
                           <FormLabel className="text-base font-semibold">
                             Exigir Troca de Senha

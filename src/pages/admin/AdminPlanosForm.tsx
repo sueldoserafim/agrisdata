@@ -76,40 +76,27 @@ export default function AdminPlanosForm() {
   }
 
   return (
-    <div className="max-w-2xl mx-auto space-y-6">
+    <div className="w-full space-y-6">
       <h1 className="text-2xl font-bold">{id ? 'Editar Plano' : 'Novo Plano'}</h1>
       <Form {...form}>
         <form
           onSubmit={form.handleSubmit(onSubmit)}
           className="space-y-6 bg-card p-6 rounded-lg border"
         >
-          <FormField
-            control={form.control}
-            name="nome"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Nome do Plano</FormLabel>
-                <FormControl>
-                  <Input {...field} />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-          <FormField
-            control={form.control}
-            name="descricao"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Descrição</FormLabel>
-                <FormControl>
-                  <Textarea {...field} value={field.value || ''} />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <FormField
+              control={form.control}
+              name="nome"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Nome do Plano</FormLabel>
+                  <FormControl>
+                    <Input {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
             <FormField
               control={form.control}
               name="preco_mensal"
@@ -136,6 +123,19 @@ export default function AdminPlanosForm() {
                 </FormItem>
               )}
             />
+            <FormField
+              control={form.control}
+              name="descricao"
+              render={({ field }) => (
+                <FormItem className="md:col-span-2 lg:col-span-3">
+                  <FormLabel>Descrição</FormLabel>
+                  <FormControl>
+                    <Textarea {...field} value={field.value || ''} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
           </div>
 
           <FormField
@@ -146,7 +146,7 @@ export default function AdminPlanosForm() {
                 <div className="mb-4">
                   <FormLabel className="text-base">Módulos Incluídos</FormLabel>
                 </div>
-                <div className="grid grid-cols-2 gap-3">
+                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3">
                   {AVAILABLE_MODULES.map((item) => (
                     <FormField
                       key={item.id}
@@ -156,7 +156,7 @@ export default function AdminPlanosForm() {
                         return (
                           <FormItem
                             key={item.id}
-                            className="flex flex-row items-start space-x-3 space-y-0"
+                            className="flex flex-row items-center space-x-3 space-y-0 p-3 rounded-lg border bg-white dark:bg-slate-950 shadow-sm hover:border-primary/50 transition-colors cursor-pointer"
                           >
                             <FormControl>
                               <Checkbox
@@ -170,7 +170,7 @@ export default function AdminPlanosForm() {
                                 }}
                               />
                             </FormControl>
-                            <FormLabel className="font-normal cursor-pointer leading-none">
+                            <FormLabel className="font-normal cursor-pointer leading-none m-0 w-full">
                               {item.label}
                             </FormLabel>
                           </FormItem>
@@ -196,9 +196,11 @@ export default function AdminPlanosForm() {
               </FormItem>
             )}
           />
-          <Button type="submit" className="w-full">
-            Salvar Plano
-          </Button>
+          <div className="flex justify-end mt-6">
+            <Button type="submit" className="w-full md:w-auto">
+              Salvar Plano
+            </Button>
+          </div>
         </form>
       </Form>
     </div>
