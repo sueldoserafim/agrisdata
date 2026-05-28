@@ -26,6 +26,10 @@ import PortalApp from './pages/portal/PortalApp'
 import { PortalLayout } from './components/portal/PortalLayout'
 import PortalTokensList from './pages/configuracoes/PortalTokensList'
 import Usuarios from './pages/app/Usuarios'
+import Vendedores from './pages/cadastros/Vendedores'
+import VendedorForm from './pages/cadastros/VendedorForm'
+import Clientes from './pages/cadastros/Clientes'
+import ClienteForm from './pages/cadastros/ClienteForm'
 import VacariaDashboard from './pages/vacaria/VacariaDashboard'
 import VacariaRebanhoList from './pages/vacaria/VacariaRebanhoList'
 import VacariaRebanhoForm from './pages/vacaria/VacariaRebanhoForm'
@@ -406,6 +410,14 @@ const App = () => (
                 <Route path="/app/sustentabilidade/emissoes" element={<EmissoesCarbono />} />
                 <Route path="/app/sustentabilidade/residuos" element={<ResiduosLogistica />} />
                 <Route path="/app/configuracoes/portais" element={<PortalTokensList />} />
+                <Route path="/app/vendedores" element={<Vendedores />} />
+                <Route path="/app/vendedores/new" element={<VendedorForm />} />
+                <Route path="/app/vendedores/:id" element={<VendedorForm />} />
+
+                <Route path="/app/clientes" element={<Clientes />} />
+                <Route path="/app/clientes/new" element={<ClienteForm />} />
+                <Route path="/app/clientes/:id" element={<ClienteForm />} />
+
                 <Route path="/app/usuarios" element={<Usuarios />} />
                 <Route path="/app/configuracoes" element={<SettingsPage />} />
 

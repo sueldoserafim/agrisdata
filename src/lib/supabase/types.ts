@@ -1077,40 +1077,67 @@ export type Database = {
       }
       clientes: {
         Row: {
+          acesso_portal: boolean | null
           cnpj_cpf: string | null
           created_at: string | null
           deleted_at: string | null
           email: string | null
           empresa_id: string
           id: string
+          indicador_ie: string | null
+          inscricao_estadual: string | null
+          inscricao_municipal: string | null
+          limite_credito: number | null
           nome: string
+          nome_fantasia: string | null
           pais: string | null
           telefone: string | null
+          tipo_cliente: string | null
+          tipo_pessoa: string | null
           updated_at: string | null
+          vendedor_id: string | null
         }
         Insert: {
+          acesso_portal?: boolean | null
           cnpj_cpf?: string | null
           created_at?: string | null
           deleted_at?: string | null
           email?: string | null
           empresa_id: string
           id?: string
+          indicador_ie?: string | null
+          inscricao_estadual?: string | null
+          inscricao_municipal?: string | null
+          limite_credito?: number | null
           nome: string
+          nome_fantasia?: string | null
           pais?: string | null
           telefone?: string | null
+          tipo_cliente?: string | null
+          tipo_pessoa?: string | null
           updated_at?: string | null
+          vendedor_id?: string | null
         }
         Update: {
+          acesso_portal?: boolean | null
           cnpj_cpf?: string | null
           created_at?: string | null
           deleted_at?: string | null
           email?: string | null
           empresa_id?: string
           id?: string
+          indicador_ie?: string | null
+          inscricao_estadual?: string | null
+          inscricao_municipal?: string | null
+          limite_credito?: number | null
           nome?: string
+          nome_fantasia?: string | null
           pais?: string | null
           telefone?: string | null
+          tipo_cliente?: string | null
+          tipo_pessoa?: string | null
           updated_at?: string | null
+          vendedor_id?: string | null
         }
         Relationships: [
           {
@@ -1118,6 +1145,13 @@ export type Database = {
             columns: ['empresa_id']
             isOneToOne: false
             referencedRelation: 'empresas'
+            referencedColumns: ['id']
+          },
+          {
+            foreignKeyName: 'clientes_vendedor_id_fkey'
+            columns: ['vendedor_id']
+            isOneToOne: false
+            referencedRelation: 'vendedores'
             referencedColumns: ['id']
           },
         ]
@@ -1731,6 +1765,118 @@ export type Database = {
           },
         ]
       }
+      contas_bancarias_entidade: {
+        Row: {
+          agencia: string | null
+          banco_codigo: string | null
+          banco_nome: string | null
+          chave_pix: string | null
+          chave_pix_tipo: string | null
+          conta: string | null
+          created_at: string | null
+          empresa_id: string
+          entidade_id: string
+          entidade_tipo: string
+          iban: string | null
+          id: string
+          swift: string | null
+          tipo_conta: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          agencia?: string | null
+          banco_codigo?: string | null
+          banco_nome?: string | null
+          chave_pix?: string | null
+          chave_pix_tipo?: string | null
+          conta?: string | null
+          created_at?: string | null
+          empresa_id: string
+          entidade_id: string
+          entidade_tipo: string
+          iban?: string | null
+          id?: string
+          swift?: string | null
+          tipo_conta?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          agencia?: string | null
+          banco_codigo?: string | null
+          banco_nome?: string | null
+          chave_pix?: string | null
+          chave_pix_tipo?: string | null
+          conta?: string | null
+          created_at?: string | null
+          empresa_id?: string
+          entidade_id?: string
+          entidade_tipo?: string
+          iban?: string | null
+          id?: string
+          swift?: string | null
+          tipo_conta?: string | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: 'contas_bancarias_entidade_empresa_id_fkey'
+            columns: ['empresa_id']
+            isOneToOne: false
+            referencedRelation: 'empresas'
+            referencedColumns: ['id']
+          },
+        ]
+      }
+      contatos_entidade: {
+        Row: {
+          cargo: string | null
+          created_at: string | null
+          email: string | null
+          empresa_id: string
+          entidade_id: string
+          entidade_tipo: string
+          id: string
+          nome: string
+          telefone: string | null
+          updated_at: string | null
+          whatsapp: string | null
+        }
+        Insert: {
+          cargo?: string | null
+          created_at?: string | null
+          email?: string | null
+          empresa_id: string
+          entidade_id: string
+          entidade_tipo: string
+          id?: string
+          nome: string
+          telefone?: string | null
+          updated_at?: string | null
+          whatsapp?: string | null
+        }
+        Update: {
+          cargo?: string | null
+          created_at?: string | null
+          email?: string | null
+          empresa_id?: string
+          entidade_id?: string
+          entidade_tipo?: string
+          id?: string
+          nome?: string
+          telefone?: string | null
+          updated_at?: string | null
+          whatsapp?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: 'contatos_entidade_empresa_id_fkey'
+            columns: ['empresa_id']
+            isOneToOne: false
+            referencedRelation: 'empresas'
+            referencedColumns: ['id']
+          },
+        ]
+      }
       cooperados_contratos: {
         Row: {
           created_at: string | null
@@ -2209,6 +2355,65 @@ export type Database = {
           },
         ]
       }
+      documentos_entidade: {
+        Row: {
+          arquivo_url: string | null
+          created_at: string | null
+          data_emissao: string | null
+          data_validade: string | null
+          dias_antecedencia_alerta: number | null
+          empresa_id: string
+          entidade_id: string
+          entidade_tipo: string
+          gerar_alerta: boolean | null
+          id: string
+          numero_documento: string | null
+          tipo_documento: string | null
+          titulo: string
+          updated_at: string | null
+        }
+        Insert: {
+          arquivo_url?: string | null
+          created_at?: string | null
+          data_emissao?: string | null
+          data_validade?: string | null
+          dias_antecedencia_alerta?: number | null
+          empresa_id: string
+          entidade_id: string
+          entidade_tipo: string
+          gerar_alerta?: boolean | null
+          id?: string
+          numero_documento?: string | null
+          tipo_documento?: string | null
+          titulo: string
+          updated_at?: string | null
+        }
+        Update: {
+          arquivo_url?: string | null
+          created_at?: string | null
+          data_emissao?: string | null
+          data_validade?: string | null
+          dias_antecedencia_alerta?: number | null
+          empresa_id?: string
+          entidade_id?: string
+          entidade_tipo?: string
+          gerar_alerta?: boolean | null
+          id?: string
+          numero_documento?: string | null
+          tipo_documento?: string | null
+          titulo?: string
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: 'documentos_entidade_empresa_id_fkey'
+            columns: ['empresa_id']
+            isOneToOne: false
+            referencedRelation: 'empresas'
+            referencedColumns: ['id']
+          },
+        ]
+      }
       documentos_exportacao: {
         Row: {
           arquivo_url: string | null
@@ -2400,6 +2605,71 @@ export type Database = {
             columns: ['plano_id']
             isOneToOne: false
             referencedRelation: 'planos'
+            referencedColumns: ['id']
+          },
+        ]
+      }
+      enderecos_entidade: {
+        Row: {
+          bairro: string | null
+          cep: string | null
+          cidade: string | null
+          complemento: string | null
+          created_at: string | null
+          empresa_id: string
+          entidade_id: string
+          entidade_tipo: string
+          estado: string | null
+          id: string
+          logradouro: string | null
+          numero: string | null
+          pais: string | null
+          receiver: string | null
+          tipo_endereco: string
+          updated_at: string | null
+        }
+        Insert: {
+          bairro?: string | null
+          cep?: string | null
+          cidade?: string | null
+          complemento?: string | null
+          created_at?: string | null
+          empresa_id: string
+          entidade_id: string
+          entidade_tipo: string
+          estado?: string | null
+          id?: string
+          logradouro?: string | null
+          numero?: string | null
+          pais?: string | null
+          receiver?: string | null
+          tipo_endereco: string
+          updated_at?: string | null
+        }
+        Update: {
+          bairro?: string | null
+          cep?: string | null
+          cidade?: string | null
+          complemento?: string | null
+          created_at?: string | null
+          empresa_id?: string
+          entidade_id?: string
+          entidade_tipo?: string
+          estado?: string | null
+          id?: string
+          logradouro?: string | null
+          numero?: string | null
+          pais?: string | null
+          receiver?: string | null
+          tipo_endereco?: string
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: 'enderecos_entidade_empresa_id_fkey'
+            columns: ['empresa_id']
+            isOneToOne: false
+            referencedRelation: 'empresas'
             referencedColumns: ['id']
           },
         ]
@@ -6092,6 +6362,7 @@ export type Database = {
       usuarios: {
         Row: {
           ativo: boolean | null
+          cliente_id: string | null
           created_at: string | null
           deleted_at: string | null
           email: string
@@ -6105,6 +6376,7 @@ export type Database = {
         }
         Insert: {
           ativo?: boolean | null
+          cliente_id?: string | null
           created_at?: string | null
           deleted_at?: string | null
           email: string
@@ -6118,6 +6390,7 @@ export type Database = {
         }
         Update: {
           ativo?: boolean | null
+          cliente_id?: string | null
           created_at?: string | null
           deleted_at?: string | null
           email?: string
@@ -6130,6 +6403,13 @@ export type Database = {
           updated_at?: string | null
         }
         Relationships: [
+          {
+            foreignKeyName: 'usuarios_cliente_id_fkey'
+            columns: ['cliente_id']
+            isOneToOne: false
+            referencedRelation: 'clientes'
+            referencedColumns: ['id']
+          },
           {
             foreignKeyName: 'usuarios_empresa_id_fkey'
             columns: ['empresa_id']
@@ -6410,34 +6690,166 @@ export type Database = {
       }
       vendedores: {
         Row: {
+          acesso_crm: boolean | null
+          agencia: string | null
+          agencia_digito: string | null
+          bairro: string | null
+          banco_codigo: string | null
+          banco_nome: string | null
+          cep: string | null
+          chave_pix: string | null
+          chave_pix_tipo: string | null
+          cidade: string | null
+          comissao_exportacao: number | null
+          comissao_fixa: number | null
+          comissao_interna: number | null
+          complemento: string | null
+          conta: string | null
+          conta_ativa: boolean | null
+          conta_digito: string | null
+          conta_principal: boolean | null
+          cpf_cnpj: string | null
           created_at: string | null
+          data_contratacao: string | null
+          data_desligamento: string | null
+          data_nascimento: string | null
           deleted_at: string | null
           email: string | null
+          email_corporativo: string | null
+          email_pessoal: string | null
           empresa_id: string
+          estado: string | null
+          experiencia_anos: number | null
+          foto_url: string | null
+          frequencia_pagamento: string | null
           id: string
+          idiomas: string | null
+          logradouro: string | null
+          meta_mensal: number | null
+          moeda_padrao: string | null
+          nivel_autonomia: string | null
           nome: string
+          numero: string | null
+          paises_atuacao: string | null
+          regioes_atuacao: string | null
+          rg: string | null
+          status: string | null
+          supervisor_id: string | null
           telefone: string | null
+          telefone_secundario: string | null
+          tipo_conta: string | null
+          tipo_mercado: string | null
+          tipo_vinculo: string | null
           updated_at: string | null
+          whatsapp: string | null
         }
         Insert: {
+          acesso_crm?: boolean | null
+          agencia?: string | null
+          agencia_digito?: string | null
+          bairro?: string | null
+          banco_codigo?: string | null
+          banco_nome?: string | null
+          cep?: string | null
+          chave_pix?: string | null
+          chave_pix_tipo?: string | null
+          cidade?: string | null
+          comissao_exportacao?: number | null
+          comissao_fixa?: number | null
+          comissao_interna?: number | null
+          complemento?: string | null
+          conta?: string | null
+          conta_ativa?: boolean | null
+          conta_digito?: string | null
+          conta_principal?: boolean | null
+          cpf_cnpj?: string | null
           created_at?: string | null
+          data_contratacao?: string | null
+          data_desligamento?: string | null
+          data_nascimento?: string | null
           deleted_at?: string | null
           email?: string | null
+          email_corporativo?: string | null
+          email_pessoal?: string | null
           empresa_id: string
+          estado?: string | null
+          experiencia_anos?: number | null
+          foto_url?: string | null
+          frequencia_pagamento?: string | null
           id?: string
+          idiomas?: string | null
+          logradouro?: string | null
+          meta_mensal?: number | null
+          moeda_padrao?: string | null
+          nivel_autonomia?: string | null
           nome: string
+          numero?: string | null
+          paises_atuacao?: string | null
+          regioes_atuacao?: string | null
+          rg?: string | null
+          status?: string | null
+          supervisor_id?: string | null
           telefone?: string | null
+          telefone_secundario?: string | null
+          tipo_conta?: string | null
+          tipo_mercado?: string | null
+          tipo_vinculo?: string | null
           updated_at?: string | null
+          whatsapp?: string | null
         }
         Update: {
+          acesso_crm?: boolean | null
+          agencia?: string | null
+          agencia_digito?: string | null
+          bairro?: string | null
+          banco_codigo?: string | null
+          banco_nome?: string | null
+          cep?: string | null
+          chave_pix?: string | null
+          chave_pix_tipo?: string | null
+          cidade?: string | null
+          comissao_exportacao?: number | null
+          comissao_fixa?: number | null
+          comissao_interna?: number | null
+          complemento?: string | null
+          conta?: string | null
+          conta_ativa?: boolean | null
+          conta_digito?: string | null
+          conta_principal?: boolean | null
+          cpf_cnpj?: string | null
           created_at?: string | null
+          data_contratacao?: string | null
+          data_desligamento?: string | null
+          data_nascimento?: string | null
           deleted_at?: string | null
           email?: string | null
+          email_corporativo?: string | null
+          email_pessoal?: string | null
           empresa_id?: string
+          estado?: string | null
+          experiencia_anos?: number | null
+          foto_url?: string | null
+          frequencia_pagamento?: string | null
           id?: string
+          idiomas?: string | null
+          logradouro?: string | null
+          meta_mensal?: number | null
+          moeda_padrao?: string | null
+          nivel_autonomia?: string | null
           nome?: string
+          numero?: string | null
+          paises_atuacao?: string | null
+          regioes_atuacao?: string | null
+          rg?: string | null
+          status?: string | null
+          supervisor_id?: string | null
           telefone?: string | null
+          telefone_secundario?: string | null
+          tipo_conta?: string | null
+          tipo_mercado?: string | null
+          tipo_vinculo?: string | null
           updated_at?: string | null
+          whatsapp?: string | null
         }
         Relationships: [
           {
@@ -6445,6 +6857,13 @@ export type Database = {
             columns: ['empresa_id']
             isOneToOne: false
             referencedRelation: 'empresas'
+            referencedColumns: ['id']
+          },
+          {
+            foreignKeyName: 'vendedores_supervisor_id_fkey'
+            columns: ['supervisor_id']
+            isOneToOne: false
+            referencedRelation: 'vendedores'
             referencedColumns: ['id']
           },
         ]
@@ -6902,6 +7321,15 @@ export const Constants = {
 //   created_at: timestamp with time zone (nullable, default: now())
 //   updated_at: timestamp with time zone (nullable, default: now())
 //   deleted_at: timestamp with time zone (nullable)
+//   nome_fantasia: text (nullable)
+//   tipo_cliente: text (nullable)
+//   tipo_pessoa: text (nullable)
+//   indicador_ie: text (nullable)
+//   inscricao_estadual: text (nullable)
+//   inscricao_municipal: text (nullable)
+//   vendedor_id: uuid (nullable)
+//   limite_credito: numeric (nullable)
+//   acesso_portal: boolean (nullable, default: false)
 // Table: colheita_registros
 //   id: uuid (not null, default: gen_random_uuid())
 //   empresa_id: uuid (not null)
@@ -7035,6 +7463,34 @@ export const Constants = {
 //   created_at: timestamp with time zone (nullable, default: now())
 //   updated_at: timestamp with time zone (nullable, default: now())
 //   deleted_at: timestamp with time zone (nullable)
+// Table: contas_bancarias_entidade
+//   id: uuid (not null, default: gen_random_uuid())
+//   empresa_id: uuid (not null)
+//   entidade_id: uuid (not null)
+//   entidade_tipo: text (not null)
+//   banco_nome: text (nullable)
+//   banco_codigo: text (nullable)
+//   agencia: text (nullable)
+//   conta: text (nullable)
+//   tipo_conta: text (nullable)
+//   swift: text (nullable)
+//   iban: text (nullable)
+//   chave_pix_tipo: text (nullable)
+//   chave_pix: text (nullable)
+//   created_at: timestamp with time zone (nullable, default: now())
+//   updated_at: timestamp with time zone (nullable, default: now())
+// Table: contatos_entidade
+//   id: uuid (not null, default: gen_random_uuid())
+//   empresa_id: uuid (not null)
+//   entidade_id: uuid (not null)
+//   entidade_tipo: text (not null)
+//   nome: text (not null)
+//   telefone: text (nullable)
+//   email: text (nullable)
+//   cargo: text (nullable)
+//   whatsapp: text (nullable)
+//   created_at: timestamp with time zone (nullable, default: now())
+//   updated_at: timestamp with time zone (nullable, default: now())
 // Table: cooperados_contratos
 //   id: uuid (not null, default: gen_random_uuid())
 //   empresa_id: uuid (not null)
@@ -7129,6 +7585,21 @@ export const Constants = {
 //   created_at: timestamp with time zone (not null, default: now())
 //   updated_at: timestamp with time zone (not null, default: now())
 //   deleted_at: timestamp with time zone (nullable)
+// Table: documentos_entidade
+//   id: uuid (not null, default: gen_random_uuid())
+//   empresa_id: uuid (not null)
+//   entidade_id: uuid (not null)
+//   entidade_tipo: text (not null)
+//   tipo_documento: text (nullable)
+//   numero_documento: text (nullable)
+//   titulo: text (not null)
+//   arquivo_url: text (nullable)
+//   data_emissao: date (nullable)
+//   data_validade: date (nullable)
+//   gerar_alerta: boolean (nullable, default: false)
+//   dias_antecedencia_alerta: integer (nullable)
+//   created_at: timestamp with time zone (nullable, default: now())
+//   updated_at: timestamp with time zone (nullable, default: now())
 // Table: documentos_exportacao
 //   id: uuid (not null, default: gen_random_uuid())
 //   empresa_id: uuid (not null)
@@ -7173,6 +7644,23 @@ export const Constants = {
 //   modulos_habilitados: _text (nullable, default: '{}'::text[])
 //   limite_usuarios: integer (nullable, default: 5)
 //   configuracoes: jsonb (nullable, default: '{}'::jsonb)
+// Table: enderecos_entidade
+//   id: uuid (not null, default: gen_random_uuid())
+//   empresa_id: uuid (not null)
+//   entidade_id: uuid (not null)
+//   entidade_tipo: text (not null)
+//   tipo_endereco: text (not null)
+//   logradouro: text (nullable)
+//   numero: text (nullable)
+//   complemento: text (nullable)
+//   bairro: text (nullable)
+//   cidade: text (nullable)
+//   estado: text (nullable)
+//   cep: text (nullable)
+//   pais: text (nullable)
+//   receiver: text (nullable)
+//   created_at: timestamp with time zone (nullable, default: now())
+//   updated_at: timestamp with time zone (nullable, default: now())
 // Table: equipamentos
 //   id: uuid (not null, default: gen_random_uuid())
 //   empresa_id: uuid (not null)
@@ -7954,6 +8442,7 @@ export const Constants = {
 //   updated_at: timestamp with time zone (nullable, default: now())
 //   deleted_at: timestamp with time zone (nullable)
 //   fornecedor_id: uuid (nullable)
+//   cliente_id: uuid (nullable)
 // Table: vacaria_animais
 //   id: uuid (not null, default: gen_random_uuid())
 //   empresa_id: uuid (not null)
@@ -8020,6 +8509,50 @@ export const Constants = {
 //   created_at: timestamp with time zone (nullable, default: now())
 //   updated_at: timestamp with time zone (nullable, default: now())
 //   deleted_at: timestamp with time zone (nullable)
+//   cpf_cnpj: text (nullable)
+//   rg: text (nullable)
+//   data_nascimento: date (nullable)
+//   foto_url: text (nullable)
+//   tipo_mercado: text (nullable)
+//   tipo_vinculo: text (nullable)
+//   telefone_secundario: text (nullable)
+//   whatsapp: text (nullable)
+//   email_corporativo: text (nullable)
+//   email_pessoal: text (nullable)
+//   comissao_interna: numeric (nullable)
+//   comissao_exportacao: numeric (nullable)
+//   comissao_fixa: numeric (nullable)
+//   meta_mensal: numeric (nullable)
+//   moeda_padrao: text (nullable)
+//   frequencia_pagamento: text (nullable)
+//   regioes_atuacao: text (nullable)
+//   paises_atuacao: text (nullable)
+//   banco_nome: text (nullable)
+//   banco_codigo: text (nullable)
+//   agencia: text (nullable)
+//   agencia_digito: text (nullable)
+//   conta: text (nullable)
+//   conta_digito: text (nullable)
+//   tipo_conta: text (nullable)
+//   chave_pix_tipo: text (nullable)
+//   chave_pix: text (nullable)
+//   conta_principal: boolean (nullable, default: true)
+//   conta_ativa: boolean (nullable, default: true)
+//   supervisor_id: uuid (nullable)
+//   nivel_autonomia: text (nullable)
+//   acesso_crm: boolean (nullable, default: false)
+//   data_contratacao: date (nullable)
+//   data_desligamento: date (nullable)
+//   status: text (nullable, default: 'ativo'::text)
+//   idiomas: text (nullable)
+//   experiencia_anos: integer (nullable)
+//   cep: text (nullable)
+//   logradouro: text (nullable)
+//   numero: text (nullable)
+//   complemento: text (nullable)
+//   bairro: text (nullable)
+//   cidade: text (nullable)
+//   estado: text (nullable)
 
 // --- CONSTRAINTS ---
 // Table: account_sales
@@ -8104,6 +8637,7 @@ export const Constants = {
 // Table: clientes
 //   FOREIGN KEY clientes_empresa_id_fkey: FOREIGN KEY (empresa_id) REFERENCES empresas(id) ON DELETE CASCADE
 //   PRIMARY KEY clientes_pkey: PRIMARY KEY (id)
+//   FOREIGN KEY clientes_vendedor_id_fkey: FOREIGN KEY (vendedor_id) REFERENCES vendedores(id)
 // Table: colheita_registros
 //   FOREIGN KEY colheita_registros_empresa_id_fkey: FOREIGN KEY (empresa_id) REFERENCES empresas(id) ON DELETE CASCADE
 //   FOREIGN KEY colheita_registros_equipamento_id_fkey: FOREIGN KEY (equipamento_id) REFERENCES equipamentos(id) ON DELETE SET NULL
@@ -8148,6 +8682,12 @@ export const Constants = {
 //   CHECK contas_bancarias_moeda_check: CHECK (((moeda)::text = ANY ((ARRAY['brl'::character varying, 'usd'::character varying, 'eur'::character varying])::text[])))
 //   PRIMARY KEY contas_bancarias_pkey: PRIMARY KEY (id)
 //   CHECK contas_bancarias_tipo_check: CHECK (((tipo)::text = ANY ((ARRAY['corrente'::character varying, 'poupanca'::character varying, 'aplicacao'::character varying, 'exterior'::character varying])::text[])))
+// Table: contas_bancarias_entidade
+//   FOREIGN KEY contas_bancarias_entidade_empresa_id_fkey: FOREIGN KEY (empresa_id) REFERENCES empresas(id) ON DELETE CASCADE
+//   PRIMARY KEY contas_bancarias_entidade_pkey: PRIMARY KEY (id)
+// Table: contatos_entidade
+//   FOREIGN KEY contatos_entidade_empresa_id_fkey: FOREIGN KEY (empresa_id) REFERENCES empresas(id) ON DELETE CASCADE
+//   PRIMARY KEY contatos_entidade_pkey: PRIMARY KEY (id)
 // Table: cooperados_contratos
 //   FOREIGN KEY cooperados_contratos_empresa_id_fkey: FOREIGN KEY (empresa_id) REFERENCES empresas(id) ON DELETE CASCADE
 //   FOREIGN KEY cooperados_contratos_fornecedor_id_fkey: FOREIGN KEY (fornecedor_id) REFERENCES fornecedores(id) ON DELETE CASCADE
@@ -8186,6 +8726,9 @@ export const Constants = {
 //   FOREIGN KEY divergencias_carregamento_sessao_id_fkey: FOREIGN KEY (sessao_id) REFERENCES sessoes_carregamento(id) ON DELETE CASCADE
 //   CHECK divergencias_carregamento_status_check: CHECK ((status = ANY (ARRAY['pendente'::text, 'aprovado'::text, 'rejeitado'::text])))
 //   CHECK divergencias_carregamento_tipo_divergencia_check: CHECK ((tipo_divergencia = ANY (ARRAY['peso'::text, 'quantidade'::text, 'qualidade'::text, 'produto_errado'::text])))
+// Table: documentos_entidade
+//   FOREIGN KEY documentos_entidade_empresa_id_fkey: FOREIGN KEY (empresa_id) REFERENCES empresas(id) ON DELETE CASCADE
+//   PRIMARY KEY documentos_entidade_pkey: PRIMARY KEY (id)
 // Table: documentos_exportacao
 //   FOREIGN KEY documentos_exportacao_container_id_fkey: FOREIGN KEY (container_id) REFERENCES containers(id) ON DELETE CASCADE
 //   FOREIGN KEY documentos_exportacao_empresa_id_fkey: FOREIGN KEY (empresa_id) REFERENCES empresas(id) ON DELETE CASCADE
@@ -8200,6 +8743,9 @@ export const Constants = {
 //   PRIMARY KEY empresas_pkey: PRIMARY KEY (id)
 //   FOREIGN KEY empresas_plano_id_fkey: FOREIGN KEY (plano_id) REFERENCES planos(id)
 //   UNIQUE empresas_slug_key: UNIQUE (slug)
+// Table: enderecos_entidade
+//   FOREIGN KEY enderecos_entidade_empresa_id_fkey: FOREIGN KEY (empresa_id) REFERENCES empresas(id) ON DELETE CASCADE
+//   PRIMARY KEY enderecos_entidade_pkey: PRIMARY KEY (id)
 // Table: equipamentos
 //   FOREIGN KEY equipamentos_empresa_id_fkey: FOREIGN KEY (empresa_id) REFERENCES empresas(id) ON DELETE CASCADE
 //   PRIMARY KEY equipamentos_pkey: PRIMARY KEY (id)
@@ -8497,6 +9043,7 @@ export const Constants = {
 //   PRIMARY KEY user_2fa_codes_pkey: PRIMARY KEY (id)
 //   FOREIGN KEY user_2fa_codes_usuario_id_fkey: FOREIGN KEY (usuario_id) REFERENCES usuarios(id) ON DELETE CASCADE
 // Table: usuarios
+//   FOREIGN KEY usuarios_cliente_id_fkey: FOREIGN KEY (cliente_id) REFERENCES clientes(id) ON DELETE SET NULL
 //   FOREIGN KEY usuarios_empresa_id_fkey: FOREIGN KEY (empresa_id) REFERENCES empresas(id) ON DELETE CASCADE
 //   FOREIGN KEY usuarios_fornecedor_id_fkey: FOREIGN KEY (fornecedor_id) REFERENCES fornecedores(id) ON DELETE SET NULL
 //   PRIMARY KEY usuarios_pkey: PRIMARY KEY (id)
@@ -8520,6 +9067,7 @@ export const Constants = {
 // Table: vendedores
 //   FOREIGN KEY vendedores_empresa_id_fkey: FOREIGN KEY (empresa_id) REFERENCES empresas(id) ON DELETE CASCADE
 //   PRIMARY KEY vendedores_pkey: PRIMARY KEY (id)
+//   FOREIGN KEY vendedores_supervisor_id_fkey: FOREIGN KEY (supervisor_id) REFERENCES vendedores(id)
 
 // --- ROW LEVEL SECURITY POLICIES ---
 // Table: account_sales
@@ -8628,6 +9176,14 @@ export const Constants = {
 //   Policy "contas_bancarias_empresa" (ALL, PERMISSIVE) roles={authenticated}
 //     USING: (empresa_id = get_user_empresa_id())
 //     WITH CHECK: (empresa_id = get_user_empresa_id())
+// Table: contas_bancarias_entidade
+//   Policy "contas_bancarias_entidade_empresa" (ALL, PERMISSIVE) roles={authenticated}
+//     USING: (empresa_id = get_user_empresa_id())
+//     WITH CHECK: (empresa_id = get_user_empresa_id())
+// Table: contatos_entidade
+//   Policy "contatos_entidade_empresa" (ALL, PERMISSIVE) roles={authenticated}
+//     USING: (empresa_id = get_user_empresa_id())
+//     WITH CHECK: (empresa_id = get_user_empresa_id())
 // Table: cooperados_contratos
 //   Policy "cooperados_contratos_empresa" (ALL, PERMISSIVE) roles={authenticated}
 //     USING: (empresa_id = get_user_empresa_id())
@@ -8654,6 +9210,10 @@ export const Constants = {
 //   Policy "divergencias_empresa" (ALL, PERMISSIVE) roles={authenticated}
 //     USING: (empresa_id = get_user_empresa_id())
 //     WITH CHECK: (empresa_id = get_user_empresa_id())
+// Table: documentos_entidade
+//   Policy "documentos_entidade_empresa" (ALL, PERMISSIVE) roles={authenticated}
+//     USING: (empresa_id = get_user_empresa_id())
+//     WITH CHECK: (empresa_id = get_user_empresa_id())
 // Table: documentos_exportacao
 //   Policy "documentos_exportacao_empresa" (ALL, PERMISSIVE) roles={authenticated}
 //     USING: (empresa_id = get_user_empresa_id())
@@ -8669,6 +9229,10 @@ export const Constants = {
 //     USING: is_admin_saas()
 //   Policy "empresas_read" (SELECT, PERMISSIVE) roles={public}
 //     USING: (deleted_at IS NULL)
+// Table: enderecos_entidade
+//   Policy "enderecos_entidade_empresa" (ALL, PERMISSIVE) roles={authenticated}
+//     USING: (empresa_id = get_user_empresa_id())
+//     WITH CHECK: (empresa_id = get_user_empresa_id())
 // Table: equipamentos
 //   Policy "equipamentos_empresa" (ALL, PERMISSIVE) roles={public}
 //     USING: (empresa_id = ( SELECT usuarios.empresa_id    FROM usuarios   WHERE (usuarios.id = auth.uid())))
@@ -9513,6 +10077,33 @@ export const Constants = {
 //               VALUES (r.empresa_id, v_admin_id, 'Vencimento de CDF Próximo', 'O CDF do resíduo ' || r.descricao || ' vence em ' || r.data_vencimento_cdf, 'cdf_vencimento', false);
 //           END LOOP;
 //       END LOOP;
+//   END;
+//   $function$
+//
+// FUNCTION check_documentos_entidade_vencimento()
+//   CREATE OR REPLACE FUNCTION public.check_documentos_entidade_vencimento()
+//    RETURNS trigger
+//    LANGUAGE plpgsql
+//   AS $function$
+//   DECLARE
+//     v_admin_id UUID;
+//   BEGIN
+//     IF NEW.gerar_alerta = true AND NEW.data_validade IS NOT NULL AND NEW.dias_antecedencia_alerta IS NOT NULL THEN
+//       IF (NEW.data_validade - CURRENT_DATE) <= NEW.dias_antecedencia_alerta AND (NEW.data_validade - CURRENT_DATE) >= 0 THEN
+//         FOR v_admin_id IN SELECT id FROM public.usuarios WHERE empresa_id = NEW.empresa_id AND perfil IN ('admin', 'gerente') AND ativo = true LOOP
+//           INSERT INTO public.alertas (empresa_id, usuario_id, titulo, descricao, tipo, lido)
+//           VALUES (
+//             NEW.empresa_id,
+//             v_admin_id,
+//             'Vencimento de Documento: ' || NEW.titulo,
+//             'O documento ' || NEW.titulo || ' vence em ' || TO_CHAR(NEW.data_validade, 'DD/MM/YYYY') || '.',
+//             'documento_vencimento',
+//             false
+//           );
+//         END LOOP;
+//       END IF;
+//     END IF;
+//     RETURN NEW;
 //   END;
 //   $function$
 //
@@ -10822,6 +11413,8 @@ export const Constants = {
 // Table: custos_talhao
 //   trg_rateio_custo: CREATE TRIGGER trg_rateio_custo AFTER INSERT ON public.custos_talhao FOR EACH ROW EXECUTE FUNCTION trg_rateio_custo_talhao()
 //   trigger_check_limite_orcamentario: CREATE TRIGGER trigger_check_limite_orcamentario AFTER INSERT OR UPDATE ON public.custos_talhao FOR EACH ROW EXECUTE FUNCTION check_limite_orcamentario()
+// Table: documentos_entidade
+//   trg_check_documentos_entidade_vencimento: CREATE TRIGGER trg_check_documentos_entidade_vencimento AFTER INSERT OR UPDATE ON public.documentos_entidade FOR EACH ROW EXECUTE FUNCTION check_documentos_entidade_vencimento()
 // Table: documentos_exportacao
 //   trigger_documentos_exportacao_updated_at: CREATE TRIGGER trigger_documentos_exportacao_updated_at BEFORE UPDATE ON public.documentos_exportacao FOR EACH ROW EXECUTE FUNCTION set_updated_at()
 // Table: emissoes_carbono

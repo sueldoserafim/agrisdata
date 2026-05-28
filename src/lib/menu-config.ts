@@ -138,6 +138,8 @@ export const allMenuItems: MenuItemRaw[] = [
     label: 'Cadastros Base',
     subItems: [
       { icon: Users, label: 'Fornecedores', path: '/app/compras/fornecedores', module: 'estoque' },
+      { icon: Briefcase, label: 'Vendedores', path: '/app/vendedores', module: null },
+      { icon: Users, label: 'Clientes', path: '/app/clientes', module: null },
     ],
   },
   {
