@@ -7,7 +7,7 @@ export const clienteSchema = z.object({
   email: z.string().optional().nullable(),
   telefone: z.string().max(30, 'O telefone não pode exceder 30 caracteres').optional().nullable(),
   tipo_cliente: z.string().optional().nullable(),
-  tipo_pessoa: z.string().optional().nullable(),
+  tipo_pessoa: z.string().min(1, 'Obrigatório'),
   indicador_ie: z.string().optional().nullable(),
   inscricao_estadual: z
     .string()

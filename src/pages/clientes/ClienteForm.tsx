@@ -8,8 +8,9 @@ import { Form } from '@/components/ui/form'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { useToast } from '@/hooks/use-toast'
 import { useEmpresa } from '@/hooks/use-empresa'
-import { getCliente, saveCliente } from '@/services/clientes'
+import { getCliente, saveCliente, checkClienteDuplicado } from '@/services/clientes'
 import { clienteSchema, type ClienteFormValues } from './schema'
+import { ToastAction } from '@/components/ui/toast'
 import { ClienteCore } from './components/ClienteCore'
 import { ClienteEnderecos } from './components/ClienteEnderecos'
 import { ClienteContatos } from './components/ClienteContatos'
@@ -47,6 +48,30 @@ export default function ClienteForm() {
       documentos: [],
     },
   })
+
+  // Visual validation indicator for required fields
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      const labels = document.querySelectorAll('label')
+      labels.forEach((label) => {
+        const text = label.textContent || ''
+        const normalizedText = text.replace('*', '').trim()
+        if (
+          ['Nome', 'Nome / Razão Social', 'CNPJ/CPF', 'CNPJ / CPF', 'Tipo de Pessoa'].includes(
+            normalizedText,
+          )
+        ) {
+          if (!label.querySelector('.text-destructive')) {
+            const span = document.createElement('span')
+            span.className = 'text-destructive ml-1'
+            span.textContent = '*'
+            label.appendChild(span)
+          }
+        }
+      })
+    }, 100)
+    return () => clearTimeout(timer)
+  }, [form.watch('tipo_pessoa')])
 
   useEffect(() => {
     if (id && empresa) {

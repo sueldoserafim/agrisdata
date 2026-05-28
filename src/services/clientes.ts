@@ -8,6 +8,31 @@ export async function getClientes(empresa_id: string) {
     .is('deleted_at', null)
 }
 
+export async function checkClienteDuplicado(
+  empresa_id: string,
+  cnpj_cpf: string,
+  current_id?: string | null,
+) {
+  const sanitized = cnpj_cpf.replace(/\D/g, '')
+  if (!sanitized) return false
+
+  let query = supabase
+    .from('clientes')
+    .select('id')
+    .eq('empresa_id', empresa_id)
+    .eq('cnpj_cpf', sanitized)
+    .is('deleted_at', null)
+
+  if (current_id) {
+    query = query.neq('id', current_id)
+  }
+
+  const { data, error } = await query.maybeSingle()
+  if (error) throw error
+
+  return !!data
+}
+
 export async function getCliente(id: string) {
   const { data: cliente } = await supabase.from('clientes').select('*').eq('id', id).single()
   const { data: enderecos } = await supabase
