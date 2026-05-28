@@ -1,7 +1,14 @@
 import { useParams } from 'react-router-dom'
 import { usePortalData } from '@/hooks/use-portal-data'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table'
 import { format } from 'date-fns'
 import { Loader2, AlertCircle, FileText, Box, FileCheck, ExternalLink } from 'lucide-react'
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
@@ -33,17 +40,31 @@ export default function ClientePortal() {
   return (
     <div className="space-y-6 animate-fade-in-up">
       <div className="flex flex-col gap-1">
-        <h2 className="text-2xl font-bold tracking-tight text-slate-800">Hello, {info.nome_entidade}</h2>
+        <h2 className="text-2xl font-bold tracking-tight text-slate-800">
+          Hello, {info.nome_entidade}
+        </h2>
         <p className="text-slate-500">Client Portal - {info.empresa_nome}</p>
       </div>
 
       <Tabs defaultValue="invoices" className="w-full">
         <TabsList className="grid w-full grid-cols-3 mb-6">
-          <TabsTrigger value="invoices" disabled={!info.acessos_permitidos.includes('invoices')}>Invoices</TabsTrigger>
-          <TabsTrigger value="containers" disabled={!info.acessos_permitidos.includes('containers')}>Containers Tracking</TabsTrigger>
-          <TabsTrigger value="documentos" disabled={!info.acessos_permitidos.includes('documentos')}>Documents</TabsTrigger>
+          <TabsTrigger value="invoices" disabled={!info.acessos_permitidos.includes('invoices')}>
+            Invoices
+          </TabsTrigger>
+          <TabsTrigger
+            value="containers"
+            disabled={!info.acessos_permitidos.includes('containers')}
+          >
+            Containers Tracking
+          </TabsTrigger>
+          <TabsTrigger
+            value="documentos"
+            disabled={!info.acessos_permitidos.includes('documentos')}
+          >
+            Documents
+          </TabsTrigger>
         </TabsList>
-        
+
         <TabsContent value="invoices" className="space-y-4">
           <Card>
             <CardHeader>
@@ -69,7 +90,11 @@ export default function ClientePortal() {
                       {data.invoices.map((item: any) => (
                         <TableRow key={item.id}>
                           <TableCell className="font-medium">{item.numero_invoice}</TableCell>
-                          <TableCell>{item.data_emissao ? format(new Date(item.data_emissao), 'MMM dd, yyyy') : '-'}</TableCell>
+                          <TableCell>
+                            {item.data_emissao
+                              ? format(new Date(item.data_emissao), 'MMM dd, yyyy')
+                              : '-'}
+                          </TableCell>
                           <TableCell className="uppercase">{item.incoterm}</TableCell>
                           <TableCell>
                             <span className="capitalize px-2 py-1 bg-slate-100 rounded-full text-xs font-medium">
@@ -77,7 +102,10 @@ export default function ClientePortal() {
                             </span>
                           </TableCell>
                           <TableCell className="text-right font-medium">
-                            {new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(item.valor_total_usd || 0)}
+                            {new Intl.NumberFormat('en-US', {
+                              style: 'currency',
+                              currency: 'USD',
+                            }).format(item.valor_total_usd || 0)}
                           </TableCell>
                         </TableRow>
                       ))}
@@ -122,8 +150,12 @@ export default function ClientePortal() {
                               {item.status?.replace('_', ' ')}
                             </span>
                           </TableCell>
-                          <TableCell>{item.data_etd ? format(new Date(item.data_etd), 'MMM dd, yyyy') : '-'}</TableCell>
-                          <TableCell>{item.data_eta ? format(new Date(item.data_eta), 'MMM dd, yyyy') : '-'}</TableCell>
+                          <TableCell>
+                            {item.data_etd ? format(new Date(item.data_etd), 'MMM dd, yyyy') : '-'}
+                          </TableCell>
+                          <TableCell>
+                            {item.data_eta ? format(new Date(item.data_eta), 'MMM dd, yyyy') : '-'}
+                          </TableCell>
                         </TableRow>
                       ))}
                     </TableBody>
@@ -160,9 +192,15 @@ export default function ClientePortal() {
                     <TableBody>
                       {data.documentos.map((item: any) => (
                         <TableRow key={item.id}>
-                          <TableCell className="uppercase font-medium">{item.tipo_documento?.replace('_', ' ')}</TableCell>
+                          <TableCell className="uppercase font-medium">
+                            {item.tipo_documento?.replace('_', ' ')}
+                          </TableCell>
                           <TableCell>{item.numero_documento || '-'}</TableCell>
-                          <TableCell>{item.data_emissao ? format(new Date(item.data_emissao), 'MMM dd, yyyy') : '-'}</TableCell>
+                          <TableCell>
+                            {item.data_emissao
+                              ? format(new Date(item.data_emissao), 'MMM dd, yyyy')
+                              : '-'}
+                          </TableCell>
                           <TableCell>
                             <span className="capitalize px-2 py-1 bg-slate-100 rounded-full text-xs font-medium">
                               {item.status}
@@ -170,7 +208,12 @@ export default function ClientePortal() {
                           </TableCell>
                           <TableCell>
                             {item.arquivo_url ? (
-                              <a href={item.arquivo_url} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline flex items-center gap-1 text-sm">
+                              <a
+                                href={item.arquivo_url}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="text-primary hover:underline flex items-center gap-1 text-sm"
+                              >
                                 Download <ExternalLink className="w-3 h-3" />
                               </a>
                             ) : (

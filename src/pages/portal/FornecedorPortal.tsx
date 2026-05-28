@@ -1,7 +1,14 @@
 import { useParams } from 'react-router-dom'
 import { usePortalData } from '@/hooks/use-portal-data'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table'
 import { format } from 'date-fns'
 import { Loader2, AlertCircle, ShoppingCart, DollarSign } from 'lucide-react'
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
@@ -33,16 +40,25 @@ export default function FornecedorPortal() {
   return (
     <div className="space-y-6 animate-fade-in-up">
       <div className="flex flex-col gap-1">
-        <h2 className="text-2xl font-bold tracking-tight text-slate-800">Olá, {info.nome_entidade}</h2>
+        <h2 className="text-2xl font-bold tracking-tight text-slate-800">
+          Olá, {info.nome_entidade}
+        </h2>
         <p className="text-slate-500">Portal do Fornecedor - {info.empresa_nome}</p>
       </div>
 
       <Tabs defaultValue="pedidos" className="w-full">
         <TabsList className="grid w-full grid-cols-2 mb-6">
-          <TabsTrigger value="pedidos" disabled={!info.acessos_permitidos.includes('pedidos')}>Pedidos de Compra</TabsTrigger>
-          <TabsTrigger value="pagamentos" disabled={!info.acessos_permitidos.includes('pagamentos')}>Pagamentos</TabsTrigger>
+          <TabsTrigger value="pedidos" disabled={!info.acessos_permitidos.includes('pedidos')}>
+            Pedidos de Compra
+          </TabsTrigger>
+          <TabsTrigger
+            value="pagamentos"
+            disabled={!info.acessos_permitidos.includes('pagamentos')}
+          >
+            Pagamentos
+          </TabsTrigger>
         </TabsList>
-        
+
         <TabsContent value="pedidos" className="space-y-4">
           <Card>
             <CardHeader>
@@ -67,11 +83,18 @@ export default function FornecedorPortal() {
                     <TableBody>
                       {data.pedidos.map((item: any) => (
                         <TableRow key={item.id}>
-                          <TableCell>{item.data_pedido ? format(new Date(item.data_pedido), 'dd/MM/yyyy') : '-'}</TableCell>
+                          <TableCell>
+                            {item.data_pedido
+                              ? format(new Date(item.data_pedido), 'dd/MM/yyyy')
+                              : '-'}
+                          </TableCell>
                           <TableCell>{item.produto_nome}</TableCell>
                           <TableCell className="text-right">{item.quantidade}</TableCell>
                           <TableCell className="text-right font-medium">
-                            {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(item.total_pedido || 0)}
+                            {new Intl.NumberFormat('pt-BR', {
+                              style: 'currency',
+                              currency: 'BRL',
+                            }).format(item.total_pedido || 0)}
                           </TableCell>
                           <TableCell>
                             <span className="capitalize px-2 py-1 bg-slate-100 rounded-full text-xs font-medium">
@@ -113,17 +136,28 @@ export default function FornecedorPortal() {
                     <TableBody>
                       {data.pagamentos.map((item: any) => (
                         <TableRow key={item.id}>
-                          <TableCell>{item.data_vencimento ? format(new Date(item.data_vencimento), 'dd/MM/yyyy') : '-'}</TableCell>
+                          <TableCell>
+                            {item.data_vencimento
+                              ? format(new Date(item.data_vencimento), 'dd/MM/yyyy')
+                              : '-'}
+                          </TableCell>
                           <TableCell>{item.descricao}</TableCell>
                           <TableCell>
-                            <span className={`px-2 py-1 rounded-full text-xs font-medium capitalize ${
-                              item.status === 'pago' ? 'bg-green-100 text-green-700' : 'bg-slate-100 text-slate-700'
-                            }`}>
+                            <span
+                              className={`px-2 py-1 rounded-full text-xs font-medium capitalize ${
+                                item.status === 'pago'
+                                  ? 'bg-green-100 text-green-700'
+                                  : 'bg-slate-100 text-slate-700'
+                              }`}
+                            >
                               {item.status}
                             </span>
                           </TableCell>
                           <TableCell className="text-right font-medium">
-                            {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(item.valor || 0)}
+                            {new Intl.NumberFormat('pt-BR', {
+                              style: 'currency',
+                              currency: 'BRL',
+                            }).format(item.valor || 0)}
                           </TableCell>
                         </TableRow>
                       ))}
@@ -131,7 +165,9 @@ export default function FornecedorPortal() {
                   </Table>
                 </div>
               ) : (
-                <div className="text-center py-8 text-slate-500">Nenhum pagamento pendente ou histórico recente.</div>
+                <div className="text-center py-8 text-slate-500">
+                  Nenhum pagamento pendente ou histórico recente.
+                </div>
               )}
             </CardContent>
           </Card>

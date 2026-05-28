@@ -5,8 +5,8 @@ import { useAuth } from '@/hooks/use-auth'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
 import { format, subMonths, addDays } from 'date-fns'
 import { ptBR } from 'date-fns/locale'
-import { ArrowDownIcon, ArrowUpIcon, Wallet, DollarSign, PiggyBank } from 'lucide-react'
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Legend } from 'recharts'
+import { ArrowDownIcon, ArrowUpIcon, Wallet, DollarSign, Activity, Percent } from 'lucide-react'
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Legend, ResponsiveContainer } from 'recharts'
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from '@/components/ui/chart'
 
 export default function FinanceiroDashboard() {
@@ -17,7 +17,14 @@ export default function FinanceiroDashboard() {
   const [lancamentosPendentes, setLancamentosPendentes] = useState({ aReceber: 0, aPagar: 0 })
 
   const [cashFlowData, setCashFlowData] = useState<any[]>([])
-  const [dreData, setDreData] = useState<any[]>([])
+
+  // BI DRE Metrics State
+  const [dreMetrics, setDreMetrics] = useState({
+    totalReceitas: 0,
+    custosOperacionais: 0,
+    despesasLogisticas: 0,
+    margemLiquida: 0,
+  })
 
   useEffect(() => {
     if (!empresa || !user) return
@@ -28,8 +35,7 @@ export default function FinanceiroDashboard() {
   const checkBillingAlerts = async () => {
     try {
       const today = new Date()
-      const targetDate = addDays(today, 3)
-      const targetDateStr = format(targetDate, 'yyyy-MM-dd')
+      const targetDateStr = format(addDays(today, 3), 'yyyy-MM-dd')
       const todayStr = format(today, 'yyyy-MM-dd')
 
       const { data: lancamentos } = await supabase
@@ -39,40 +45,30 @@ export default function FinanceiroDashboard() {
         .eq('status', 'pendente')
         .lte('data_vencimento', targetDateStr)
 
-      if (!lancamentos || lancamentos.length === 0) return
+      if (lancamentos && lancamentos.length > 0) {
+        for (const l of lancamentos) {
+          if (!l.data_vencimento) continue
+          const isOverdue = l.data_vencimento < todayStr
+          const title = isOverdue ? 'Pagamento Atrasado (Automação)' : 'Vencimento Próximo'
+          const desc = `O lançamento "${l.descricao}" no valor de R$ ${l.valor} atingiu data limite de ação. Verifique a tela financeira.`
 
-      for (const l of lancamentos) {
-        if (!l.data_vencimento) continue
-        const isOverdue = l.data_vencimento < todayStr
-        const title = isOverdue ? 'Pagamento Atrasado' : 'Vencimento Próximo'
-        const desc = `Lançamento: ${l.descricao} | Valor: R$ ${l.valor}`
+          const { data: existing } = await supabase
+            .from('alertas')
+            .select('id')
+            .eq('empresa_id', empresa?.id)
+            .eq('tipo', 'financeiro')
+            .like('descricao', `%${l.descricao}%`)
+            .eq('lido', false)
+            .maybeSingle()
 
-        const { data: existing } = await supabase
-          .from('alertas')
-          .select('id')
-          .eq('empresa_id', empresa?.id)
-          .eq('tipo', 'financeiro')
-          .like('descricao', `%${l.descricao}%`)
-          .eq('lido', false)
-          .maybeSingle()
-
-        if (!existing) {
-          await supabase.from('alertas').insert({
-            empresa_id: empresa?.id,
-            usuario_id: user?.id,
-            titulo: title,
-            descricao: desc,
-            tipo: 'financeiro',
-            lido: false,
-          })
-
-          if (isOverdue && l.tipo === 'receita' && Number(l.valor) > 5000) {
-            await supabase.functions.invoke('send-email', {
-              body: {
-                to: user?.email,
-                subject: 'Alerta de Recebível Atrasado (Alto Valor)',
-                html: `<p>O lançamento <b>${l.descricao}</b> no valor de <b>R$ ${l.valor}</b> está atrasado.</p>`,
-              },
+          if (!existing) {
+            await supabase.from('alertas').insert({
+              empresa_id: empresa?.id,
+              usuario_id: user?.id,
+              titulo: title,
+              descricao: desc,
+              tipo: 'financeiro',
+              lido: false,
             })
           }
         }
@@ -108,6 +104,9 @@ export default function FinanceiroDashboard() {
 
       let r = 0,
         p = 0
+      let dreR = 0,
+        dreCO = 0,
+        dreDL = 0
 
       const chartMap = new Map()
       const startOfPeriod = subMonths(new Date(), 11)
@@ -117,14 +116,14 @@ export default function FinanceiroDashboard() {
         chartMap.set(monthYear, { name: monthYear, receitas: 0, despesas: 0 })
       }
 
-      const dreMap = new Map()
-
       lancamentos?.forEach((l) => {
+        // Pending logic
         if (l.status === 'pendente' || l.status === 'atrasado') {
           if (l.tipo === 'receita') r += Number(l.valor)
           if (l.tipo === 'despesa' || l.tipo === 'custo') p += Number(l.valor)
         }
 
+        // Cash flow historic mapping
         const lDate = l.data_lancamento || l.data_vencimento
         if (lDate) {
           const dateObj = new Date(lDate)
@@ -138,16 +137,41 @@ export default function FinanceiroDashboard() {
           }
         }
 
-        const categoria = l.plano_contas?.descricao || 'Sem Categoria'
-        if (!dreMap.has(categoria)) dreMap.set(categoria, { categoria, receita: 0, despesa: 0 })
-        const dEntry = dreMap.get(categoria)
-        if (l.tipo === 'receita') dEntry.receita += Number(l.valor)
-        if (l.tipo === 'despesa' || l.tipo === 'custo') dEntry.despesa += Number(l.valor)
+        // BI DRE Categorization - Crossing Operational Costs with Logistics Expenses vs Revenue
+        if (l.tipo === 'receita') {
+          dreR += Number(l.valor)
+        } else if (l.tipo === 'despesa' || l.tipo === 'custo') {
+          const cat = (l.plano_contas?.descricao || '').toLowerCase()
+          const desc = (l.descricao || '').toLowerCase()
+
+          // Logic mapping logistics specifically vs general operational costs
+          if (
+            cat.includes('logístic') ||
+            cat.includes('frete') ||
+            cat.includes('exportação') ||
+            desc.includes('frete') ||
+            desc.includes('porto') ||
+            desc.includes('container')
+          ) {
+            dreDL += Number(l.valor)
+          } else {
+            dreCO += Number(l.valor)
+          }
+        }
+      })
+
+      const lucroBruto = dreR - dreCO - dreDL
+      const margem = dreR > 0 ? (lucroBruto / dreR) * 100 : 0
+
+      setDreMetrics({
+        totalReceitas: dreR,
+        custosOperacionais: dreCO,
+        despesasLogisticas: dreDL,
+        margemLiquida: margem,
       })
 
       setLancamentosPendentes({ aReceber: r, aPagar: p })
       setCashFlowData(Array.from(chartMap.values()))
-      setDreData(Array.from(dreMap.values()))
     } catch (err) {
       console.error(err)
     } finally {
@@ -155,7 +179,7 @@ export default function FinanceiroDashboard() {
     }
   }
 
-  const formatCurrency = (val: number, currency: string) => {
+  const formatCurrency = (val: number, currency: string = 'BRL') => {
     return new Intl.NumberFormat('pt-BR', {
       style: 'currency',
       currency: currency.toUpperCase(),
@@ -168,88 +192,177 @@ export default function FinanceiroDashboard() {
   }
 
   return (
-    <div className="p-6 space-y-6">
+    <div className="p-6 space-y-6 max-w-7xl mx-auto animate-fade-in">
       <div>
-        <h1 className="text-3xl font-bold tracking-tight">Dashboard Financeiro</h1>
-        <p className="text-muted-foreground">Visão geral do caixa, fluxo e DRE.</p>
+        <h1 className="text-3xl font-bold tracking-tight">Gestão Financeira & BI</h1>
+        <p className="text-muted-foreground mt-1">
+          Monitoramento gerencial abrangendo fluxo de caixa projetado, cruzamentos operacionais e o
+          Demonstrativo de Resultados (DRE) analítico.
+        </p>
       </div>
 
-      <div className="grid gap-4 md:grid-cols-3">
-        <Card>
+      <div className="grid gap-4 md:grid-cols-4">
+        <Card className="shadow-sm">
           <CardHeader className="flex flex-row items-center justify-between pb-2 space-y-0">
-            <CardTitle className="text-sm font-medium">Saldo em BRL</CardTitle>
+            <CardTitle className="text-sm font-medium">Caixa Atual (BRL)</CardTitle>
             <Wallet className="w-4 h-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{formatCurrency(saldos.brl, 'BRL')}</div>
+            <div className="text-2xl font-bold tracking-tight">
+              {formatCurrency(saldos.brl, 'BRL')}
+            </div>
           </CardContent>
         </Card>
-        <Card>
+        <Card className="shadow-sm">
           <CardHeader className="flex flex-row items-center justify-between pb-2 space-y-0">
-            <CardTitle className="text-sm font-medium">Saldo em USD</CardTitle>
+            <CardTitle className="text-sm font-medium">Contas Câmbio (USD)</CardTitle>
             <DollarSign className="w-4 h-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{formatCurrency(saldos.usd, 'USD')}</div>
+            <div className="text-2xl font-bold tracking-tight">
+              {formatCurrency(saldos.usd, 'USD')}
+            </div>
           </CardContent>
         </Card>
-        <Card>
+        <Card className="shadow-sm">
           <CardHeader className="flex flex-row items-center justify-between pb-2 space-y-0">
-            <CardTitle className="text-sm font-medium">A Receber (Pendentes)</CardTitle>
+            <CardTitle className="text-sm font-medium text-green-700">Títulos A Receber</CardTitle>
             <ArrowUpIcon className="w-4 h-4 text-green-500" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-green-600">
+            <div className="text-2xl font-bold text-green-600 tracking-tight">
               {formatCurrency(lancamentosPendentes.aReceber, 'BRL')}
             </div>
           </CardContent>
         </Card>
-      </div>
-
-      <div className="grid gap-4 md:grid-cols-2">
-        <Card>
-          <CardHeader>
-            <CardTitle>Fluxo de Caixa (12 Meses)</CardTitle>
-            <CardDescription>Receitas vs Despesas</CardDescription>
+        <Card className="shadow-sm">
+          <CardHeader className="flex flex-row items-center justify-between pb-2 space-y-0">
+            <CardTitle className="text-sm font-medium text-rose-700">Obrigações A Pagar</CardTitle>
+            <ArrowDownIcon className="w-4 h-4 text-rose-500" />
           </CardHeader>
           <CardContent>
-            <ChartContainer config={chartConfig} className="h-[300px] w-full">
-              <BarChart data={cashFlowData}>
-                <CartesianGrid strokeDasharray="3 3" vertical={false} />
-                <XAxis dataKey="name" />
-                <YAxis />
-                <ChartTooltip content={<ChartTooltipContent />} />
-                <Legend />
-                <Bar dataKey="receitas" fill="var(--color-receitas)" radius={[4, 4, 0, 0]} />
-                <Bar dataKey="despesas" fill="var(--color-despesas)" radius={[4, 4, 0, 0]} />
-              </BarChart>
-            </ChartContainer>
+            <div className="text-2xl font-bold text-rose-600 tracking-tight">
+              {formatCurrency(lancamentosPendentes.aPagar, 'BRL')}
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+
+      <div className="grid gap-6 md:grid-cols-12">
+        <Card className="shadow-sm md:col-span-4 border-l-4 border-l-primary flex flex-col justify-between h-full">
+          <CardHeader>
+            <CardTitle>DRE Gerencial Consolidado</CardTitle>
+            <CardDescription className="text-xs">
+              Crosstab financeiro isolando as despesas logísticas das demais operacionais.
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="flex-1">
+            <div className="space-y-6 pt-2">
+              <div className="flex items-center justify-between bg-green-50 dark:bg-green-950/20 p-3 rounded-md">
+                <div className="flex items-center gap-2">
+                  <Activity className="w-4 h-4 text-green-600" />
+                  <span className="font-semibold text-sm text-green-800 dark:text-green-400">
+                    (=) Faturamento Total
+                  </span>
+                </div>
+                <span className="font-bold text-lg text-green-600 dark:text-green-500">
+                  {formatCurrency(dreMetrics.totalReceitas)}
+                </span>
+              </div>
+
+              <div className="flex items-center justify-between pt-2 px-1">
+                <span className="font-medium text-sm text-muted-foreground">
+                  (-) Custos Operacionais
+                </span>
+                <span className="text-rose-500 font-medium">
+                  {formatCurrency(dreMetrics.custosOperacionais)}
+                </span>
+              </div>
+
+              <div className="flex items-center justify-between pt-2 pb-4 border-b border-dashed px-1">
+                <span className="font-medium text-sm text-muted-foreground">
+                  (-) Despesas Logísticas/Porto
+                </span>
+                <span className="text-rose-500 font-medium">
+                  {formatCurrency(dreMetrics.despesasLogisticas)}
+                </span>
+              </div>
+
+              <div className="flex items-center justify-between pt-2 bg-primary/5 p-4 rounded-lg mt-4 border border-primary/10">
+                <div className="flex items-center gap-2">
+                  <Percent className="w-5 h-5 text-primary" />
+                  <span className="font-bold text-base">Margem Líquida</span>
+                </div>
+                <div className="text-right">
+                  <span
+                    className={`text-2xl font-extrabold ${dreMetrics.margemLiquida >= 0 ? 'text-primary' : 'text-rose-600'}`}
+                  >
+                    {dreMetrics.margemLiquida.toFixed(2)}%
+                  </span>
+                  <p className="text-xs font-semibold text-muted-foreground mt-1">
+                    Retorno Absoluto:{' '}
+                    {formatCurrency(
+                      dreMetrics.totalReceitas -
+                        dreMetrics.custosOperacionais -
+                        dreMetrics.despesasLogisticas,
+                    )}
+                  </p>
+                </div>
+              </div>
+            </div>
           </CardContent>
         </Card>
 
-        <Card>
+        <Card className="shadow-sm md:col-span-8">
           <CardHeader>
-            <CardTitle>DRE Resumido (Geral)</CardTitle>
-            <CardDescription>Resultado por Plano de Contas</CardDescription>
+            <CardTitle>Fluxo de Caixa e Volumetria (Últimos 12 Meses)</CardTitle>
+            <CardDescription>
+              Visualização analítica temporal de receitas consolidadas e desembolsos sistêmicos.
+            </CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="space-y-4 max-h-[300px] overflow-auto">
-              {dreData.length > 0 ? (
-                dreData.map((d, i) => (
-                  <div key={i} className="flex items-center justify-between border-b pb-2">
-                    <span className="font-medium text-sm">{d.categoria}</span>
-                    <div className="flex gap-4 text-sm">
-                      <span className="text-green-600">R: {formatCurrency(d.receita, 'BRL')}</span>
-                      <span className="text-red-600">D: {formatCurrency(d.despesa, 'BRL')}</span>
-                    </div>
-                  </div>
-                ))
-              ) : (
-                <div className="text-center text-muted-foreground pt-10">
-                  Nenhum dado encontrado
-                </div>
-              )}
-            </div>
+            <ChartContainer config={chartConfig} className="h-[360px] w-full">
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart data={cashFlowData} margin={{ top: 20, right: 10, left: 0, bottom: 0 }}>
+                  <CartesianGrid
+                    strokeDasharray="3 3"
+                    vertical={false}
+                    stroke="hsl(var(--border))"
+                  />
+                  <XAxis
+                    dataKey="name"
+                    fontSize={12}
+                    tickLine={false}
+                    axisLine={false}
+                    stroke="hsl(var(--muted-foreground))"
+                    tickMargin={10}
+                  />
+                  <YAxis
+                    fontSize={12}
+                    tickLine={false}
+                    axisLine={false}
+                    stroke="hsl(var(--muted-foreground))"
+                    tickFormatter={(val) => `R$ ${val / 1000}k`}
+                  />
+                  <ChartTooltip content={<ChartTooltipContent />} />
+                  <Legend wrapperStyle={{ paddingTop: '20px' }} />
+                  <Bar
+                    dataKey="receitas"
+                    name="Receitas"
+                    fill="var(--color-receitas)"
+                    radius={[4, 4, 0, 0]}
+                    maxBarSize={45}
+                  />
+                  <Bar
+                    dataKey="despesas"
+                    name="Despesas Totais"
+                    fill="var(--color-despesas)"
+                    radius={[4, 4, 0, 0]}
+                    maxBarSize={45}
+                  />
+                </BarChart>
+              </ResponsiveContainer>
+            </ChartContainer>
           </CardContent>
         </Card>
       </div>

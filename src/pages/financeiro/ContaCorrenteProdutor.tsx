@@ -1,7 +1,14 @@
 import { useEffect, useState } from 'react'
-import { supabase } from '@/lib/supabase/client'
-import { useEmpresa } from '@/hooks/use-empresa'
+import { FileText, Search, ArrowDownCircle, ArrowUpCircle } from 'lucide-react'
 import { Button } from '@/components/ui/button'
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table'
 import {
   Select,
   SelectContent,
@@ -9,310 +16,195 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
-import { format } from 'date-fns'
-import { Plus } from 'lucide-react'
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogFooter,
-} from '@/components/ui/dialog'
-import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
+import { Card, CardContent } from '@/components/ui/card'
+import { useEmpresa } from '@/hooks/use-empresa'
+import { supabase } from '@/lib/supabase/client'
 import { toast } from 'sonner'
+import { cn } from '@/lib/utils'
 
 export default function ContaCorrenteProdutor() {
   const { empresa } = useEmpresa()
-  const [produtores, setProdutores] = useState<any[]>([])
+  const [entries, setEntries] = useState<any[]>([])
+  const [loading, setLoading] = useState(false)
+  const [cooperados, setCooperados] = useState<any[]>([])
   const [safras, setSafras] = useState<any[]>([])
-  const [selectedProdutor, setSelectedProdutor] = useState<string>('')
-  const [selectedSafra, setSelectedSafra] = useState<string>('todas')
-  const [movimentos, setMovimentos] = useState<any[]>([])
-  const [saldoFinal, setSaldoFinal] = useState(0)
 
-  const [open, setOpen] = useState(false)
-  const [formData, setFormData] = useState<any>({
-    tipo_movimento: 'adiantamento',
-    data_movimento: new Date().toISOString().split('T')[0],
-  })
+  const [produtorId, setProdutorId] = useState<string>('all')
+  const [safraId, setSafraId] = useState<string>('all')
 
   useEffect(() => {
     if (empresa) {
-      loadProdutores()
-      loadSafras()
+      supabase
+        .from('fornecedores')
+        .select('id, nome')
+        .eq('empresa_id', empresa.id)
+        .then(({ data }) => setCooperados(data || []))
+      supabase
+        .from('safras')
+        .select('id, nome_safra, codigo_safra')
+        .eq('empresa_id', empresa.id)
+        .is('deleted_at', null)
+        .then(({ data }) => setSafras(data || []))
+      loadData()
     }
   }, [empresa])
 
-  useEffect(() => {
-    if (selectedProdutor) loadMovimentos()
-    else setMovimentos([])
-  }, [selectedProdutor, selectedSafra])
+  async function loadData() {
+    if (!empresa) return
+    setLoading(true)
+    let query = supabase
+      .from('conta_corrente_produtor')
+      .select('*, fornecedores(nome), safras(nome_safra, codigo_safra)')
+      .eq('empresa_id', empresa.id)
+      .order('data_movimento', { ascending: false })
 
-  const loadSafras = async () => {
-    const { data } = await supabase
-      .from('safras')
-      .select('id, nome_safra')
-      .eq('empresa_id', empresa?.id)
-    if (data) setSafras(data)
+    if (produtorId !== 'all') query = query.eq('produtor_id', produtorId)
+    if (safraId !== 'all') query = query.eq('safra_id', safraId)
+
+    const { data, error } = await query
+    setLoading(false)
+    if (error) toast.error('Erro ao carregar extrato')
+    else setEntries(data || [])
   }
 
-  const loadProdutores = async () => {
-    const { data } = await supabase
-      .from('fornecedores')
-      .select('id, nome')
-      .eq('empresa_id', empresa?.id)
-      .order('nome')
-    if (data) setProdutores(data)
-  }
-
-  const loadMovimentos = async () => {
-    let q = supabase
-      .from('conta_corrente_produtor' as any)
-      .select('*, safras(nome_safra)')
-      .eq('produtor_id', selectedProdutor)
-      .order('data_movimento', { ascending: true })
-      .order('created_at', { ascending: true })
-
-    if (selectedSafra !== 'todas') {
-      q = q.eq('safra_id', selectedSafra)
-    }
-
-    const { data } = await q
-
-    if (data) {
-      let calcSaldo = 0
-      const processed = data.map((m) => {
-        if (m.tipo_movimento === 'entrega') calcSaldo += Number(m.valor)
-        else calcSaldo -= Number(m.valor) // adiantamento, pagamento, desconto
-        return { ...m, saldo: calcSaldo }
-      })
-      setMovimentos(processed)
-      setSaldoFinal(calcSaldo)
-    }
-  }
-
-  const handleSave = async () => {
-    if (!formData.descricao || !formData.valor || !formData.tipo_movimento) {
-      toast.error('Preencha os campos obrigatórios')
-      return
-    }
-
-    const { error } = await supabase.from('conta_corrente_produtor' as any).insert({
-      empresa_id: empresa?.id,
-      produtor_id: selectedProdutor,
-      ...formData,
-    })
-
-    if (error) toast.error('Erro ao salvar')
-    else {
-      toast.success('Movimento registrado')
-      setOpen(false)
-      loadMovimentos()
-      setFormData({
-        tipo_movimento: 'adiantamento',
-        data_movimento: new Date().toISOString().split('T')[0],
-      })
-    }
-  }
+  const subtotal = entries.reduce((acc, curr) => acc + Number(curr.valor), 0)
 
   return (
-    <div className="p-6 space-y-6">
-      <div className="flex justify-between items-center">
-        <div>
-          <h1 className="text-3xl font-bold tracking-tight">Conta Corrente do Produtor</h1>
-          <p className="text-muted-foreground">Extrato de entregas, adiantamentos e acertos.</p>
-        </div>
+    <div className="p-8 max-w-6xl mx-auto space-y-6">
+      <div>
+        <h1 className="text-3xl font-bold tracking-tight">Extrato Individual (Conta Corrente)</h1>
+        <p className="text-muted-foreground mt-2">
+          Demonstrativo financeiro detalhado de entregas, rateios de custo, receitas e
+          adiantamentos.
+        </p>
       </div>
 
-      <div className="bg-card border p-4 rounded-lg flex flex-wrap items-end gap-4">
-        <div className="space-y-2 flex-1 max-w-md min-w-[200px]">
-          <Label>Selecione o Produtor</Label>
-          <Select value={selectedProdutor} onValueChange={setSelectedProdutor}>
-            <SelectTrigger>
-              <SelectValue placeholder="Selecione..." />
-            </SelectTrigger>
-            <SelectContent>
-              {produtores.map((p) => (
-                <SelectItem key={p.id} value={p.id}>
-                  {p.nome}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
-        <div className="space-y-2 flex-1 max-w-[200px]">
-          <Label>Filtrar por Safra</Label>
-          <Select value={selectedSafra} onValueChange={setSelectedSafra}>
-            <SelectTrigger>
-              <SelectValue placeholder="Todas as Safras" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="todas">Todas</SelectItem>
-              {safras.map((s) => (
-                <SelectItem key={s.id} value={s.id}>
-                  {s.nome_safra}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
-        {selectedProdutor && (
-          <Button onClick={() => setOpen(true)}>
-            <Plus className="w-4 h-4 mr-2" /> Novo Movimento
+      <Card>
+        <CardContent className="p-4 flex flex-col md:flex-row gap-4 items-end">
+          <div className="space-y-2 flex-1">
+            <label className="text-sm font-medium">Cooperado / Produtor</label>
+            <Select value={produtorId} onValueChange={setProdutorId}>
+              <SelectTrigger>
+                <SelectValue placeholder="Todos os Produtores" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">Todos os Produtores</SelectItem>
+                {cooperados.map((c) => (
+                  <SelectItem key={c.id} value={c.id}>
+                    {c.nome}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+          <div className="space-y-2 flex-1">
+            <label className="text-sm font-medium">Safra</label>
+            <Select value={safraId} onValueChange={setSafraId}>
+              <SelectTrigger>
+                <SelectValue placeholder="Todas as Safras" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">Todas as Safras</SelectItem>
+                {safras.map((s) => (
+                  <SelectItem key={s.id} value={s.id}>
+                    {s.nome_safra || s.codigo_safra}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+          <Button onClick={loadData} disabled={loading} className="w-full md:w-auto">
+            <Search className="w-4 h-4 mr-2" /> Filtrar
           </Button>
-        )}
+        </CardContent>
+      </Card>
+
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+        <Card className="bg-primary/5 border-primary/20">
+          <CardContent className="p-6">
+            <p className="text-sm text-muted-foreground font-medium mb-1">
+              Saldo Acumulado (Filtro)
+            </p>
+            <h2
+              className={cn(
+                'text-3xl font-bold',
+                subtotal >= 0 ? 'text-green-600' : 'text-destructive',
+              )}
+            >
+              {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'USD' }).format(
+                subtotal,
+              )}
+            </h2>
+          </CardContent>
+        </Card>
       </div>
 
-      {selectedProdutor && (
-        <div className="bg-card border rounded-lg overflow-hidden">
-          <div className="p-4 bg-muted/30 border-b flex justify-between items-center">
-            <h3 className="font-semibold">Extrato</h3>
-            <div className="text-right">
-              <span className="text-sm text-muted-foreground">Saldo Final:</span>
-              <div
-                className={`text-xl font-bold ${saldoFinal >= 0 ? 'text-green-600' : 'text-red-600'}`}
-              >
-                {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(
-                  saldoFinal,
-                )}
-              </div>
-            </div>
-          </div>
-          <table className="w-full text-sm text-left">
-            <thead className="bg-muted">
-              <tr>
-                <th className="p-3 font-medium">Data</th>
-                <th className="p-3 font-medium">Descrição</th>
-                <th className="p-3 font-medium">Tipo</th>
-                <th className="p-3 font-medium text-right">Crédito (Entrega)</th>
-                <th className="p-3 font-medium text-right">Débito (Adto/Pag)</th>
-                <th className="p-3 font-medium text-right">Saldo</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y">
-              {movimentos.map((m) => (
-                <tr key={m.id} className="hover:bg-muted/50">
-                  <td className="p-3">{format(new Date(m.data_movimento), 'dd/MM/yyyy')}</td>
-                  <td className="p-3">
-                    {m.descricao} {m.safras ? `(${m.safras.nome_safra})` : ''}
-                  </td>
-                  <td className="p-3 capitalize">{m.tipo_movimento}</td>
-                  <td className="p-3 text-right text-green-600">
-                    {m.tipo_movimento === 'entrega'
-                      ? new Intl.NumberFormat('pt-BR', {
-                          style: 'currency',
-                          currency: 'BRL',
-                        }).format(m.valor)
-                      : '-'}
-                  </td>
-                  <td className="p-3 text-right text-red-600">
-                    {m.tipo_movimento !== 'entrega'
-                      ? new Intl.NumberFormat('pt-BR', {
-                          style: 'currency',
-                          currency: 'BRL',
-                        }).format(m.valor)
-                      : '-'}
-                  </td>
-                  <td className="p-3 text-right font-medium border-l border-muted">
-                    {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(
-                      m.saldo,
-                    )}
-                  </td>
-                </tr>
-              ))}
-              {movimentos.length === 0 && (
-                <tr>
-                  <td colSpan={6} className="p-8 text-center text-muted-foreground">
-                    Nenhum movimento registrado.
-                  </td>
-                </tr>
-              )}
-            </tbody>
-          </table>
-        </div>
-      )}
-
-      <Dialog open={open} onOpenChange={setOpen}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Registrar Movimento</DialogTitle>
-          </DialogHeader>
-          <div className="space-y-4 py-4">
-            <div className="space-y-2">
-              <Label>Safra (Opcional)</Label>
-              <Select
-                value={formData.safra_id || 'none'}
-                onValueChange={(val) =>
-                  setFormData({ ...formData, safra_id: val === 'none' ? null : val })
-                }
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="Nenhuma" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="none">Nenhuma</SelectItem>
-                  {safras.map((s) => (
-                    <SelectItem key={s.id} value={s.id}>
-                      {s.nome_safra}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label>Data</Label>
-                <Input
-                  type="date"
-                  value={formData.data_movimento}
-                  onChange={(e) => setFormData({ ...formData, data_movimento: e.target.value })}
-                />
-              </div>
-              <div className="space-y-2">
-                <Label>Tipo</Label>
-                <Select
-                  value={formData.tipo_movimento}
-                  onValueChange={(val) => setFormData({ ...formData, tipo_movimento: val })}
-                >
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="entrega">Entrega de Produto (Crédito)</SelectItem>
-                    <SelectItem value="adiantamento">Adiantamento (Débito)</SelectItem>
-                    <SelectItem value="pagamento">Pagamento Final (Débito)</SelectItem>
-                    <SelectItem value="desconto">Desconto (Débito)</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
-            <div className="space-y-2">
-              <Label>Descrição</Label>
-              <Input
-                value={formData.descricao || ''}
-                onChange={(e) => setFormData({ ...formData, descricao: e.target.value })}
-                placeholder="Motivo/Produto"
-              />
-            </div>
-            <div className="space-y-2">
-              <Label>Valor (BRL)</Label>
-              <Input
-                type="number"
-                step="0.01"
-                value={formData.valor || ''}
-                onChange={(e) => setFormData({ ...formData, valor: Number(e.target.value) })}
-              />
-            </div>
-          </div>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setOpen(false)}>
-              Cancelar
-            </Button>
-            <Button onClick={handleSave}>Confirmar</Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+      <div className="border rounded-md bg-card overflow-hidden">
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHead>Data</TableHead>
+              <TableHead>Cooperado</TableHead>
+              <TableHead>Safra</TableHead>
+              <TableHead>Histórico / Descrição</TableHead>
+              <TableHead>Tipo</TableHead>
+              <TableHead className="text-right">Valor</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {loading ? (
+              <TableRow>
+                <TableCell colSpan={6} className="text-center py-8">
+                  Carregando...
+                </TableCell>
+              </TableRow>
+            ) : entries.length === 0 ? (
+              <TableRow>
+                <TableCell colSpan={6} className="text-center py-8 text-muted-foreground">
+                  Nenhum registro encontrado para os filtros.
+                </TableCell>
+              </TableRow>
+            ) : (
+              entries.map((e) => (
+                <TableRow key={e.id}>
+                  <TableCell>
+                    {e.data_movimento ? new Date(e.data_movimento).toLocaleDateString() : '-'}
+                  </TableCell>
+                  <TableCell className="font-medium">{e.fornecedores?.nome}</TableCell>
+                  <TableCell>{e.safras?.nome_safra || e.safras?.codigo_safra || '-'}</TableCell>
+                  <TableCell className="max-w-md truncate" title={e.descricao}>
+                    {e.descricao}
+                  </TableCell>
+                  <TableCell>
+                    <span className="capitalize text-xs font-semibold px-2 py-1 rounded-full bg-slate-100 text-slate-700">
+                      {e.tipo_movimento?.replace('_', ' ')}
+                    </span>
+                  </TableCell>
+                  <TableCell className="text-right font-semibold">
+                    <div
+                      className={cn(
+                        'flex items-center justify-end gap-2',
+                        Number(e.valor) >= 0 ? 'text-green-600' : 'text-destructive',
+                      )}
+                    >
+                      {Number(e.valor) >= 0 ? (
+                        <ArrowUpCircle className="w-4 h-4" />
+                      ) : (
+                        <ArrowDownCircle className="w-4 h-4" />
+                      )}
+                      {new Intl.NumberFormat('pt-BR', {
+                        style: 'currency',
+                        currency: 'USD',
+                        minimumFractionDigits: 4,
+                      }).format(Math.abs(Number(e.valor)))}
+                    </div>
+                  </TableCell>
+                </TableRow>
+              ))
+            )}
+          </TableBody>
+        </Table>
+      </div>
     </div>
   )
 }

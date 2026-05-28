@@ -17,7 +17,7 @@ export function usePortalData(token: string) {
 
       try {
         const { data: result, error: rpcError } = await supabase.rpc('get_portal_data', {
-          p_token: token
+          p_token: token,
         })
 
         if (rpcError) throw rpcError

@@ -22,6 +22,9 @@ const formSchema = z.object({
   habilitarPortal: z.boolean().default(false),
   portalEmail: z.string().optional(),
   portalSenha: z.string().optional(),
+  is_cooperado: z.boolean().default(false),
+  nome_propriedade: z.string().optional(),
+  area_total_ha: z.coerce.number().optional(),
 })
 
 type FormData = z.infer<typeof formSchema>
@@ -72,6 +75,9 @@ export default function FornecedorForm() {
         email: data.email || '',
         telefone: data.telefone || '',
         habilitarPortal: !!user,
+        is_cooperado: data.is_cooperado || false,
+        nome_propriedade: data.nome_propriedade || '',
+        area_total_ha: data.area_total_ha || 0,
         portalEmail: user?.email || data.email || '',
         portalSenha: '',
       })
@@ -109,6 +115,9 @@ export default function FornecedorForm() {
         cnpj: data.cnpj,
         email: data.email,
         telefone: data.telefone,
+        is_cooperado: data.is_cooperado,
+        nome_propriedade: data.nome_propriedade,
+        area_total_ha: data.area_total_ha,
         id: id !== 'new' ? id : undefined,
         empresa_id: empresa.id,
       }
@@ -167,6 +176,38 @@ export default function FornecedorForm() {
 
               <div className="mt-6">
                 <TabsContent value="gerais" className="space-y-6 mt-0">
+                  <div className="bg-primary/5 p-4 rounded-lg flex flex-col gap-4 border border-primary/20 mb-6">
+                    <div className="flex items-center space-x-2">
+                      <Switch
+                        id="is_cooperado"
+                        checked={watch('is_cooperado')}
+                        onCheckedChange={(c) => setValue('is_cooperado', c)}
+                      />
+                      <Label htmlFor="is_cooperado" className="font-semibold text-primary">
+                        É um Cooperado?
+                      </Label>
+                    </div>
+                    {watch('is_cooperado') && (
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div className="space-y-2">
+                          <Label>Nome da Propriedade (Fazenda)</Label>
+                          <Input
+                            {...register('nome_propriedade')}
+                            placeholder="Ex: Sítio São João"
+                          />
+                        </div>
+                        <div className="space-y-2">
+                          <Label>Área Total (Hectares)</Label>
+                          <Input
+                            type="number"
+                            step="0.1"
+                            {...register('area_total_ha')}
+                            placeholder="Ex: 15.5"
+                          />
+                        </div>
+                      </div>
+                    )}
+                  </div>
                   <div className="space-y-2">
                     <Label>Nome / Razão Social *</Label>
                     <Input {...register('nome')} placeholder="Ex: Agro Insumos S/A" />

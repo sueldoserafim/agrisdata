@@ -3,7 +3,14 @@ import { supabase } from '@/lib/supabase/client'
 import { useEmpresa } from '@/hooks/use-empresa'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table'
 import { Badge } from '@/components/ui/badge'
 import { ExternalLink, Copy, Trash2, Plus, Globe } from 'lucide-react'
 import { format } from 'date-fns'
@@ -55,7 +62,7 @@ export default function PortaisExternosList() {
         .from('portal_tokens')
         .update({ ativo: false, deleted_at: new Date().toISOString() })
         .eq('id', id)
-      
+
       if (error) throw error
       toast.success('Acesso revogado com sucesso')
       loadTokens()
@@ -103,7 +110,9 @@ export default function PortaisExternosList() {
               <TableBody>
                 {loading ? (
                   <TableRow>
-                    <TableCell colSpan={5} className="text-center py-8">Carregando...</TableCell>
+                    <TableCell colSpan={5} className="text-center py-8">
+                      Carregando...
+                    </TableCell>
                   </TableRow>
                 ) : tokens.length === 0 ? (
                   <TableRow>
@@ -115,7 +124,9 @@ export default function PortaisExternosList() {
                   tokens.map((t) => (
                     <TableRow key={t.id}>
                       <TableCell>
-                        <Badge variant="outline" className="capitalize">{t.entidade_tipo}</Badge>
+                        <Badge variant="outline" className="capitalize">
+                          {t.entidade_tipo}
+                        </Badge>
                       </TableCell>
                       <TableCell>
                         <div className="flex gap-1 flex-wrap">
@@ -130,21 +141,38 @@ export default function PortaisExternosList() {
                         {format(new Date(t.data_expiracao), 'dd/MM/yyyy', { locale: ptBR })}
                       </TableCell>
                       <TableCell>
-                        {t.ultimo_acesso 
-                          ? format(new Date(t.ultimo_acesso), 'dd/MM HH:mm', { locale: ptBR })
-                          : <span className="text-muted-foreground text-sm">Nunca</span>}
+                        {t.ultimo_acesso ? (
+                          format(new Date(t.ultimo_acesso), 'dd/MM HH:mm', { locale: ptBR })
+                        ) : (
+                          <span className="text-muted-foreground text-sm">Nunca</span>
+                        )}
                       </TableCell>
                       <TableCell className="text-right">
                         <div className="flex justify-end gap-2">
-                          <Button variant="ghost" size="icon" onClick={() => copyToClipboard(t.token, t.entidade_tipo)} title="Copiar Link">
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            onClick={() => copyToClipboard(t.token, t.entidade_tipo)}
+                            title="Copiar Link"
+                          >
                             <Copy className="h-4 w-4" />
                           </Button>
-                          <a href={`/portal/${t.entidade_tipo}/${t.token}`} target="_blank" rel="noreferrer">
+                          <a
+                            href={`/portal/${t.entidade_tipo}/${t.token}`}
+                            target="_blank"
+                            rel="noreferrer"
+                          >
                             <Button variant="ghost" size="icon" title="Abrir">
                               <ExternalLink className="h-4 w-4" />
                             </Button>
                           </a>
-                          <Button variant="ghost" size="icon" className="text-destructive hover:bg-destructive/10" onClick={() => handleRevoke(t.id)} title="Revogar">
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="text-destructive hover:bg-destructive/10"
+                            onClick={() => handleRevoke(t.id)}
+                            title="Revogar"
+                          >
                             <Trash2 className="h-4 w-4" />
                           </Button>
                         </div>
@@ -159,12 +187,12 @@ export default function PortaisExternosList() {
       </Card>
 
       {isFormOpen && (
-        <PortaisExternosForm 
-          onClose={() => setIsFormOpen(false)} 
+        <PortaisExternosForm
+          onClose={() => setIsFormOpen(false)}
           onSuccess={() => {
             setIsFormOpen(false)
             loadTokens()
-          }} 
+          }}
         />
       )}
     </div>

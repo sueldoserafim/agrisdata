@@ -5,7 +5,14 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { Badge } from '@/components/ui/badge'
 import { toast } from 'sonner'
 import { supabase } from '@/lib/supabase/client'
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table'
 import { format, isAfter } from 'date-fns'
 import PortalTokenForm from './PortalTokenForm'
 import { Input } from '@/components/ui/input'
@@ -36,7 +43,12 @@ export default function PortalTokensList() {
   }, [])
 
   const handleDelete = async (id: string) => {
-    if (!confirm('Tem certeza que deseja revogar este acesso? O token deixará de funcionar imediatamente.')) return
+    if (
+      !confirm(
+        'Tem certeza que deseja revogar este acesso? O token deixará de funcionar imediatamente.',
+      )
+    )
+      return
 
     const { error } = await supabase.from('portal_tokens').update({ ativo: false }).eq('id', id)
     if (error) {
@@ -50,12 +62,15 @@ export default function PortalTokensList() {
   const copyToClipboard = (token: string, tipo: string) => {
     const url = `${window.location.origin}/portal/${tipo}/${token}`
     navigator.clipboard.writeText(url)
-    toast.success('Link do portal copiado!', { description: 'Você já pode enviar para o parceiro.' })
+    toast.success('Link do portal copiado!', {
+      description: 'Você já pode enviar para o parceiro.',
+    })
   }
 
-  const filteredTokens = tokens.filter(t => 
-    t.nome_entidade.toLowerCase().includes(searchTerm.toLowerCase()) || 
-    t.entidade_tipo.toLowerCase().includes(searchTerm.toLowerCase())
+  const filteredTokens = tokens.filter(
+    (t) =>
+      t.nome_entidade.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      t.entidade_tipo.toLowerCase().includes(searchTerm.toLowerCase()),
   )
 
   return (
@@ -66,7 +81,9 @@ export default function PortalTokensList() {
             <ShieldCheck className="w-8 h-8 text-primary" />
             Portais Externos
           </h1>
-          <p className="text-slate-500">Gerencie tokens de acesso seguro para parceiros e clientes.</p>
+          <p className="text-slate-500">
+            Gerencie tokens de acesso seguro para parceiros e clientes.
+          </p>
         </div>
         <Button onClick={() => setIsFormOpen(true)}>
           <Plus className="w-4 h-4 mr-2" />
@@ -106,7 +123,9 @@ export default function PortalTokensList() {
               <TableBody>
                 {loading ? (
                   <TableRow>
-                    <TableCell colSpan={7} className="text-center py-8">Carregando...</TableCell>
+                    <TableCell colSpan={7} className="text-center py-8">
+                      Carregando...
+                    </TableCell>
                   </TableRow>
                 ) : filteredTokens.length === 0 ? (
                   <TableRow>
@@ -123,12 +142,16 @@ export default function PortalTokensList() {
                       <TableRow key={t.id}>
                         <TableCell className="font-medium">{t.nome_entidade}</TableCell>
                         <TableCell>
-                          <Badge variant="outline" className="capitalize">{t.entidade_tipo}</Badge>
+                          <Badge variant="outline" className="capitalize">
+                            {t.entidade_tipo}
+                          </Badge>
                         </TableCell>
                         <TableCell>
                           <div className="flex flex-wrap gap-1">
                             {t.acessos_permitidos.map((perm: string) => (
-                              <Badge key={perm} variant="secondary" className="text-[10px]">{perm}</Badge>
+                              <Badge key={perm} variant="secondary" className="text-[10px]">
+                                {perm}
+                              </Badge>
                             ))}
                           </div>
                         </TableCell>
@@ -136,11 +159,15 @@ export default function PortalTokensList() {
                           {format(new Date(t.data_expiracao), 'dd/MM/yyyy')}
                         </TableCell>
                         <TableCell>
-                          {t.ultimo_acesso ? format(new Date(t.ultimo_acesso), 'dd/MM/yyyy HH:mm') : 'Nunca'}
+                          {t.ultimo_acesso
+                            ? format(new Date(t.ultimo_acesso), 'dd/MM/yyyy HH:mm')
+                            : 'Nunca'}
                         </TableCell>
                         <TableCell>
                           {isValid ? (
-                            <Badge className="bg-green-100 text-green-800 hover:bg-green-100 border-none">Ativo</Badge>
+                            <Badge className="bg-green-100 text-green-800 hover:bg-green-100 border-none">
+                              Ativo
+                            </Badge>
                           ) : (
                             <Badge variant="destructive">
                               {isExpired ? 'Expirado' : 'Revogado'}
@@ -148,17 +175,17 @@ export default function PortalTokensList() {
                           )}
                         </TableCell>
                         <TableCell className="text-right space-x-2">
-                          <Button 
-                            variant="ghost" 
-                            size="icon" 
+                          <Button
+                            variant="ghost"
+                            size="icon"
                             onClick={() => copyToClipboard(t.token, t.entidade_tipo)}
                             title="Copiar Link"
                             disabled={!isValid}
                           >
                             <Copy className="w-4 h-4 text-blue-600" />
                           </Button>
-                          <Button 
-                            variant="ghost" 
+                          <Button
+                            variant="ghost"
                             size="icon"
                             onClick={() => {
                               window.open(`/portal/${t.entidade_tipo}/${t.token}`, '_blank')
@@ -169,9 +196,9 @@ export default function PortalTokensList() {
                             <ExternalLink className="w-4 h-4 text-slate-600" />
                           </Button>
                           {isValid && (
-                            <Button 
-                              variant="ghost" 
-                              size="icon" 
+                            <Button
+                              variant="ghost"
+                              size="icon"
                               onClick={() => handleDelete(t.id)}
                               title="Revogar Acesso"
                             >
@@ -190,12 +217,12 @@ export default function PortalTokensList() {
       </Card>
 
       {isFormOpen && (
-        <PortalTokenForm 
-          onClose={() => setIsFormOpen(false)} 
+        <PortalTokenForm
+          onClose={() => setIsFormOpen(false)}
           onSuccess={() => {
             setIsFormOpen(false)
             fetchTokens()
-          }} 
+          }}
         />
       )}
     </div>

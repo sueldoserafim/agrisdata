@@ -109,10 +109,24 @@ export function AppSidebar() {
 
   const isAdmin = perfil === 'admin' || perfil === 'admin_saas'
   const isManager = isAdmin || perfil === 'gerente'
-  const visibleMenuItems = useMemo(
-    () => filterMenu(allMenuItems, isAdmin, isManager, modulos),
-    [isAdmin, isManager, modulos],
-  )
+  const visibleMenuItems = useMemo(() => {
+    const items = filterMenu(allMenuItems, isAdmin, isManager, modulos)
+    const hasVacaria = items.some((i) => i.label === 'Vacaria')
+    if (!hasVacaria) {
+      items.push({
+        label: 'Vacaria',
+        icon: Hexagon,
+        subItems: [
+          { label: 'Dashboard', path: '/app/vacaria' },
+          { label: 'Rebanho', path: '/app/vacaria/rebanho' },
+          { label: 'Produção', path: '/app/vacaria/producao' },
+          { label: 'Reprodução', path: '/app/vacaria/reproducao' },
+          { label: 'Saúde', path: '/app/vacaria/saude' },
+        ],
+      })
+    }
+    return items
+  }, [isAdmin, isManager, modulos])
 
   useEffect(() => {
     setOpenGroups((prev) => {

@@ -2,8 +2,21 @@ import { useState, useEffect } from 'react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from '@/components/ui/dialog'
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+  DialogDescription,
+} from '@/components/ui/dialog'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
 import { Checkbox } from '@/components/ui/checkbox'
 import { supabase } from '@/lib/supabase/client'
 import { toast } from 'sonner'
@@ -18,21 +31,21 @@ const PERMISSOES_MAP: Record<string, { id: string; label: string }[]> = {
   produtor: [
     { id: 'extrato', label: 'Extrato de Conta Corrente' },
     { id: 'entregas', label: 'Histórico de Entregas' },
-    { id: 'pagamentos', label: 'Pagamentos' }
+    { id: 'pagamentos', label: 'Pagamentos' },
   ],
   cliente: [
     { id: 'invoices', label: 'Invoices' },
     { id: 'containers', label: 'Tracking de Containers' },
-    { id: 'documentos', label: 'Documentos de Exportação' }
+    { id: 'documentos', label: 'Documentos de Exportação' },
   ],
   fornecedor: [
     { id: 'pedidos', label: 'Pedidos de Compra' },
-    { id: 'pagamentos', label: 'Previsão de Pagamentos' }
+    { id: 'pagamentos', label: 'Previsão de Pagamentos' },
   ],
   despachante: [
     { id: 'containers', label: 'Containers Ativos' },
-    { id: 'documentos', label: 'Documentos Pendentes' }
-  ]
+    { id: 'documentos', label: 'Documentos Pendentes' },
+  ],
 }
 
 export default function PortalTokenForm({ onClose, onSuccess }: PortalTokenFormProps) {
@@ -46,7 +59,7 @@ export default function PortalTokenForm({ onClose, onSuccess }: PortalTokenFormP
 
   useEffect(() => {
     setEntidadeId('')
-    setPermissoesSelecionadas(PERMISSOES_MAP[tipo].map(p => p.id))
+    setPermissoesSelecionadas(PERMISSOES_MAP[tipo].map((p) => p.id))
     fetchEntidades(tipo)
   }, [tipo])
 
@@ -60,7 +73,11 @@ export default function PortalTokenForm({ onClose, onSuccess }: PortalTokenFormP
 
     if (!table) return
 
-    const { data } = await supabase.from(table).select('id, nome').eq('empresa_id', empresa.id).order('nome')
+    const { data } = await supabase
+      .from(table)
+      .select('id, nome')
+      .eq('empresa_id', empresa.id)
+      .order('nome')
     setEntidades(data || [])
   }
 
@@ -69,12 +86,14 @@ export default function PortalTokenForm({ onClose, onSuccess }: PortalTokenFormP
     if (!entidadeId || !empresa?.id) return
 
     setSaving(true)
-    const entidadeSelecionada = entidades.find(e => e.id === entidadeId)
-    
+    const entidadeSelecionada = entidades.find((e) => e.id === entidadeId)
+
     const randomBuffer = new Uint8Array(24)
     crypto.getRandomValues(randomBuffer)
-    const rawToken = Array.from(randomBuffer).map(b => b.toString(16).padStart(2, '0')).join('')
-    
+    const rawToken = Array.from(randomBuffer)
+      .map((b) => b.toString(16).padStart(2, '0'))
+      .join('')
+
     const expiration = new Date()
     expiration.setDate(expiration.getDate() + parseInt(diasValidade))
 
@@ -85,7 +104,7 @@ export default function PortalTokenForm({ onClose, onSuccess }: PortalTokenFormP
       nome_entidade: entidadeSelecionada?.nome || 'Desconhecido',
       token: rawToken,
       data_expiracao: expiration.toISOString(),
-      acessos_permitidos: permissoesSelecionadas
+      acessos_permitidos: permissoesSelecionadas,
     })
 
     if (error) {
@@ -130,8 +149,10 @@ export default function PortalTokenForm({ onClose, onSuccess }: PortalTokenFormP
                   <SelectValue placeholder="Selecione..." />
                 </SelectTrigger>
                 <SelectContent>
-                  {entidades.map(ent => (
-                    <SelectItem key={ent.id} value={ent.id}>{ent.nome}</SelectItem>
+                  {entidades.map((ent) => (
+                    <SelectItem key={ent.id} value={ent.id}>
+                      {ent.nome}
+                    </SelectItem>
                   ))}
                 </SelectContent>
               </Select>
@@ -139,11 +160,11 @@ export default function PortalTokenForm({ onClose, onSuccess }: PortalTokenFormP
 
             <div className="grid gap-2">
               <Label>Validade (Dias)</Label>
-              <Input 
-                type="number" 
-                value={diasValidade} 
-                onChange={e => setDiasValidade(e.target.value)} 
-                min="1" 
+              <Input
+                type="number"
+                value={diasValidade}
+                onChange={(e) => setDiasValidade(e.target.value)}
+                min="1"
                 max="365"
               />
             </div>
@@ -151,20 +172,25 @@ export default function PortalTokenForm({ onClose, onSuccess }: PortalTokenFormP
             <div className="grid gap-2 border rounded-md p-3 mt-2">
               <Label className="mb-2">Permissões Habilitadas no Portal</Label>
               <div className="space-y-2">
-                {PERMISSOES_MAP[tipo]?.map(perm => (
+                {PERMISSOES_MAP[tipo]?.map((perm) => (
                   <div key={perm.id} className="flex items-center space-x-2">
-                    <Checkbox 
+                    <Checkbox
                       id={`perm-${perm.id}`}
                       checked={permissoesSelecionadas.includes(perm.id)}
                       onCheckedChange={(checked) => {
                         if (checked) {
                           setPermissoesSelecionadas([...permissoesSelecionadas, perm.id])
                         } else {
-                          setPermissoesSelecionadas(permissoesSelecionadas.filter(p => p !== perm.id))
+                          setPermissoesSelecionadas(
+                            permissoesSelecionadas.filter((p) => p !== perm.id),
+                          )
                         }
                       }}
                     />
-                    <label htmlFor={`perm-${perm.id}`} className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
+                    <label
+                      htmlFor={`perm-${perm.id}`}
+                      className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                    >
                       {perm.label}
                     </label>
                   </div>
@@ -173,8 +199,13 @@ export default function PortalTokenForm({ onClose, onSuccess }: PortalTokenFormP
             </div>
           </div>
           <DialogFooter>
-            <Button type="button" variant="outline" onClick={onClose}>Cancelar</Button>
-            <Button type="submit" disabled={saving || !entidadeId || permissoesSelecionadas.length === 0}>
+            <Button type="button" variant="outline" onClick={onClose}>
+              Cancelar
+            </Button>
+            <Button
+              type="submit"
+              disabled={saving || !entidadeId || permissoesSelecionadas.length === 0}
+            >
               {saving ? 'Gerando...' : 'Gerar Link Seguro'}
             </Button>
           </DialogFooter>

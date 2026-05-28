@@ -24,7 +24,10 @@ import {
 import { useEmpresa } from '@/hooks/use-empresa'
 import { useToast } from '@/components/ui/use-toast'
 import { exportacaoService } from '@/services/exportacao'
-import { ArrowLeft, Save } from 'lucide-react'
+import { ArrowLeft, Save, BrainCircuit } from 'lucide-react'
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
+import { Progress } from '@/components/ui/progress'
+import { supabase } from '@/lib/supabase/client'
 
 const formSchema = z.object({
   numero_booking: z.string().min(1, 'Número é obrigatório'),
@@ -49,6 +52,9 @@ export default function BookingForm() {
   const [loading, setLoading] = useState(false)
   const [navios, setNavios] = useState<any[]>([])
   const [portos, setPortos] = useState<any[]>([])
+  const [rolloverProb, setRolloverProb] = useState<{ prob: number; confidence: number } | null>(
+    null,
+  )
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -90,6 +96,46 @@ export default function BookingForm() {
     }
     loadDependencies()
   }, [id, empresa?.id])
+
+  const navioId = form.watch('navio_id')
+  const portoOrigemId = form.watch('porto_origem_id')
+  const portoDestinoId = form.watch('porto_destino_id')
+
+  useEffect(() => {
+    async function calculateRolloverRisk() {
+      if (!empresa?.id || !navioId || !portoOrigemId || !portoDestinoId) {
+        setRolloverProb(null)
+        return
+      }
+      const { data: routeBookings } = await supabase
+        .from('bookings')
+        .select('id')
+        .eq('empresa_id', empresa.id)
+        .eq('navio_id', navioId)
+        .eq('porto_origem_id', portoOrigemId)
+        .eq('porto_destino_id', portoDestinoId)
+        .is('deleted_at', null)
+
+      if (!routeBookings || routeBookings.length === 0) {
+        setRolloverProb({ prob: 5, confidence: 10 })
+        return
+      }
+      const bookingIds = routeBookings.map((b) => b.id)
+      const { data: rolagens } = await supabase
+        .from('rolagens_container')
+        .select('id')
+        .in('booking_original_id', bookingIds)
+        .is('deleted_at', null)
+
+      const total = bookingIds.length
+      const rolled = rolagens ? rolagens.length : 0
+      const prob = total > 0 ? (rolled / total) * 100 : 5
+      const confidence = Math.min(100, (total / 5) * 100)
+
+      setRolloverProb({ prob: Math.round(prob), confidence: Math.round(confidence) })
+    }
+    calculateRolloverRisk()
+  }, [navioId, portoOrigemId, portoDestinoId, empresa?.id])
 
   const onSubmit = async (values: z.infer<typeof formSchema>) => {
     if (!empresa?.id) return
@@ -316,6 +362,38 @@ export default function BookingForm() {
                     </FormItem>
                   )}
                 />
+                {rolloverProb && (
+                  <div className="col-span-1 md:col-span-2">
+                    <Alert
+                      className={
+                        rolloverProb.prob > 30
+                          ? 'border-red-200 bg-red-50 text-red-800'
+                          : 'border-emerald-200 bg-emerald-50 text-emerald-800'
+                      }
+                    >
+                      <BrainCircuit className="h-4 w-4" />
+                      <AlertTitle className="flex items-center justify-between">
+                        Carrier Rollover Probability Predictor
+                        <span className="text-xs opacity-70">
+                          Confidence: {rolloverProb.confidence}%
+                        </span>
+                      </AlertTitle>
+                      <AlertDescription>
+                        <div className="flex items-center gap-4 mt-2">
+                          <div className="text-2xl font-bold">{rolloverProb.prob}%</div>
+                          <Progress
+                            value={rolloverProb.prob}
+                            className="flex-1 h-2 bg-background/50"
+                          />
+                        </div>
+                        <p className="text-xs mt-2 opacity-80">
+                          Based on historical carrier and routing data for similar bookings.
+                        </p>
+                      </AlertDescription>
+                    </Alert>
+                  </div>
+                )}
+
                 <FormField
                   control={form.control}
                   name="agente_maritimo"

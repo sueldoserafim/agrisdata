@@ -1,15 +1,31 @@
 import { format } from 'date-fns'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table'
 import { Badge } from '@/components/ui/badge'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area'
-import { Download, Package, DollarSign, Calendar, MapPin, Truck, FileText, Anchor } from 'lucide-react'
+import {
+  Download,
+  Package,
+  DollarSign,
+  Calendar,
+  MapPin,
+  Truck,
+  FileText,
+  Anchor,
+} from 'lucide-react'
 
 // --- PRODUTOR ---
 export function PortalProdutor({ data, access }: { data: any; access: string[] }) {
   if (access.length === 0) return <NoAccess />
-  
+
   return (
     <Tabs defaultValue={access[0]}>
       <TabsList className="mb-6 grid w-full grid-cols-3 max-w-2xl bg-white border">
@@ -17,7 +33,7 @@ export function PortalProdutor({ data, access }: { data: any; access: string[] }
         {access.includes('entregas') && <TabsTrigger value="entregas">Entregas</TabsTrigger>}
         {access.includes('financeiro') && <TabsTrigger value="financeiro">Financeiro</TabsTrigger>}
       </TabsList>
-      
+
       {access.includes('extrato') && (
         <TabsContent value="extrato">
           <Card className="border-0 shadow-md">
@@ -41,15 +57,31 @@ export function PortalProdutor({ data, access }: { data: any; access: string[] }
                   </TableHeader>
                   <TableBody>
                     {data?.conta_corrente?.length === 0 ? (
-                      <TableRow><TableCell colSpan={5} className="text-center py-8 text-muted-foreground">Nenhuma movimentação encontrada.</TableCell></TableRow>
+                      <TableRow>
+                        <TableCell colSpan={5} className="text-center py-8 text-muted-foreground">
+                          Nenhuma movimentação encontrada.
+                        </TableCell>
+                      </TableRow>
                     ) : (
                       data?.conta_corrente?.map((item: any) => (
                         <TableRow key={item.id}>
-                          <TableCell className="font-medium">{item.data_movimento ? format(new Date(item.data_movimento), 'dd/MM/yyyy') : '-'}</TableCell>
-                          <TableCell><Badge variant="outline" className="capitalize">{item.tipo_movimento}</Badge></TableCell>
+                          <TableCell className="font-medium">
+                            {item.data_movimento
+                              ? format(new Date(item.data_movimento), 'dd/MM/yyyy')
+                              : '-'}
+                          </TableCell>
+                          <TableCell>
+                            <Badge variant="outline" className="capitalize">
+                              {item.tipo_movimento}
+                            </Badge>
+                          </TableCell>
                           <TableCell>{item.descricao || '-'}</TableCell>
-                          <TableCell className="text-right text-slate-700">{item.valor?.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</TableCell>
-                          <TableCell className="text-right font-bold">{item.saldo?.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</TableCell>
+                          <TableCell className="text-right text-slate-700">
+                            {item.valor?.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+                          </TableCell>
+                          <TableCell className="text-right font-bold">
+                            {item.saldo?.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+                          </TableCell>
                         </TableRow>
                       ))
                     )}
@@ -84,15 +116,33 @@ export function PortalProdutor({ data, access }: { data: any; access: string[] }
                   </TableHeader>
                   <TableBody>
                     {data?.entregas?.length === 0 ? (
-                      <TableRow><TableCell colSpan={5} className="text-center py-8 text-muted-foreground">Nenhuma entrega encontrada.</TableCell></TableRow>
+                      <TableRow>
+                        <TableCell colSpan={5} className="text-center py-8 text-muted-foreground">
+                          Nenhuma entrega encontrada.
+                        </TableCell>
+                      </TableRow>
                     ) : (
                       data?.entregas?.map((item: any) => (
                         <TableRow key={item.id}>
-                          <TableCell className="font-medium">{item.data_recepcao ? format(new Date(item.data_recepcao), 'dd/MM/yyyy HH:mm') : '-'}</TableCell>
+                          <TableCell className="font-medium">
+                            {item.data_recepcao
+                              ? format(new Date(item.data_recepcao), 'dd/MM/yyyy HH:mm')
+                              : '-'}
+                          </TableCell>
                           <TableCell>{item.nome_safra || '-'}</TableCell>
-                          <TableCell><Badge variant="secondary" className="capitalize">{item.status?.replace('_', ' ')}</Badge></TableCell>
-                          <TableCell className="text-right">{item.quantidade_caixas || '-'}</TableCell>
-                          <TableCell className="text-right font-semibold">{item.peso_liquido_kg?.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</TableCell>
+                          <TableCell>
+                            <Badge variant="secondary" className="capitalize">
+                              {item.status?.replace('_', ' ')}
+                            </Badge>
+                          </TableCell>
+                          <TableCell className="text-right">
+                            {item.quantidade_caixas || '-'}
+                          </TableCell>
+                          <TableCell className="text-right font-semibold">
+                            {item.peso_liquido_kg?.toLocaleString('pt-BR', {
+                              minimumFractionDigits: 2,
+                            })}
+                          </TableCell>
                         </TableRow>
                       ))
                     )}
@@ -127,15 +177,42 @@ export function PortalProdutor({ data, access }: { data: any; access: string[] }
                   </TableHeader>
                   <TableBody>
                     {data?.financeiro?.length === 0 ? (
-                      <TableRow><TableCell colSpan={5} className="text-center py-8 text-muted-foreground">Nenhum registro encontrado.</TableCell></TableRow>
+                      <TableRow>
+                        <TableCell colSpan={5} className="text-center py-8 text-muted-foreground">
+                          Nenhum registro encontrado.
+                        </TableCell>
+                      </TableRow>
                     ) : (
                       data?.financeiro?.map((item: any) => (
                         <TableRow key={item.id}>
-                          <TableCell>{item.data ? format(new Date(item.data), 'dd/MM/yyyy') : '-'}</TableCell>
-                          <TableCell><Badge variant="outline" className="capitalize">{item.tipo}</Badge></TableCell>
+                          <TableCell>
+                            {item.data ? format(new Date(item.data), 'dd/MM/yyyy') : '-'}
+                          </TableCell>
+                          <TableCell>
+                            <Badge variant="outline" className="capitalize">
+                              {item.tipo}
+                            </Badge>
+                          </TableCell>
                           <TableCell>{item.descricao || '-'}</TableCell>
-                          <TableCell><Badge className="capitalize" variant={item.status === 'pago' || item.status === 'reembolsado' ? 'default' : 'secondary'}>{item.status}</Badge></TableCell>
-                          <TableCell className="text-right font-medium">{item.valor?.toLocaleString('pt-BR', { minimumFractionDigits: 2, style: 'currency', currency: 'BRL' })}</TableCell>
+                          <TableCell>
+                            <Badge
+                              className="capitalize"
+                              variant={
+                                item.status === 'pago' || item.status === 'reembolsado'
+                                  ? 'default'
+                                  : 'secondary'
+                              }
+                            >
+                              {item.status}
+                            </Badge>
+                          </TableCell>
+                          <TableCell className="text-right font-medium">
+                            {item.valor?.toLocaleString('pt-BR', {
+                              minimumFractionDigits: 2,
+                              style: 'currency',
+                              currency: 'BRL',
+                            })}
+                          </TableCell>
                         </TableRow>
                       ))
                     )}
@@ -158,9 +235,15 @@ export function PortalCliente({ data, access }: { data: any; access: string[] })
   return (
     <Tabs defaultValue={access[0]}>
       <TabsList className="mb-6 grid w-full grid-cols-3 max-w-2xl bg-white border">
-        {access.includes('invoices') && <TabsTrigger value="invoices">Invoices & Orders</TabsTrigger>}
-        {access.includes('documentos') && <TabsTrigger value="documentos">Documentation</TabsTrigger>}
-        {access.includes('tracking') && <TabsTrigger value="tracking">Container Tracking</TabsTrigger>}
+        {access.includes('invoices') && (
+          <TabsTrigger value="invoices">Invoices & Orders</TabsTrigger>
+        )}
+        {access.includes('documentos') && (
+          <TabsTrigger value="documentos">Documentation</TabsTrigger>
+        )}
+        {access.includes('tracking') && (
+          <TabsTrigger value="tracking">Container Tracking</TabsTrigger>
+        )}
       </TabsList>
 
       {access.includes('invoices') && (
@@ -186,21 +269,49 @@ export function PortalCliente({ data, access }: { data: any; access: string[] })
                   </TableHeader>
                   <TableBody>
                     {data?.invoices?.length === 0 ? (
-                      <TableRow><TableCell colSpan={6} className="text-center py-8">No invoices found.</TableCell></TableRow>
+                      <TableRow>
+                        <TableCell colSpan={6} className="text-center py-8">
+                          No invoices found.
+                        </TableCell>
+                      </TableRow>
                     ) : (
                       data?.invoices?.map((item: any) => (
                         <TableRow key={item.id}>
                           <TableCell className="font-medium">{item.numero_invoice}</TableCell>
-                          <TableCell>{item.data_emissao ? format(new Date(item.data_emissao), 'MM/dd/yyyy') : '-'}</TableCell>
-                          <TableCell><Badge variant="outline" className="uppercase">{item.incoterm || '-'}</Badge></TableCell>
-                          <TableCell><Badge variant="secondary" className="capitalize">{item.status}</Badge></TableCell>
-                          <TableCell className="text-right font-semibold">${item.valor_total_usd?.toLocaleString('en-US', { minimumFractionDigits: 2 })}</TableCell>
+                          <TableCell>
+                            {item.data_emissao
+                              ? format(new Date(item.data_emissao), 'MM/dd/yyyy')
+                              : '-'}
+                          </TableCell>
+                          <TableCell>
+                            <Badge variant="outline" className="uppercase">
+                              {item.incoterm || '-'}
+                            </Badge>
+                          </TableCell>
+                          <TableCell>
+                            <Badge variant="secondary" className="capitalize">
+                              {item.status}
+                            </Badge>
+                          </TableCell>
+                          <TableCell className="text-right font-semibold">
+                            $
+                            {item.valor_total_usd?.toLocaleString('en-US', {
+                              minimumFractionDigits: 2,
+                            })}
+                          </TableCell>
                           <TableCell className="text-center">
                             {item.pdf_url ? (
-                              <a href={item.pdf_url} target="_blank" rel="noreferrer" className="inline-flex items-center justify-center p-2 text-primary hover:bg-slate-100 rounded-md transition-colors">
+                              <a
+                                href={item.pdf_url}
+                                target="_blank"
+                                rel="noreferrer"
+                                className="inline-flex items-center justify-center p-2 text-primary hover:bg-slate-100 rounded-md transition-colors"
+                              >
                                 <Download className="h-4 w-4" />
                               </a>
-                            ) : '-'}
+                            ) : (
+                              '-'
+                            )}
                           </TableCell>
                         </TableRow>
                       ))
@@ -236,20 +347,39 @@ export function PortalCliente({ data, access }: { data: any; access: string[] })
                   </TableHeader>
                   <TableBody>
                     {data?.documentos?.length === 0 ? (
-                      <TableRow><TableCell colSpan={5} className="text-center py-8">No documents found.</TableCell></TableRow>
+                      <TableRow>
+                        <TableCell colSpan={5} className="text-center py-8">
+                          No documents found.
+                        </TableCell>
+                      </TableRow>
                     ) : (
                       data?.documentos?.map((item: any) => (
                         <TableRow key={item.id}>
-                          <TableCell className="font-medium">{item.numero_container || '-'}</TableCell>
-                          <TableCell className="uppercase">{item.tipo_documento?.replace('_', ' ')}</TableCell>
+                          <TableCell className="font-medium">
+                            {item.numero_container || '-'}
+                          </TableCell>
+                          <TableCell className="uppercase">
+                            {item.tipo_documento?.replace('_', ' ')}
+                          </TableCell>
                           <TableCell>{item.numero_documento || '-'}</TableCell>
-                          <TableCell><Badge variant="outline" className="capitalize">{item.status}</Badge></TableCell>
+                          <TableCell>
+                            <Badge variant="outline" className="capitalize">
+                              {item.status}
+                            </Badge>
+                          </TableCell>
                           <TableCell className="text-center">
                             {item.arquivo_url ? (
-                              <a href={item.arquivo_url} target="_blank" rel="noreferrer" className="inline-flex items-center justify-center p-2 text-primary hover:bg-slate-100 rounded-md transition-colors">
+                              <a
+                                href={item.arquivo_url}
+                                target="_blank"
+                                rel="noreferrer"
+                                className="inline-flex items-center justify-center p-2 text-primary hover:bg-slate-100 rounded-md transition-colors"
+                              >
                                 <Download className="h-4 w-4" />
                               </a>
-                            ) : '-'}
+                            ) : (
+                              '-'
+                            )}
                           </TableCell>
                         </TableRow>
                       ))
@@ -267,7 +397,9 @@ export function PortalCliente({ data, access }: { data: any; access: string[] })
         <TabsContent value="tracking">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {data?.tracking?.length === 0 ? (
-              <div className="col-span-full text-center py-8 text-muted-foreground bg-white rounded-lg border">No active containers found.</div>
+              <div className="col-span-full text-center py-8 text-muted-foreground bg-white rounded-lg border">
+                No active containers found.
+              </div>
             ) : (
               data?.tracking?.map((item: any) => (
                 <Card key={item.id} className="border-0 shadow-md overflow-hidden">
@@ -280,7 +412,12 @@ export function PortalCliente({ data, access }: { data: any; access: string[] })
                           <Anchor className="h-3.5 w-3.5" /> Booking: {item.numero_booking || 'N/A'}
                         </CardDescription>
                       </div>
-                      <Badge className="uppercase" variant={item.status === 'concluido' ? 'default' : 'secondary'}>{item.status}</Badge>
+                      <Badge
+                        className="uppercase"
+                        variant={item.status === 'concluido' ? 'default' : 'secondary'}
+                      >
+                        {item.status}
+                      </Badge>
                     </div>
                   </CardHeader>
                   <CardContent className="text-sm">
@@ -326,12 +463,14 @@ export function PortalFornecedor({ data, access }: { data: any; access: string[]
     <Tabs defaultValue={access[0]}>
       <TabsList className="mb-6 grid w-full grid-cols-2 max-w-md bg-white border">
         {access.includes('pedidos') && <TabsTrigger value="pedidos">Pedidos de Compra</TabsTrigger>}
-        {access.includes('pagamentos') && <TabsTrigger value="pagamentos">Pagamentos Pendentes</TabsTrigger>}
+        {access.includes('pagamentos') && (
+          <TabsTrigger value="pagamentos">Pagamentos Pendentes</TabsTrigger>
+        )}
       </TabsList>
 
       {access.includes('pedidos') && (
         <TabsContent value="pedidos">
-           <Card className="border-0 shadow-md">
+          <Card className="border-0 shadow-md">
             <CardHeader className="bg-slate-50 border-b">
               <CardTitle className="text-xl flex items-center gap-2">
                 <Package className="h-5 w-5 text-primary" /> Pedidos Recentes
@@ -352,16 +491,37 @@ export function PortalFornecedor({ data, access }: { data: any; access: string[]
                   </TableHeader>
                   <TableBody>
                     {data?.pedidos?.length === 0 ? (
-                      <TableRow><TableCell colSpan={6} className="text-center py-8">Nenhum pedido encontrado.</TableCell></TableRow>
+                      <TableRow>
+                        <TableCell colSpan={6} className="text-center py-8">
+                          Nenhum pedido encontrado.
+                        </TableCell>
+                      </TableRow>
                     ) : (
                       data?.pedidos?.map((item: any) => (
                         <TableRow key={item.id}>
-                          <TableCell className="font-medium">{item.data_pedido ? format(new Date(item.data_pedido), 'dd/MM/yyyy') : '-'}</TableCell>
+                          <TableCell className="font-medium">
+                            {item.data_pedido
+                              ? format(new Date(item.data_pedido), 'dd/MM/yyyy')
+                              : '-'}
+                          </TableCell>
                           <TableCell>{item.produto_nome}</TableCell>
                           <TableCell className="text-right">{item.quantidade}</TableCell>
-                          <TableCell className="text-right">{item.preco_unitario?.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</TableCell>
-                          <TableCell>{item.data_entrega_prevista ? format(new Date(item.data_entrega_prevista), 'dd/MM/yyyy') : '-'}</TableCell>
-                          <TableCell><Badge variant="outline" className="capitalize">{item.status}</Badge></TableCell>
+                          <TableCell className="text-right">
+                            {item.preco_unitario?.toLocaleString('pt-BR', {
+                              style: 'currency',
+                              currency: 'BRL',
+                            })}
+                          </TableCell>
+                          <TableCell>
+                            {item.data_entrega_prevista
+                              ? format(new Date(item.data_entrega_prevista), 'dd/MM/yyyy')
+                              : '-'}
+                          </TableCell>
+                          <TableCell>
+                            <Badge variant="outline" className="capitalize">
+                              {item.status}
+                            </Badge>
+                          </TableCell>
                         </TableRow>
                       ))
                     )}
@@ -376,7 +536,7 @@ export function PortalFornecedor({ data, access }: { data: any; access: string[]
 
       {access.includes('pagamentos') && (
         <TabsContent value="pagamentos">
-           <Card className="border-0 shadow-md">
+          <Card className="border-0 shadow-md">
             <CardHeader className="bg-slate-50 border-b">
               <CardTitle className="text-xl flex items-center gap-2">
                 <DollarSign className="h-5 w-5 text-primary" /> Pagamentos Pendentes
@@ -396,15 +556,34 @@ export function PortalFornecedor({ data, access }: { data: any; access: string[]
                   </TableHeader>
                   <TableBody>
                     {data?.pagamentos?.length === 0 ? (
-                      <TableRow><TableCell colSpan={5} className="text-center py-8">Nenhum pagamento pendente.</TableCell></TableRow>
+                      <TableRow>
+                        <TableCell colSpan={5} className="text-center py-8">
+                          Nenhum pagamento pendente.
+                        </TableCell>
+                      </TableRow>
                     ) : (
                       data?.pagamentos?.map((item: any) => (
                         <TableRow key={item.id}>
-                          <TableCell className="font-medium">{item.data_vencimento ? format(new Date(item.data_vencimento), 'dd/MM/yyyy') : '-'}</TableCell>
+                          <TableCell className="font-medium">
+                            {item.data_vencimento
+                              ? format(new Date(item.data_vencimento), 'dd/MM/yyyy')
+                              : '-'}
+                          </TableCell>
                           <TableCell>{item.descricao}</TableCell>
-                          <TableCell>{item.parcela} / {item.total_parcelas}</TableCell>
-                          <TableCell><Badge variant="secondary" className="capitalize">{item.status}</Badge></TableCell>
-                          <TableCell className="text-right font-bold text-slate-700">{item.valor?.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</TableCell>
+                          <TableCell>
+                            {item.parcela} / {item.total_parcelas}
+                          </TableCell>
+                          <TableCell>
+                            <Badge variant="secondary" className="capitalize">
+                              {item.status}
+                            </Badge>
+                          </TableCell>
+                          <TableCell className="text-right font-bold text-slate-700">
+                            {item.valor?.toLocaleString('pt-BR', {
+                              style: 'currency',
+                              currency: 'BRL',
+                            })}
+                          </TableCell>
                         </TableRow>
                       ))
                     )}
@@ -427,13 +606,17 @@ export function PortalDespachante({ data, access }: { data: any; access: string[
   return (
     <Tabs defaultValue={access[0]}>
       <TabsList className="mb-6 grid w-full grid-cols-2 max-w-md bg-white border">
-        {access.includes('containers') && <TabsTrigger value="containers">Containers Ativos</TabsTrigger>}
-        {access.includes('documentos') && <TabsTrigger value="documentos">Documentação</TabsTrigger>}
+        {access.includes('containers') && (
+          <TabsTrigger value="containers">Containers Ativos</TabsTrigger>
+        )}
+        {access.includes('documentos') && (
+          <TabsTrigger value="documentos">Documentação</TabsTrigger>
+        )}
       </TabsList>
 
       {access.includes('containers') && (
         <TabsContent value="containers">
-           <Card className="border-0 shadow-md">
+          <Card className="border-0 shadow-md">
             <CardHeader className="bg-slate-50 border-b">
               <CardTitle className="text-xl flex items-center gap-2">
                 <Truck className="h-5 w-5 text-primary" /> Containers Pendentes/Embarcados
@@ -454,16 +637,30 @@ export function PortalDespachante({ data, access }: { data: any; access: string[
                   </TableHeader>
                   <TableBody>
                     {data?.containers?.length === 0 ? (
-                      <TableRow><TableCell colSpan={6} className="text-center py-8">Nenhum container ativo.</TableCell></TableRow>
+                      <TableRow>
+                        <TableCell colSpan={6} className="text-center py-8">
+                          Nenhum container ativo.
+                        </TableCell>
+                      </TableRow>
                     ) : (
                       data?.containers?.map((item: any) => (
                         <TableRow key={item.id}>
                           <TableCell className="font-bold">{item.numero_container}</TableCell>
                           <TableCell>{item.numero_booking || '-'}</TableCell>
                           <TableCell>{item.destino || '-'}</TableCell>
-                          <TableCell>{item.data_etd ? format(new Date(item.data_etd), 'dd/MM/yyyy') : '-'}</TableCell>
-                          <TableCell>{item.gate_in_data ? format(new Date(item.gate_in_data), 'dd/MM HH:mm') : '-'}</TableCell>
-                          <TableCell><Badge variant="outline" className="capitalize">{item.status?.replace('_', ' ')}</Badge></TableCell>
+                          <TableCell>
+                            {item.data_etd ? format(new Date(item.data_etd), 'dd/MM/yyyy') : '-'}
+                          </TableCell>
+                          <TableCell>
+                            {item.gate_in_data
+                              ? format(new Date(item.gate_in_data), 'dd/MM HH:mm')
+                              : '-'}
+                          </TableCell>
+                          <TableCell>
+                            <Badge variant="outline" className="capitalize">
+                              {item.status?.replace('_', ' ')}
+                            </Badge>
+                          </TableCell>
                         </TableRow>
                       ))
                     )}
@@ -483,7 +680,9 @@ export function PortalDespachante({ data, access }: { data: any; access: string[
               <CardTitle className="text-xl flex items-center gap-2">
                 <FileText className="h-5 w-5 text-primary" /> Documentos Pendentes
               </CardTitle>
-              <CardDescription>Lista de documentos que necessitam emissão ou validação.</CardDescription>
+              <CardDescription>
+                Lista de documentos que necessitam emissão ou validação.
+              </CardDescription>
             </CardHeader>
             <CardContent className="p-0">
               <ScrollArea className="w-full">
@@ -499,20 +698,37 @@ export function PortalDespachante({ data, access }: { data: any; access: string[
                   </TableHeader>
                   <TableBody>
                     {data?.documentos?.length === 0 ? (
-                      <TableRow><TableCell colSpan={5} className="text-center py-8">Toda a documentação está em dia.</TableCell></TableRow>
+                      <TableRow>
+                        <TableCell colSpan={5} className="text-center py-8">
+                          Toda a documentação está em dia.
+                        </TableCell>
+                      </TableRow>
                     ) : (
                       data?.documentos?.map((item: any) => (
                         <TableRow key={item.id}>
                           <TableCell className="font-medium">{item.numero_container}</TableCell>
-                          <TableCell className="uppercase text-xs font-semibold">{item.tipo_documento?.replace('_', ' ')}</TableCell>
+                          <TableCell className="uppercase text-xs font-semibold">
+                            {item.tipo_documento?.replace('_', ' ')}
+                          </TableCell>
                           <TableCell>{item.numero_documento || 'Pendente'}</TableCell>
-                          <TableCell><Badge variant="destructive" className="capitalize">{item.status}</Badge></TableCell>
+                          <TableCell>
+                            <Badge variant="destructive" className="capitalize">
+                              {item.status}
+                            </Badge>
+                          </TableCell>
                           <TableCell className="text-center">
                             {item.arquivo_url ? (
-                              <a href={item.arquivo_url} target="_blank" rel="noreferrer" className="inline-flex items-center justify-center p-2 text-primary hover:bg-slate-100 rounded-md transition-colors">
+                              <a
+                                href={item.arquivo_url}
+                                target="_blank"
+                                rel="noreferrer"
+                                className="inline-flex items-center justify-center p-2 text-primary hover:bg-slate-100 rounded-md transition-colors"
+                              >
                                 <Download className="h-4 w-4" />
                               </a>
-                            ) : '-'}
+                            ) : (
+                              '-'
+                            )}
                           </TableCell>
                         </TableRow>
                       ))

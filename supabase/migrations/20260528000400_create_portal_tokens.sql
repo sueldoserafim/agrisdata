@@ -131,4 +131,4 @@ BEGIN
         'data', v_result
     );
 END;
-$$ LANGUAGE plpgsql;
+$$;

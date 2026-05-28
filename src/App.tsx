@@ -26,11 +26,41 @@ import PortalApp from './pages/portal/PortalApp'
 import { PortalLayout } from './components/portal/PortalLayout'
 import PortalTokensList from './pages/configuracoes/PortalTokensList'
 import Usuarios from './pages/app/Usuarios'
+import VacariaDashboard from './pages/vacaria/VacariaDashboard'
+import VacariaRebanhoList from './pages/vacaria/VacariaRebanhoList'
+import VacariaRebanhoForm from './pages/vacaria/VacariaRebanhoForm'
+import VacariaProducaoList from './pages/vacaria/VacariaProducaoList'
+import VacariaReproducaoList from './pages/vacaria/VacariaReproducaoList'
+import VacariaSaudeList from './pages/vacaria/VacariaSaudeList'
 import SettingsPage from './pages/Settings'
 import AuditoriaSafrasList from './pages/auditoria/AuditoriaSafrasList'
+import DashboardSustentabilidade from './pages/sustentabilidade/DashboardSustentabilidade'
+import CertificacoesList from './pages/sustentabilidade/CertificacoesList'
+import AuditoriaChecklist from './pages/sustentabilidade/AuditoriaChecklist'
+import NaoConformidadesList from './pages/sustentabilidade/NaoConformidadesList'
+import EmissoesCarbono from './pages/sustentabilidade/EmissoesCarbono'
+import ResiduosLogistica from './pages/sustentabilidade/ResiduosLogistica'
 import RelatorioSafra from './pages/auditoria/RelatorioSafra'
 import PerformanceDashboard from './pages/bi/PerformanceDashboard'
 import TendenciasDashboard from './pages/performance/TendenciasDashboard'
+import BIDashboard from './pages/bi/BIDashboard'
+
+import RHDashboard from './pages/rh/RHDashboard'
+import RHPonto from './pages/rh/RHPonto'
+import RHFerias from './pages/rh/RHFerias'
+import RHFolha from './pages/rh/RHFolha'
+import RHEpis from './pages/rh/RHEpis'
+
+import FrotaDashboard from './pages/frota/FrotaDashboard'
+import FrotaVeiculos from './pages/frota/FrotaVeiculos'
+import FrotaViagens from './pages/frota/FrotaViagens'
+import FrotaManutencoes from './pages/frota/FrotaManutencoes'
+import FrotaAbastecimentos from './pages/frota/FrotaAbastecimentos'
+
+import PatrimonioDashboard from './pages/patrimonio/PatrimonioDashboard'
+import PatrimonioBens from './pages/patrimonio/PatrimonioBens'
+import PatrimonioScanner from './pages/patrimonio/PatrimonioScanner'
+
 import CadernoCampo from './pages/operacoes/CadernoCampo'
 import BalancoMassas from './pages/producao/BalancoMassas'
 
@@ -127,8 +157,10 @@ import DocumentosList from './pages/exportacao/DocumentosList'
 import DocumentoForm from './pages/exportacao/DocumentoForm'
 import RolagensList from './pages/exportacao/RolagensList'
 import RolagemForm from './pages/exportacao/RolagemForm'
-import PortalApp from './pages/portal/PortalApp'
 import PortaisExternosList from './pages/configuracoes/PortaisExternosList'
+import ContratosList from './pages/cooperativa/ContratosList'
+import ContratoForm from './pages/cooperativa/ContratoForm'
+import VincularPallets from './pages/cooperativa/VincularPallets'
 
 const App = () => (
   <BrowserRouter future={{ v7_startTransition: false, v7_relativeSplatPath: false }}>
@@ -324,6 +356,10 @@ const App = () => (
                 <Route path="/app/financeiro/lancamentos/:id" element={<LancamentoForm />} />
                 <Route path="/app/financeiro/conciliacao" element={<ConciliacaoBancaria />} />
                 <Route path="/app/financeiro/produtores" element={<ContaCorrenteProdutor />} />
+                <Route path="/app/cooperativa/contratos" element={<ContratosList />} />
+                <Route path="/app/cooperativa/contratos/novo" element={<ContratoForm />} />
+                <Route path="/app/cooperativa/contratos/:id" element={<ContratoForm />} />
+                <Route path="/app/cooperativa/vincular-pallets" element={<VincularPallets />} />
                 <Route path="/app/financeiro/adiantamentos" element={<AdiantamentosList />} />
                 <Route path="/app/financeiro/adiantamentos/novo" element={<AdiantamentoForm />} />
                 <Route path="/app/financeiro/adiantamentos/:id" element={<AdiantamentoForm />} />
@@ -340,28 +376,50 @@ const App = () => (
                   path="/app/producao/colheita/rastreabilidade/:id"
                   element={<RastreabilidadeDetail />}
                 />
-                <Route
-                  path="/app/rh"
-                  element={<div className="p-8 font-semibold text-xl">RH</div>}
-                />
-                <Route
-                  path="/app/frota"
-                  element={<div className="p-8 font-semibold text-xl">Frota</div>}
-                />
-                <Route
-                  path="/app/bi"
-                  element={<div className="p-8 font-semibold text-xl">BI</div>}
-                />
+                <Route path="/app/rh" element={<RHDashboard />} />
+                <Route path="/app/rh/ponto" element={<RHPonto />} />
+                <Route path="/app/rh/ferias" element={<RHFerias />} />
+                <Route path="/app/rh/folha" element={<RHFolha />} />
+                <Route path="/app/rh/epis" element={<RHEpis />} />
+
+                <Route path="/app/frota" element={<FrotaDashboard />} />
+                <Route path="/app/frota/veiculos" element={<FrotaVeiculos />} />
+                <Route path="/app/frota/viagens" element={<FrotaViagens />} />
+                <Route path="/app/frota/manutencoes" element={<FrotaManutencoes />} />
+                <Route path="/app/frota/abastecimentos" element={<FrotaAbastecimentos />} />
+
+                <Route path="/app/patrimonio" element={<PatrimonioDashboard />} />
+                <Route path="/app/patrimonio/bens" element={<PatrimonioBens />} />
+                <Route path="/app/patrimonio/scanner" element={<PatrimonioScanner />} />
+                <Route path="/app/bi" element={<BIDashboard />} />
                 <Route path="/app/performance" element={<PerformanceDashboard />} />
                 <Route path="/app/performance/tendencias" element={<TendenciasDashboard />} />
                 <Route path="/app/auditoria-safras" element={<AuditoriaSafrasList />} />
                 <Route path="/app/auditoria-safras/:id/relatorio" element={<RelatorioSafra />} />
+                <Route path="/app/sustentabilidade" element={<DashboardSustentabilidade />} />
+                <Route path="/app/sustentabilidade/certificacoes" element={<CertificacoesList />} />
+                <Route
+                  path="/app/sustentabilidade/auditoria/:id"
+                  element={<AuditoriaChecklist />}
+                />
+                <Route path="/app/sustentabilidade/ncs" element={<NaoConformidadesList />} />
+                <Route path="/app/sustentabilidade/emissoes" element={<EmissoesCarbono />} />
+                <Route path="/app/sustentabilidade/residuos" element={<ResiduosLogistica />} />
                 <Route path="/app/configuracoes/portais" element={<PortalTokensList />} />
                 <Route path="/app/usuarios" element={<Usuarios />} />
                 <Route path="/app/configuracoes" element={<SettingsPage />} />
+
+                {/* Vacaria Module */}
+                <Route path="/app/vacaria" element={<VacariaDashboard />} />
+                <Route path="/app/vacaria/rebanho" element={<VacariaRebanhoList />} />
+                <Route path="/app/vacaria/rebanho/novo" element={<VacariaRebanhoForm />} />
+                <Route path="/app/vacaria/rebanho/:id" element={<VacariaRebanhoForm />} />
+                <Route path="/app/vacaria/producao" element={<VacariaProducaoList />} />
+                <Route path="/app/vacaria/reproducao" element={<VacariaReproducaoList />} />
+                <Route path="/app/vacaria/saude" element={<VacariaSaudeList />} />
               </Route>
             </Route>
-          </Route>          </Route>
+          </Route>
           <Route path="*" element={<NotFound />} />
         </Routes>
       </TooltipProvider>

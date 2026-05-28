@@ -72,7 +72,7 @@ BEGIN
         'empresa_nome', v_empresa.nome
     );
 END;
-$;
+$$;
 
 CREATE OR REPLACE FUNCTION public.get_portal_produtor_data(p_token TEXT)
 RETURNS JSONB
@@ -125,7 +125,7 @@ BEGIN
         'financeiro', v_financeiro
     );
 END;
-$;
+$$;
 
 CREATE OR REPLACE FUNCTION public.get_portal_cliente_data(p_token TEXT)
 RETURNS JSONB
@@ -174,7 +174,7 @@ BEGIN
         'tracking', v_tracking
     );
 END;
-$;
+$$;
 
 CREATE OR REPLACE FUNCTION public.get_portal_fornecedor_data(p_token TEXT)
 RETURNS JSONB
@@ -212,7 +212,7 @@ BEGIN
         'pagamentos', v_pagamentos
     );
 END;
-$;
+$$;
 
 CREATE OR REPLACE FUNCTION public.get_portal_despachante_data(p_token TEXT)
 RETURNS JSONB
@@ -253,4 +253,4 @@ BEGIN
         'documentos', v_documentos
     );
 END;
-$;
+$$;
