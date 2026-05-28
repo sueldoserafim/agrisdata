@@ -15,6 +15,18 @@ export const getTalhoes = async (empresaId: string) => {
   return data
 }
 
+export const deleteTalhao = async (id: string) => {
+  const { data, error } = await supabase
+    .from('talhoes')
+    .update({ deleted_at: new Date().toISOString() })
+    .eq('id', id)
+    .select()
+    .single()
+
+  if (error) throw error
+  return data
+}
+
 export const getTalhao = async (id: string) => {
   const { data, error } = await supabase.from('talhoes').select('*').eq('id', id).single()
 

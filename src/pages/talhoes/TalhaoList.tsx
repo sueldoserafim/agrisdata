@@ -1,250 +1,322 @@
 import { useEffect, useState, useMemo } from 'react'
-import { Link } from 'react-router-dom'
-import { Plus, MapPin, Search } from 'lucide-react'
+import { useNavigate } from 'react-router-dom'
 import { useEmpresa } from '@/hooks/use-empresa'
-import { getTalhoes, getFazendas } from '@/services/talhoes'
-import { Button } from '@/components/ui/button'
-import { Card, CardContent } from '@/components/ui/card'
-import { Badge } from '@/components/ui/badge'
-import { Input } from '@/components/ui/input'
+import { getTalhoes, deleteTalhao } from '@/services/talhoes'
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select'
-import { Skeleton } from '@/components/ui/skeleton'
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table'
+import { Button } from '@/components/ui/button'
+import { Badge } from '@/components/ui/badge'
+import { Plus, Pencil, Trash2, List, Map as MapIcon, Loader2 } from 'lucide-react'
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from '@/components/ui/alert-dialog'
+import { useToast } from '@/hooks/use-toast'
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import {
+  ScatterChart,
+  Scatter,
+  XAxis,
+  YAxis,
+  ZAxis,
+  CartesianGrid,
+  ResponsiveContainer,
+} from 'recharts'
+import { ChartContainer, ChartTooltip } from '@/components/ui/chart'
 
 export default function TalhaoList() {
+  const navigate = useNavigate()
   const { empresa } = useEmpresa()
+  const { toast } = useToast()
   const [talhoes, setTalhoes] = useState<any[]>([])
-  const [fazendas, setFazendas] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
-  const [filterFazenda, setFilterFazenda] = useState<string>('all')
-  const [filterStatus, setFilterStatus] = useState<string>('all')
-  const [search, setSearch] = useState('')
 
-  useEffect(() => {
+  const fetchTalhoes = async () => {
     if (!empresa?.id) return
-    const fetchDados = async () => {
-      try {
-        const [talhoesData, fazendasData] = await Promise.all([
-          getTalhoes(empresa.id),
-          getFazendas(empresa.id),
-        ])
-        setTalhoes(talhoesData)
-        setFazendas(fazendasData)
-      } catch (err) {
-        console.error(err)
-      } finally {
-        setLoading(false)
-      }
+    try {
+      setLoading(true)
+      const data = await getTalhoes(empresa.id)
+      setTalhoes(data || [])
+    } catch (error: any) {
+      toast({
+        title: 'Erro ao buscar talhões',
+        description: error.message,
+        variant: 'destructive',
+      })
+    } finally {
+      setLoading(false)
     }
-    fetchDados()
-  }, [empresa?.id])
-
-  const statusColors: Record<string, string> = {
-    disponível: 'bg-green-100 text-green-800 border-green-200',
-    em_plantio: 'bg-blue-100 text-blue-800 border-blue-200',
-    em_produção: 'bg-purple-100 text-purple-800 border-purple-200',
-    em_repouso: 'bg-yellow-100 text-yellow-800 border-yellow-200',
-    bloqueado: 'bg-red-100 text-red-800 border-red-200',
   }
 
-  const filteredTalhoes = useMemo(() => {
-    return talhoes.filter((t) => {
-      const matchFazenda = filterFazenda === 'all' || t.fazenda_id === filterFazenda
-      const matchStatus =
-        filterStatus === 'all' || (t.status_atual || 'disponível') === filterStatus
-      const matchSearch =
-        t.nome.toLowerCase().includes(search.toLowerCase()) ||
-        (t.codigo_talhao || '').toLowerCase().includes(search.toLowerCase())
-      return matchFazenda && matchStatus && matchSearch
-    })
-  }, [talhoes, filterFazenda, filterStatus, search])
+  useEffect(() => {
+    fetchTalhoes()
+  }, [empresa?.id])
+
+  const handleDelete = async (id: string) => {
+    try {
+      await deleteTalhao(id)
+      toast({
+        title: 'Sucesso',
+        description: 'Talhão excluído com sucesso.',
+      })
+      fetchTalhoes()
+    } catch (error: any) {
+      toast({
+        title: 'Erro ao excluir',
+        description: error.message,
+        variant: 'destructive',
+      })
+    }
+  }
+
+  const mapData = useMemo(() => {
+    return talhoes
+      .filter((t) => t.latitude != null && t.longitude != null)
+      .map((t) => ({
+        x: Number(t.longitude),
+        y: Number(t.latitude),
+        name: t.nome,
+        area: Number(t.area_ha) || 10,
+        fazenda: t.fazendas?.nome || 'N/A',
+        status: t.status_atual,
+      }))
+  }, [talhoes])
+
+  if (loading) {
+    return (
+      <div className="flex h-full items-center justify-center">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      </div>
+    )
+  }
 
   return (
-    <div className="p-8 max-w-7xl mx-auto flex flex-col h-[calc(100vh-4rem)]">
-      <div className="flex justify-between items-center mb-6">
+    <div className="flex flex-col gap-6 p-6 max-w-[1600px] mx-auto w-full">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
           <h1 className="text-3xl font-bold tracking-tight">Talhões</h1>
           <p className="text-muted-foreground mt-1">
-            Gerencie os talhões e áreas de plantio das suas fazendas
+            Gerencie as áreas de plantio e visualize no mapa
           </p>
         </div>
-        <Button asChild>
-          <Link to="/app/talhoes/new">
-            <Plus className="size-4 mr-2" /> Novo Talhão
-          </Link>
+        <Button onClick={() => navigate('/app/talhoes/new')} className="shrink-0">
+          <Plus className="mr-2 h-4 w-4" />
+          Novo Talhão
         </Button>
       </div>
 
-      <div className="flex gap-4 mb-6 bg-card p-4 rounded-xl border shadow-sm flex-wrap md:flex-nowrap">
-        <div className="flex-1 min-w-[200px] relative">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
-          <Input
-            placeholder="Buscar por nome ou código..."
-            className="pl-9"
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-          />
-        </div>
-        <div className="w-full md:w-64">
-          <Select value={filterFazenda} onValueChange={setFilterFazenda}>
-            <SelectTrigger>
-              <SelectValue placeholder="Fazenda" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">Todas as Fazendas</SelectItem>
-              {fazendas.map((f) => (
-                <SelectItem key={f.id} value={f.id}>
-                  {f.nome}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
-        <div className="w-full md:w-64">
-          <Select value={filterStatus} onValueChange={setFilterStatus}>
-            <SelectTrigger>
-              <SelectValue placeholder="Status" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">Todos os Status</SelectItem>
-              <SelectItem value="disponível">Disponível</SelectItem>
-              <SelectItem value="em_plantio">Em Plantio</SelectItem>
-              <SelectItem value="em_produção">Em Produção</SelectItem>
-              <SelectItem value="em_repouso">Em Repouso</SelectItem>
-              <SelectItem value="bloqueado">Bloqueado</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
-      </div>
+      <Tabs defaultValue="lista" className="w-full">
+        <TabsList className="grid w-full max-w-[400px] grid-cols-2 mb-6">
+          <TabsTrigger value="lista" className="flex items-center gap-2">
+            <List className="h-4 w-4" />
+            Lista
+          </TabsTrigger>
+          <TabsTrigger value="mapa" className="flex items-center gap-2">
+            <MapIcon className="h-4 w-4" />
+            Mapa
+          </TabsTrigger>
+        </TabsList>
 
-      <div className="flex-1 grid grid-cols-1 lg:grid-cols-5 gap-6 min-h-0">
-        <div className="lg:col-span-2 overflow-y-auto pr-2 space-y-4 pb-12">
-          {loading ? (
-            Array.from({ length: 4 }).map((_, i) => (
-              <Skeleton key={i} className="h-32 w-full rounded-xl" />
-            ))
-          ) : filteredTalhoes.length === 0 ? (
-            <div className="text-center py-12 text-muted-foreground bg-muted/30 rounded-xl border border-dashed">
-              Nenhum talhão encontrado
-            </div>
-          ) : (
-            filteredTalhoes.map((t) => (
-              <Card
-                key={t.id}
-                className="hover:border-primary/50 transition-colors group cursor-pointer"
-              >
-                <CardContent className="p-5">
-                  <div className="flex justify-between items-start mb-2">
-                    <div>
-                      <h3 className="font-semibold text-lg flex items-center gap-2">
-                        <Link to={`/app/talhoes/${t.id}`} className="hover:underline">
-                          {t.nome}
-                        </Link>
-                      </h3>
-                      <p className="text-sm text-muted-foreground flex items-center gap-1 mt-1">
-                        <MapPin className="size-3" /> {t.fazendas?.nome || 'Fazenda Desconhecida'}
-                      </p>
-                    </div>
-                    <Badge
-                      variant="outline"
-                      className={statusColors[t.status_atual || 'disponível']}
-                    >
-                      {(t.status_atual || 'disponível').replace('_', ' ')}
-                    </Badge>
-                  </div>
-                  <div className="grid grid-cols-2 gap-2 mt-4 text-sm bg-muted/50 p-3 rounded-lg">
-                    <div>
-                      <span className="text-muted-foreground block text-xs">Código</span>
-                      <span className="font-medium">{t.codigo_talhao || '-'}</span>
-                    </div>
-                    <div>
-                      <span className="text-muted-foreground block text-xs">Área</span>
-                      <span className="font-medium">{t.area_ha || 0} ha</span>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            ))
-          )}
-        </div>
-
-        <div className="lg:col-span-3 bg-muted/20 rounded-2xl border shadow-inner relative overflow-hidden flex flex-col min-h-[400px]">
-          <div className="p-4 bg-background/80 backdrop-blur-sm border-b absolute top-0 left-0 right-0 z-10 flex justify-between items-center">
-            <h3 className="font-semibold text-sm">Visualização Geográfica (Mapa)</h3>
-            <span className="text-xs text-muted-foreground">Demo View</span>
-          </div>
-
-          <div
-            className="flex-1 w-full h-full relative"
-            style={{
-              backgroundImage: 'radial-gradient(#e5e7eb 1px, transparent 1px)',
-              backgroundSize: '40px 40px',
-              backgroundColor: '#f9fafb',
-            }}
-          >
-            <div className="absolute inset-0 pt-16 p-8 flex items-center justify-center">
-              <svg
-                width="100%"
-                height="100%"
-                viewBox="0 0 800 600"
-                className="opacity-80 drop-shadow-md"
-              >
-                {filteredTalhoes.map((t, i) => {
-                  const x = 150 + ((i * 180) % 500)
-                  const y = 100 + ((i * 120) % 350)
-                  const scale = 0.5 + (t.area_ha ? Math.min(Number(t.area_ha) / 50, 1.5) : 1)
-                  const color =
-                    (t.status_atual || 'disponível') === 'disponível'
-                      ? '#22c55e'
-                      : t.status_atual === 'em_plantio'
-                        ? '#3b82f6'
-                        : t.status_atual === 'em_produção'
-                          ? '#a855f7'
-                          : t.status_atual === 'em_repouso'
-                            ? '#eab308'
-                            : '#ef4444'
-
-                  return (
-                    <g key={t.id} transform={`translate(${x}, ${y}) scale(${scale})`}>
-                      <path
-                        d="M0,0 L80,20 L100,100 L20,80 Z"
-                        fill={color}
-                        fillOpacity="0.4"
-                        stroke={color}
-                        strokeWidth="3"
-                        className="hover:fill-opacity-0.6 hover:stroke-width-5 transition-all cursor-pointer"
-                      />
-                      <text
-                        x="45"
-                        y="55"
-                        fontSize="14"
-                        fill="#1f2937"
-                        fontWeight="bold"
-                        textAnchor="middle"
-                      >
-                        {t.codigo_talhao || t.nome.substring(0, 10)}
-                      </text>
-                    </g>
-                  )
-                })}
-              </svg>
-            </div>
-
-            {filteredTalhoes.length === 0 && !loading && (
-              <div className="absolute inset-0 flex items-center justify-center bg-background/50 backdrop-blur-[2px]">
-                <p className="text-muted-foreground font-medium">
-                  Nenhum talhão para exibir no mapa
-                </p>
+        <TabsContent value="lista" className="mt-0">
+          <Card>
+            <CardHeader className="pb-3">
+              <CardTitle>Todos os Talhões</CardTitle>
+              <CardDescription>Listagem detalhada das áreas produtivas</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="rounded-md border">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Nome / Código</TableHead>
+                      <TableHead>Fazenda</TableHead>
+                      <TableHead>Área (ha)</TableHead>
+                      <TableHead>Status</TableHead>
+                      <TableHead className="text-right">Ações</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {talhoes.length === 0 ? (
+                      <TableRow>
+                        <TableCell colSpan={5} className="text-center py-8 text-muted-foreground">
+                          Nenhum talhão encontrado.
+                        </TableCell>
+                      </TableRow>
+                    ) : (
+                      talhoes.map((talhao) => (
+                        <TableRow key={talhao.id}>
+                          <TableCell>
+                            <div className="font-medium">{talhao.nome}</div>
+                            {talhao.codigo_talhao && (
+                              <div className="text-xs text-muted-foreground">
+                                {talhao.codigo_talhao}
+                              </div>
+                            )}
+                          </TableCell>
+                          <TableCell>{talhao.fazendas?.nome || 'N/A'}</TableCell>
+                          <TableCell>{talhao.area_ha || '-'}</TableCell>
+                          <TableCell>
+                            <Badge
+                              variant={
+                                talhao.status_atual === 'disponível' ? 'default' : 'secondary'
+                              }
+                            >
+                              {talhao.status_atual || 'N/A'}
+                            </Badge>
+                          </TableCell>
+                          <TableCell className="text-right">
+                            <div className="flex justify-end gap-2">
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                onClick={() => navigate(`/app/talhoes/${talhao.id}`)}
+                              >
+                                <Pencil className="h-4 w-4" />
+                              </Button>
+                              <AlertDialog>
+                                <AlertDialogTrigger asChild>
+                                  <Button variant="ghost" size="icon" className="text-destructive">
+                                    <Trash2 className="h-4 w-4" />
+                                  </Button>
+                                </AlertDialogTrigger>
+                                <AlertDialogContent>
+                                  <AlertDialogHeader>
+                                    <AlertDialogTitle>Excluir Talhão?</AlertDialogTitle>
+                                    <AlertDialogDescription>
+                                      Esta ação não pode ser desfeita. O talhão será movido para a
+                                      lixeira.
+                                    </AlertDialogDescription>
+                                  </AlertDialogHeader>
+                                  <AlertDialogFooter>
+                                    <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                                    <AlertDialogAction
+                                      className="bg-destructive text-destructive-foreground"
+                                      onClick={() => handleDelete(talhao.id)}
+                                    >
+                                      Excluir
+                                    </AlertDialogAction>
+                                  </AlertDialogFooter>
+                                </AlertDialogContent>
+                              </AlertDialog>
+                            </div>
+                          </TableCell>
+                        </TableRow>
+                      ))
+                    )}
+                  </TableBody>
+                </Table>
               </div>
-            )}
-          </div>
-        </div>
-      </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="mapa" className="mt-0 h-[600px]">
+          <Card className="h-full flex flex-col">
+            <CardHeader className="pb-3 shrink-0">
+              <CardTitle>Distribuição Geográfica</CardTitle>
+              <CardDescription>
+                Posicionamento dos talhões com base em suas coordenadas (Latitude / Longitude)
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="flex-1 min-h-0">
+              {mapData.length > 0 ? (
+                <div className="h-full w-full bg-slate-50 dark:bg-slate-900 rounded-md border p-4">
+                  <ChartContainer
+                    config={{
+                      talhao: {
+                        label: 'Talhão',
+                        color: 'hsl(var(--primary))',
+                      },
+                    }}
+                    className="h-full w-full"
+                  >
+                    <ResponsiveContainer width="100%" height="100%">
+                      <ScatterChart margin={{ top: 20, right: 20, bottom: 20, left: 20 }}>
+                        <CartesianGrid strokeDasharray="3 3" opacity={0.3} />
+                        <XAxis
+                          type="number"
+                          dataKey="x"
+                          name="Longitude"
+                          domain={['auto', 'auto']}
+                          tickFormatter={(val) => val.toFixed(4)}
+                        />
+                        <YAxis
+                          type="number"
+                          dataKey="y"
+                          name="Latitude"
+                          domain={['auto', 'auto']}
+                          tickFormatter={(val) => val.toFixed(4)}
+                        />
+                        <ZAxis type="number" dataKey="area" range={[100, 1000]} name="Área (ha)" />
+                        <ChartTooltip
+                          cursor={{ strokeDasharray: '3 3' }}
+                          content={({ active, payload }) => {
+                            if (active && payload && payload.length) {
+                              const data = payload[0].payload
+                              return (
+                                <div className="bg-background border rounded-lg p-3 shadow-md text-sm">
+                                  <div className="font-bold mb-1 text-base">{data.name}</div>
+                                  <div className="grid grid-cols-2 gap-x-4 gap-y-1">
+                                    <span className="text-muted-foreground">Fazenda:</span>
+                                    <span className="font-medium">{data.fazenda}</span>
+                                    <span className="text-muted-foreground">Área:</span>
+                                    <span className="font-medium">{data.area} ha</span>
+                                    <span className="text-muted-foreground">Status:</span>
+                                    <span className="font-medium capitalize">{data.status}</span>
+                                    <span className="text-muted-foreground">Lat/Lng:</span>
+                                    <span className="font-medium text-xs">
+                                      {data.y.toFixed(4)} / {data.x.toFixed(4)}
+                                    </span>
+                                  </div>
+                                </div>
+                              )
+                            }
+                            return null
+                          }}
+                        />
+                        <Scatter
+                          name="Talhões"
+                          data={mapData}
+                          fill="hsl(var(--primary))"
+                          fillOpacity={0.7}
+                          stroke="hsl(var(--primary))"
+                          strokeWidth={2}
+                        />
+                      </ScatterChart>
+                    </ResponsiveContainer>
+                  </ChartContainer>
+                </div>
+              ) : (
+                <div className="h-full w-full flex flex-col items-center justify-center text-muted-foreground border border-dashed rounded-md bg-muted/20">
+                  <MapIcon className="h-12 w-12 mb-4 opacity-20" />
+                  <p>Nenhum talhão com coordenadas geográficas cadastradas.</p>
+                  <Button
+                    variant="link"
+                    className="mt-2"
+                    onClick={() => navigate('/app/talhoes/new')}
+                  >
+                    Cadastrar coordenadas
+                  </Button>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        </TabsContent>
+      </Tabs>
     </div>
   )
 }
