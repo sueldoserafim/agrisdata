@@ -173,7 +173,7 @@ export default function GrausDiaForm() {
   }
 
   return (
-    <div className="p-8 max-w-3xl mx-auto space-y-6 animate-fade-in-up">
+    <div className="p-8 w-full space-y-6 animate-fade-in-up">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div className="flex items-center gap-4">
           <Button variant="outline" size="icon" onClick={() => navigate('/app/agronomia/gda')}>
@@ -251,12 +251,12 @@ export default function GrausDiaForm() {
                 Informe as temperaturas máxima e mínima registradas.
               </CardDescription>
             </CardHeader>
-            <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <CardContent className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-6">
               <FormField
                 control={form.control}
                 name="safra_id"
                 render={({ field }) => (
-                  <FormItem className="md:col-span-2">
+                  <FormItem className="col-span-full xl:col-span-1">
                     <FormLabel>Safra *</FormLabel>
                     <Select onValueChange={field.onChange} value={field.value}>
                       <FormControl>
@@ -319,7 +319,7 @@ export default function GrausDiaForm() {
               />
 
               {(fonte === 'inmet' || fonte === 'climatempo') && (
-                <div className="md:col-span-2 p-4 bg-muted/50 rounded-lg flex items-center justify-between">
+                <div className="col-span-full p-4 bg-muted/50 rounded-lg flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
                   <div className="text-sm text-muted-foreground">
                     É possível buscar os dados automaticamente baseados na localização da fazenda.
                   </div>

@@ -14,7 +14,7 @@ export default function AdminConfiguracoes() {
           <CardDescription>Ajustes globais aplicados a toda a plataforma SaaS.</CardDescription>
         </CardHeader>
         <CardContent className="space-y-6">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-6">
             <div className="flex items-center justify-between border p-4 rounded-xl shadow-sm bg-slate-50/50 dark:bg-slate-900/20">
               <div className="space-y-0.5">
                 <Label className="text-base">Manutenção Programada</Label>

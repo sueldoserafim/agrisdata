@@ -213,7 +213,7 @@ export default function AmostrasQualidadeForm() {
   }
 
   return (
-    <div className="p-6 w-full mx-auto space-y-6">
+    <div className="p-6 w-full space-y-6">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-4">
           <Button
@@ -251,7 +251,7 @@ export default function AmostrasQualidadeForm() {
               <CardHeader>
                 <CardTitle>Identificação da Amostra</CardTitle>
               </CardHeader>
-              <CardContent className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
+              <CardContent className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-4 md:gap-6">
                 <FormField
                   control={form.control}
                   name="safra_id"
@@ -335,11 +335,11 @@ export default function AmostrasQualidadeForm() {
             </Card>
 
             {/* BRIX E QUÍMICOS */}
-            <Card className="col-span-1">
+            <Card className="col-span-1 xl:col-span-2">
               <CardHeader>
                 <CardTitle>Brix & Parâmetros Químicos</CardTitle>
               </CardHeader>
-              <CardContent className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
+              <CardContent className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-4 md:gap-6">
                 <FormField
                   control={form.control}
                   name="brix_minimo"
@@ -427,7 +427,7 @@ export default function AmostrasQualidadeForm() {
                   control={form.control}
                   name="ratio_brix_acidez"
                   render={({ field }) => (
-                    <FormItem className="md:col-span-2 lg:col-span-2">
+                    <FormItem className="col-span-full xl:col-span-1">
                       <FormLabel className="flex items-center">
                         Ratio Brix/Acidez (Auto)
                         <HelpPopover
@@ -465,11 +465,11 @@ export default function AmostrasQualidadeForm() {
             </Card>
 
             {/* FÍSICOS */}
-            <Card className="col-span-1">
+            <Card className="col-span-1 xl:col-span-2">
               <CardHeader>
                 <CardTitle>Parâmetros Físicos</CardTitle>
               </CardHeader>
-              <CardContent className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
+              <CardContent className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-4 md:gap-6">
                 <FormField
                   control={form.control}
                   name="firmeza_media"
@@ -561,9 +561,9 @@ export default function AmostrasQualidadeForm() {
               <CardHeader>
                 <CardTitle>Decisão de Colheita e Evidências</CardTitle>
               </CardHeader>
-              <CardContent className="grid grid-cols-1 lg:grid-cols-2 gap-6 md:gap-8">
+              <CardContent className="grid grid-cols-1 xl:grid-cols-2 gap-6 md:gap-8">
                 <div className="space-y-4">
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-2 2xl:grid-cols-2 gap-4">
                     <FormField
                       control={form.control}
                       name="apto_colheita"

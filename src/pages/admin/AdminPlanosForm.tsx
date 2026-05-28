@@ -83,7 +83,7 @@ export default function AdminPlanosForm() {
           onSubmit={form.handleSubmit(onSubmit)}
           className="space-y-6 bg-card p-6 rounded-lg border"
         >
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-6">
             <FormField
               control={form.control}
               name="nome"
@@ -127,7 +127,7 @@ export default function AdminPlanosForm() {
               control={form.control}
               name="descricao"
               render={({ field }) => (
-                <FormItem className="md:col-span-2 lg:col-span-3">
+                <FormItem className="col-span-full">
                   <FormLabel>Descrição</FormLabel>
                   <FormControl>
                     <Textarea {...field} value={field.value || ''} />

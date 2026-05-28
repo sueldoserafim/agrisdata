@@ -155,7 +155,7 @@ export default function AnalisesSoloForm() {
   )
 
   return (
-    <div className="p-6 max-w-5xl mx-auto space-y-6 animate-fade-in-up">
+    <div className="p-6 w-full space-y-6 animate-fade-in-up">
       <h1 className="text-2xl font-bold">
         {id ? 'Editar Análise de Solo' : 'Nova Análise de Solo'}
       </h1>
@@ -176,7 +176,7 @@ export default function AnalisesSoloForm() {
             <CardHeader>
               <CardTitle className="text-lg">Identificação e Arquivo</CardTitle>
             </CardHeader>
-            <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <CardContent className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-4">
               <FormField
                 control={form.control}
                 name="talhao_id"
@@ -204,7 +204,7 @@ export default function AnalisesSoloForm() {
               {renderInput('data_coleta', 'Data de Coleta', 'date')}
               {renderInput('laboratorio', 'Laboratório', 'text')}
               {renderInput('metodologia', 'Metodologia', 'text')}
-              <FormItem className="col-span-1 md:col-span-2">
+              <FormItem className="col-span-full">
                 <FormLabel>PDF do Laudo Oficial</FormLabel>
                 <div className="flex gap-2 items-center">
                   <Input
@@ -245,7 +245,7 @@ export default function AnalisesSoloForm() {
             <CardHeader>
               <CardTitle className="text-lg">Macronutrientes</CardTitle>
             </CardHeader>
-            <CardContent className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-4">
+            <CardContent className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-4">
               {[
                 ['ph', 'pH (água)'],
                 ['materia_organica', 'MO (%)'],
@@ -262,7 +262,7 @@ export default function AnalisesSoloForm() {
             <CardHeader>
               <CardTitle className="text-lg">Micronutrientes e Índices</CardTitle>
             </CardHeader>
-            <CardContent className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-4">
+            <CardContent className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-4">
               {[
                 ['boro', 'Boro (mg/dm³)'],
                 ['zinco', 'Zinco (mg/dm³)'],
@@ -270,7 +270,7 @@ export default function AnalisesSoloForm() {
                 ['manganes', 'Manganês (mg/dm³)'],
                 ['cobre', 'Cobre (mg/dm³)'],
               ].map(([n, l]) => renderInput(n as keyof FormValues, l))}
-              <div className="col-span-1 md:col-span-3 lg:col-span-5 border-b my-2" />
+              <div className="col-span-full border-b my-2" />
               {[
                 ['ctc', 'CTC (cmolc/dm³)'],
                 ['saturacao_bases', 'V (%)'],
@@ -285,7 +285,7 @@ export default function AnalisesSoloForm() {
             <CardHeader>
               <CardTitle className="text-lg">Recomendações Técnicas</CardTitle>
             </CardHeader>
-            <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <CardContent className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-4">
               {renderInput('calcario_recomendado', 'Calcário (t/ha)')}
               {renderInput('gesso_recomendado', 'Gesso (t/ha)')}
             </CardContent>

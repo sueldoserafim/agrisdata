@@ -112,7 +112,7 @@ export default function PluviometriaForm() {
   }
 
   return (
-    <div className="p-6 max-w-2xl mx-auto space-y-6">
+    <div className="p-6 w-full space-y-6">
       <div className="flex items-center gap-4">
         <Link to="/app/agronomia/pluviometria">
           <Button variant="outline" size="icon">
@@ -147,34 +147,34 @@ export default function PluviometriaForm() {
         <CardContent>
           <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-              <FormField
-                control={form.control}
-                name="talhao_id"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>
-                      Talhão <span className="text-red-500">*</span>
-                    </FormLabel>
-                    <Select onValueChange={field.onChange} value={field.value}>
-                      <FormControl>
-                        <SelectTrigger>
-                          <SelectValue placeholder="Selecione o talhão" />
-                        </SelectTrigger>
-                      </FormControl>
-                      <SelectContent>
-                        {talhoes.map((t) => (
-                          <SelectItem key={t.id} value={t.id}>
-                            {t.nome}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+              <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-6">
+                <FormField
+                  control={form.control}
+                  name="talhao_id"
+                  render={({ field }) => (
+                    <FormItem className="col-span-full xl:col-span-1">
+                      <FormLabel>
+                        Talhão <span className="text-red-500">*</span>
+                      </FormLabel>
+                      <Select onValueChange={field.onChange} value={field.value}>
+                        <FormControl>
+                          <SelectTrigger>
+                            <SelectValue placeholder="Selecione o talhão" />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          {talhoes.map((t) => (
+                            <SelectItem key={t.id} value={t.id}>
+                              {t.nome}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <FormField
                   control={form.control}
                   name="data"

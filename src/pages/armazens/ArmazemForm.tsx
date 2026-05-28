@@ -115,7 +115,7 @@ export default function ArmazemForm() {
   }
 
   return (
-    <div className="p-6 max-w-3xl mx-auto space-y-6">
+    <div className="p-6 w-full space-y-6">
       <div className="flex items-center gap-4">
         <Button variant="ghost" size="icon" onClick={() => navigate('/app/armazens')}>
           <ArrowLeft className="size-4" />
@@ -146,13 +146,13 @@ export default function ArmazemForm() {
       <Card>
         <CardContent className="p-6">
           <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2 col-span-2 md:col-span-1">
+            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-6">
+              <div className="space-y-2 col-span-full md:col-span-1">
                 <Label>Nome do Armazém</Label>
                 <Input {...register('nome')} placeholder="Ex: Galpão Principal" />
                 {errors.nome && <p className="text-sm text-destructive">{errors.nome.message}</p>}
               </div>
-              <div className="space-y-2 col-span-2 md:col-span-1">
+              <div className="space-y-2 col-span-full md:col-span-1">
                 <Label>Fazenda</Label>
                 <Select
                   onValueChange={(val) => setValue('fazenda_id', val)}
@@ -173,7 +173,7 @@ export default function ArmazemForm() {
                   <p className="text-sm text-destructive">{errors.fazenda_id.message}</p>
                 )}
               </div>
-              <div className="space-y-2 col-span-2 md:col-span-1">
+              <div className="space-y-2 col-span-full md:col-span-1">
                 <Label>Tipo de Armazém</Label>
                 <Select onValueChange={(val) => setValue('tipo', val)} value={watch('tipo')}>
                   <SelectTrigger>
@@ -188,7 +188,7 @@ export default function ArmazemForm() {
                 </Select>
                 {errors.tipo && <p className="text-sm text-destructive">{errors.tipo.message}</p>}
               </div>
-              <div className="space-y-2 col-span-2 md:col-span-1">
+              <div className="space-y-2 col-span-full md:col-span-1">
                 <Label>Responsável</Label>
                 <Select
                   onValueChange={(val) => setValue('responsavel_id', val)}
@@ -229,7 +229,7 @@ export default function ArmazemForm() {
             </div>
 
             {isTempControlada && (
-              <div className="grid grid-cols-2 gap-4 bg-muted/50 p-4 rounded-lg">
+              <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-6 bg-muted/50 p-4 rounded-lg">
                 <div className="space-y-2">
                   <Label>Temp. Mínima (°C)</Label>
                   <Input
