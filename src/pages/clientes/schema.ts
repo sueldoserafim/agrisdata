@@ -3,6 +3,9 @@ import { z } from 'zod'
 export const clienteSchema = z.object({
   nome: z.string().min(1, 'Obrigatório'),
   nome_fantasia: z.string().optional().nullable(),
+  pais: z.string().optional().nullable(),
+  moeda_id: z.string().optional().nullable(),
+  porto_destino_id: z.string().optional().nullable(),
   cnpj_cpf: z.string().min(1, 'Obrigatório').max(30, 'O documento não pode exceder 30 caracteres'),
   email: z.string().optional().nullable(),
   telefone: z.string().max(30, 'O telefone não pode exceder 30 caracteres').optional().nullable(),

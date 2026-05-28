@@ -25,6 +25,7 @@ import AdminConfiguracoes from './pages/admin/AdminConfiguracoes'
 import PortalApp from './pages/portal/PortalApp'
 import { PortalLayout } from './components/portal/PortalLayout'
 import PortalTokensList from './pages/configuracoes/PortalTokensList'
+import MoedasList from './pages/configuracoes/MoedasList'
 import Usuarios from './pages/app/Usuarios'
 import Vendedores from './pages/cadastros/Vendedores'
 import VendedorForm from './pages/cadastros/VendedorForm'
@@ -420,6 +421,7 @@ const App = () => (
 
                 <Route path="/app/usuarios" element={<Usuarios />} />
                 <Route path="/app/configuracoes" element={<SettingsPage />} />
+                <Route path="/app/configuracoes/moedas" element={<MoedasList />} />
 
                 {/* Vacaria Module */}
                 <Route path="/app/vacaria" element={<VacariaDashboard />} />

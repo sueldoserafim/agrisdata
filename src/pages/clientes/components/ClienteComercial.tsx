@@ -1,9 +1,6 @@
-import { useEffect, useState } from 'react'
 import { UseFormReturn } from 'react-hook-form'
-import { Plus } from 'lucide-react'
 import { FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form'
 import { Input } from '@/components/ui/input'
-import { Textarea } from '@/components/ui/textarea'
 import {
   Select,
   SelectContent,
@@ -11,37 +8,160 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
-import { Checkbox } from '@/components/ui/checkbox'
-import { Button } from '@/components/ui/button'
-import { useEmpresa } from '@/hooks/use-empresa'
-import { getVendedores } from '@/services/vendedores'
+import { Textarea } from '@/components/ui/textarea'
 import { ClienteFormValues } from '../schema'
+import { useEffect, useState } from 'react'
+import { supabase } from '@/lib/supabase/client'
+import { useEmpresa } from '@/hooks/use-empresa'
 
-export function ClienteComercial({ form }: { form: UseFormReturn<ClienteFormValues> }) {
+interface ClienteComercialProps {
+  form: UseFormReturn<ClienteFormValues>
+}
+
+export function ClienteComercial({ form }: ClienteComercialProps) {
   const { empresa } = useEmpresa()
+  const [moedas, setMoedas] = useState<any[]>([])
+  const [portos, setPortos] = useState<any[]>([])
   const [vendedores, setVendedores] = useState<any[]>([])
 
   useEffect(() => {
-    if (empresa) {
-      getVendedores(empresa.id).then(({ data }) => {
-        if (data) setVendedores(data)
-      })
+    if (!empresa) return
+    const fetchData = async () => {
+      const [moedasRes, portosRes, vendedoresRes] = await Promise.all([
+        supabase
+          .from('moedas' as any)
+          .select('*')
+          .eq('empresa_id', empresa.id)
+          .is('deleted_at', null),
+        supabase.from('portos').select('*').eq('empresa_id', empresa.id).is('deleted_at', null),
+        supabase.from('vendedores').select('*').eq('empresa_id', empresa.id).is('deleted_at', null),
+      ])
+      if (moedasRes.data) setMoedas(moedasRes.data)
+      if (portosRes.data) setPortos(portosRes.data)
+      if (vendedoresRes.data) setVendedores(vendedoresRes.data)
     }
+    fetchData()
   }, [empresa])
 
+  const tipoCliente = form.watch('tipo_cliente')
+
   return (
-    <div className="space-y-6">
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+    <div className="space-y-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        <FormField
+          control={form.control}
+          name="tipo_cliente"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Tipo de Cliente</FormLabel>
+              <Select
+                onValueChange={field.onChange}
+                defaultValue={field.value || undefined}
+                value={field.value || undefined}
+              >
+                <FormControl>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Selecione..." />
+                  </SelectTrigger>
+                </FormControl>
+                <SelectContent>
+                  <SelectItem value="Nacional">Nacional</SelectItem>
+                  <SelectItem value="Internacional">Internacional</SelectItem>
+                </SelectContent>
+              </Select>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
+        <FormField
+          control={form.control}
+          name="pais"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>País</FormLabel>
+              <FormControl>
+                <Input placeholder="País" {...field} value={field.value || ''} />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
+        <FormField
+          control={form.control}
+          name="moeda_id"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Moeda</FormLabel>
+              <Select
+                onValueChange={field.onChange}
+                defaultValue={field.value || undefined}
+                value={field.value || undefined}
+              >
+                <FormControl>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Selecione..." />
+                  </SelectTrigger>
+                </FormControl>
+                <SelectContent>
+                  {moedas.map((m) => (
+                    <SelectItem key={m.id} value={m.id}>
+                      {m.nome} ({m.codigo})
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
+        {tipoCliente === 'Internacional' && (
+          <FormField
+            control={form.control}
+            name="porto_destino_id"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Porto Destino</FormLabel>
+                <Select
+                  onValueChange={field.onChange}
+                  defaultValue={field.value || undefined}
+                  value={field.value || undefined}
+                >
+                  <FormControl>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Selecione..." />
+                    </SelectTrigger>
+                  </FormControl>
+                  <SelectContent>
+                    {portos.map((p) => (
+                      <SelectItem key={p.id} value={p.id}>
+                        {p.nome_porto} {p.cidade ? `- ${p.cidade}` : ''}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+        )}
+
         <FormField
           control={form.control}
           name="vendedor_id"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Vendedor Responsável</FormLabel>
-              <Select onValueChange={field.onChange} value={field.value || ''}>
+              <FormLabel>Vendedor</FormLabel>
+              <Select
+                onValueChange={field.onChange}
+                defaultValue={field.value || undefined}
+                value={field.value || undefined}
+              >
                 <FormControl>
                   <SelectTrigger>
-                    <SelectValue placeholder="Selecione um vendedor" />
+                    <SelectValue placeholder="Selecione..." />
                   </SelectTrigger>
                 </FormControl>
                 <SelectContent>
@@ -78,7 +198,7 @@ export function ClienteComercial({ form }: { form: UseFormReturn<ClienteFormValu
             <FormItem>
               <FormLabel>Forma de Pagamento Padrão</FormLabel>
               <FormControl>
-                <Input {...field} value={field.value || ''} />
+                <Input placeholder="Ex: Boleto 30 dias" {...field} value={field.value || ''} />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -99,24 +219,19 @@ export function ClienteComercial({ form }: { form: UseFormReturn<ClienteFormValu
           )}
         />
 
-        <div className="flex gap-2 items-end">
-          <FormField
-            control={form.control}
-            name="preset_prazo"
-            render={({ field }) => (
-              <FormItem className="flex-1">
-                <FormLabel>Preset Prazo</FormLabel>
-                <FormControl>
-                  <Input {...field} value={field.value || ''} />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-          <Button type="button" variant="outline" size="icon" className="mb-1">
-            <Plus className="h-4 w-4" />
-          </Button>
-        </div>
+        <FormField
+          control={form.control}
+          name="prazo_dias"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Prazo Médio (Dias)</FormLabel>
+              <FormControl>
+                <Input placeholder="Ex: 30,60,90" {...field} value={field.value || ''} />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
       </div>
 
       <FormField
@@ -126,46 +241,16 @@ export function ClienteComercial({ form }: { form: UseFormReturn<ClienteFormValu
           <FormItem>
             <FormLabel>Observações Comerciais</FormLabel>
             <FormControl>
-              <Textarea {...field} value={field.value || ''} rows={4} />
+              <Textarea
+                placeholder="Observações adicionais sobre a negociação..."
+                {...field}
+                value={field.value || ''}
+              />
             </FormControl>
             <FormMessage />
           </FormItem>
         )}
       />
-
-      <div className="border rounded-md p-4 space-y-4">
-        <h3 className="font-semibold text-lg">Acesso ao Portal</h3>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <FormField
-            control={form.control}
-            name="acesso_portal"
-            render={({ field }) => (
-              <FormItem className="flex flex-row items-start space-x-3 space-y-0 pt-2 border p-4 rounded-md h-full">
-                <FormControl>
-                  <Checkbox checked={field.value} onCheckedChange={field.onChange} />
-                </FormControl>
-                <div className="space-y-1 leading-none">
-                  <FormLabel>Ativar acesso ao Portal do Cliente</FormLabel>
-                </div>
-              </FormItem>
-            )}
-          />
-
-          <FormField
-            control={form.control}
-            name="usuario_vinculado"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Usuário Vinculado (Portal)</FormLabel>
-                <FormControl>
-                  <Input {...field} value={field.value || ''} />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-        </div>
-      </div>
     </div>
   )
 }

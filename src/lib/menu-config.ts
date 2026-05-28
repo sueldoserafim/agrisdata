@@ -465,6 +465,13 @@ export const allMenuItems: MenuItemRaw[] = [
     subItems: [
       { icon: UserCog, label: 'Usuários', path: '/app/usuarios', module: null, adminOnly: true },
       {
+        icon: CircleDollarSign,
+        label: 'Moedas',
+        path: '/app/configuracoes/moedas',
+        module: null,
+        adminOnly: true,
+      },
+      {
         icon: Sliders,
         label: 'Configurações do Sistema',
         path: '/app/configuracoes',
