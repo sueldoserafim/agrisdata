@@ -48,13 +48,12 @@ Deno.serve(async (req: Request) => {
     )
 
     const payload = await req.json()
-    const { nome, email, password, perfil, fornecedor_id } = payload
+    const { nome, email, password, perfil, fornecedor_id, cliente_id } = payload
 
     if (!nome || !email || !password || !perfil) {
       throw new Error('Missing required fields')
     }
 
-    // Criar o usuário Auth
     const { data: authData, error: authError } = await supabaseAdmin.auth.admin.createUser({
       email,
       password,
@@ -66,7 +65,6 @@ Deno.serve(async (req: Request) => {
       throw new Error(`Error creating user in auth: ${authError.message}`)
     }
 
-    // Criar o Perfil do usuário vinculando à mesma empresa do admin
     const { error: insertError } = await supabaseAdmin.from('usuarios').insert({
       id: authData.user.id,
       empresa_id: profile.empresa_id,
@@ -74,6 +72,7 @@ Deno.serve(async (req: Request) => {
       nome,
       perfil,
       fornecedor_id: fornecedor_id || null,
+      cliente_id: cliente_id || null,
       ativo: true,
     })
 
