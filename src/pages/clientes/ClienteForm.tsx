@@ -62,81 +62,90 @@ export default function ClienteForm() {
     }
   }, [id, empresa, form])
 
-  const cnpjCpf = form.watch('cnpj_cpf')
+  const handleSearchCnpj = async (force = false) => {
+    const currentCnpj = form.getValues('cnpj_cpf')
+    const cleanCnpj = currentCnpj?.replace(/\D/g, '') || ''
 
-  useEffect(() => {
-    const cleanCnpj = cnpjCpf?.replace(/\D/g, '') || ''
+    if (cleanCnpj.length !== 14) {
+      toast({
+        title: 'CNPJ Inválido',
+        description: 'Digite um CNPJ válido com 14 dígitos para buscar.',
+        variant: 'destructive',
+      })
+      return
+    }
 
-    if (cleanCnpj.length === 14 && cleanCnpj !== lastFetchedCnpj.current) {
-      const fetchCnpj = async () => {
-        setIsFetchingCnpj(true)
-        try {
-          const res = await fetch(`https://brasilapi.com.br/api/cnpj/v1/${cleanCnpj}`)
-          if (!res.ok) throw new Error('CNPJ não encontrado ou erro na API.')
-          const data = await res.json()
+    if (!force && cleanCnpj === lastFetchedCnpj.current) {
+      return
+    }
 
-          form.setValue('nome', data.razao_social || '', { shouldValidate: true })
-          if (data.nome_fantasia) {
-            form.setValue('nome_fantasia', data.nome_fantasia, { shouldValidate: true })
-          } else {
-            form.setValue('nome_fantasia', data.razao_social || '', { shouldValidate: true })
-          }
+    setIsFetchingCnpj(true)
+    try {
+      const res = await fetch(`https://brasilapi.com.br/api/cnpj/v1/${cleanCnpj}`)
+      if (!res.ok)
+        throw new Error('CNPJ não encontrado. Verifique os dados ou preencha manualmente.')
+      const data = await res.json()
 
-          const logradouroPrefix = data.descricao_tipo_de_logradouro
-            ? `${data.descricao_tipo_de_logradouro} `
-            : ''
-          const logradouroFull = `${logradouroPrefix}${data.logradouro || ''}`.trim()
+      form.setValue('nome', data.razao_social || '', { shouldValidate: true })
+      form.setValue('nome_fantasia', data.nome_fantasia || data.razao_social || '', {
+        shouldValidate: true,
+      })
 
-          const enderecos = form.getValues('enderecos') || []
-          const hasFaturamento = enderecos.some((e: any) => e.tipo_endereco === 'Faturamento')
-          if (!hasFaturamento) {
-            form.setValue(
-              'enderecos',
-              [
-                ...enderecos,
-                {
-                  tipo_endereco: 'Faturamento',
-                  logradouro: logradouroFull,
-                  numero: data.numero || '',
-                  complemento: data.complemento || '',
-                  bairro: data.bairro || '',
-                  cidade: data.municipio || '',
-                  estado: data.uf || '',
-                  cep: data.cep?.replace(/\D/g, '') || '',
-                  pais: 'Brasil',
-                  receiver: data.razao_social || '',
-                },
-              ],
-              { shouldValidate: true },
-            )
-          }
+      const logradouroPrefix = data.descricao_tipo_de_logradouro
+        ? `${data.descricao_tipo_de_logradouro} `
+        : ''
+      const logradouroFull = `${logradouroPrefix}${data.logradouro || ''}`.trim()
 
-          let indicador_ie = '9'
-          if (data.inscricao_estadual && data.inscricao_estadual.trim() !== '') {
-            indicador_ie = '1'
-            form.setValue('inscricao_estadual', data.inscricao_estadual, { shouldValidate: true })
-          }
-          form.setValue('indicador_ie', indicador_ie, { shouldValidate: true })
+      const enderecos = form.getValues('enderecos') || []
+      const hasFaturamentoIndex = enderecos.findIndex((e: any) => e.tipo_endereco === 'Faturamento')
 
-          toast({
-            title: 'CNPJ Encontrado',
-            description: 'Os dados foram preenchidos automaticamente.',
-          })
-        } catch (err: any) {
-          toast({
-            title: 'Erro na busca de CNPJ',
-            description: err.message,
-            variant: 'destructive',
-          })
-        } finally {
-          setIsFetchingCnpj(false)
-          lastFetchedCnpj.current = cleanCnpj
-        }
+      const newEndereco = {
+        tipo_endereco: 'Faturamento',
+        logradouro: logradouroFull,
+        numero: data.numero || '',
+        complemento: data.complemento || '',
+        bairro: data.bairro || '',
+        cidade: data.municipio || '',
+        estado: data.uf || '',
+        cep: data.cep?.replace(/\D/g, '') || '',
+        pais: 'Brasil',
+        receiver: data.razao_social || '',
       }
 
-      fetchCnpj()
+      if (hasFaturamentoIndex === -1) {
+        form.setValue('enderecos', [...enderecos, newEndereco], { shouldValidate: true })
+      } else {
+        const updatedEnderecos = [...enderecos]
+        updatedEnderecos[hasFaturamentoIndex] = {
+          ...updatedEnderecos[hasFaturamentoIndex],
+          ...newEndereco,
+        }
+        form.setValue('enderecos', updatedEnderecos, { shouldValidate: true })
+      }
+
+      let indicador_ie = '9'
+      if (data.inscricao_estadual && data.inscricao_estadual.trim() !== '') {
+        indicador_ie = '1'
+        form.setValue('inscricao_estadual', data.inscricao_estadual, { shouldValidate: true })
+      }
+      form.setValue('indicador_ie', indicador_ie, { shouldValidate: true })
+
+      toast({
+        title: 'CNPJ Encontrado',
+        description: 'Os dados foram preenchidos automaticamente.',
+      })
+      lastFetchedCnpj.current = cleanCnpj
+    } catch (err: any) {
+      toast({
+        title: 'Erro na busca de CNPJ',
+        description: err.message,
+        variant: 'destructive',
+      })
+      lastFetchedCnpj.current = cleanCnpj
+    } finally {
+      setIsFetchingCnpj(false)
     }
-  }, [cnpjCpf, form, toast])
+  }
 
   const onSubmit = async (values: ClienteFormValues) => {
     if (!empresa) return
@@ -217,7 +226,11 @@ export default function ClienteForm() {
 
             <div className="mt-6 bg-white p-6 rounded-lg border shadow-sm">
               <TabsContent value="core" className="m-0">
-                <ClienteCore form={form} />
+                <ClienteCore
+                  form={form}
+                  onSearchCnpj={handleSearchCnpj}
+                  isFetchingCnpj={isFetchingCnpj}
+                />
               </TabsContent>
               <TabsContent value="enderecos" className="m-0">
                 <ClienteEnderecos form={form} />
