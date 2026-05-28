@@ -22,6 +22,9 @@ import AdminPlanosForm from './pages/admin/AdminPlanosForm'
 import AdminFaturamentoList from './pages/admin/AdminFaturamentoList'
 import AdminSuporteList from './pages/admin/AdminSuporteList'
 import AdminConfiguracoes from './pages/admin/AdminConfiguracoes'
+import PortalApp from './pages/portal/PortalApp'
+import { PortalLayout } from './components/portal/PortalLayout'
+import PortalTokensList from './pages/configuracoes/PortalTokensList'
 import Usuarios from './pages/app/Usuarios'
 import SettingsPage from './pages/Settings'
 import AuditoriaSafrasList from './pages/auditoria/AuditoriaSafrasList'
@@ -124,6 +127,8 @@ import DocumentosList from './pages/exportacao/DocumentosList'
 import DocumentoForm from './pages/exportacao/DocumentoForm'
 import RolagensList from './pages/exportacao/RolagensList'
 import RolagemForm from './pages/exportacao/RolagemForm'
+import PortalApp from './pages/portal/PortalApp'
+import PortaisExternosList from './pages/configuracoes/PortaisExternosList'
 
 const App = () => (
   <BrowserRouter future={{ v7_startTransition: false, v7_relativeSplatPath: false }}>
@@ -134,6 +139,7 @@ const App = () => (
         <Routes>
           <Route path="/login" element={<Login />} />
           <Route path="/signup" element={<SignUp />} />
+          <Route path="/portal/:tipo/:token" element={<PortalApp />} />
           <Route path="/admin" element={<AdminProtectedRoute />}>
             <Route element={<AdminLayout />}>
               <Route index element={<AdminDashboard />} />
@@ -350,11 +356,12 @@ const App = () => (
                 <Route path="/app/performance/tendencias" element={<TendenciasDashboard />} />
                 <Route path="/app/auditoria-safras" element={<AuditoriaSafrasList />} />
                 <Route path="/app/auditoria-safras/:id/relatorio" element={<RelatorioSafra />} />
+                <Route path="/app/configuracoes/portais" element={<PortalTokensList />} />
                 <Route path="/app/usuarios" element={<Usuarios />} />
                 <Route path="/app/configuracoes" element={<SettingsPage />} />
               </Route>
             </Route>
-          </Route>
+          </Route>          </Route>
           <Route path="*" element={<NotFound />} />
         </Routes>
       </TooltipProvider>

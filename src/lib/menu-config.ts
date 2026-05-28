@@ -43,6 +43,7 @@ import {
   Sliders,
   ShieldAlert,
   CloudRain,
+  ExternalLink,
 } from 'lucide-react'
 
 export type MenuItemRaw = {
@@ -376,6 +377,7 @@ export const allMenuItems: MenuItemRaw[] = [
         module: null,
         adminOnly: true,
       },
+      { icon: Globe, label: 'Portais Externos', path: '/app/configuracoes/portais', module: null, adminOnly: true },
       { icon: LifeBuoy, label: 'Suporte', path: '/app/suporte', module: 'suporte' },
     ],
   },
