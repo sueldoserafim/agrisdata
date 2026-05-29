@@ -10,6 +10,7 @@ import {
   Building2,
   MapPin,
   KeyRound,
+  FileText,
 } from 'lucide-react'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
@@ -25,6 +26,13 @@ import {
 } from '@/components/ui/form'
 import { Input } from '@/components/ui/input'
 import { Switch } from '@/components/ui/switch'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
 import { useToast } from '@/hooks/use-toast'
 import { useEmpresa } from '@/hooks/use-empresa'
 import { comprasService } from '@/services/compras'
@@ -33,7 +41,12 @@ import { Skeleton } from '@/components/ui/skeleton'
 
 const fornecedorSchema = z.object({
   nome: z.string().min(1, 'Nome / Razão Social é obrigatório'),
+  nome_fantasia: z.string().optional(),
+  tipo_pessoa: z.string().optional(),
   cnpj: z.string().optional(),
+  indicador_ie: z.string().optional(),
+  inscricao_estadual: z.string().optional(),
+  inscricao_municipal: z.string().optional(),
   email: z.string().email('Email inválido').optional().or(z.literal('')),
   telefone: z.string().optional(),
   is_cooperado: z.boolean().default(false),
@@ -66,7 +79,12 @@ export default function FornecedorForm() {
     resolver: zodResolver(fornecedorSchema),
     defaultValues: {
       nome: '',
+      nome_fantasia: '',
+      tipo_pessoa: 'PJ',
       cnpj: '',
+      indicador_ie: 'nao_contribuinte',
+      inscricao_estadual: '',
+      inscricao_municipal: '',
       email: '',
       telefone: '',
       is_cooperado: false,
@@ -97,7 +115,12 @@ export default function FornecedorForm() {
 
       form.reset({
         nome: data.nome || '',
+        nome_fantasia: data.nome_fantasia || '',
+        tipo_pessoa: data.tipo_pessoa || 'PJ',
         cnpj: data.cnpj || '',
+        indicador_ie: data.indicador_ie || 'nao_contribuinte',
+        inscricao_estadual: data.inscricao_estadual || '',
+        inscricao_municipal: data.inscricao_municipal || '',
         email: data.email || '',
         telefone: data.telefone || '',
         is_cooperado: data.is_cooperado || false,
@@ -144,6 +167,7 @@ export default function FornecedorForm() {
       if (data.error) throw new Error(data.error)
 
       if (data.razao_social) form.setValue('nome', data.razao_social)
+      if (data.nome_fantasia) form.setValue('nome_fantasia', data.nome_fantasia)
       if (data.cep) form.setValue('cep', data.cep)
       if (data.logradouro) form.setValue('logradouro', data.logradouro)
       if (data.numero) form.setValue('numero', data.numero)
@@ -168,7 +192,12 @@ export default function FornecedorForm() {
         id: id || undefined,
         empresa_id: empresa!.id,
         nome: values.nome,
+        nome_fantasia: values.nome_fantasia || null,
+        tipo_pessoa: values.tipo_pessoa || null,
         cnpj: values.cnpj || null,
+        indicador_ie: values.indicador_ie || null,
+        inscricao_estadual: values.inscricao_estadual || null,
+        inscricao_municipal: values.inscricao_municipal || null,
         email: values.email || null,
         telefone: values.telefone || null,
         is_cooperado: values.is_cooperado,
@@ -272,14 +301,40 @@ export default function FornecedorForm() {
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 <FormField
                   control={form.control}
-                  name="cnpj"
+                  name="tipo_pessoa"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel className="text-slate-700">CNPJ</FormLabel>
+                      <FormLabel className="text-slate-700">Tipo de Pessoa</FormLabel>
+                      <Select onValueChange={field.onChange} defaultValue={field.value}>
+                        <FormControl>
+                          <SelectTrigger className="bg-slate-50">
+                            <SelectValue placeholder="Selecione" />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          <SelectItem value="PJ">Pessoa Jurídica</SelectItem>
+                          <SelectItem value="PF">Pessoa Física</SelectItem>
+                        </SelectContent>
+                      </Select>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="cnpj"
+                  render={({ field }) => (
+                    <FormItem className="lg:col-span-2">
+                      <FormLabel className="text-slate-700">CNPJ / CPF</FormLabel>
                       <div className="flex gap-2">
                         <FormControl>
                           <Input
-                            placeholder="Ex: 00.000.000/0000-00"
+                            placeholder={
+                              form.watch('tipo_pessoa') === 'PF'
+                                ? 'Ex: 000.000.000-00'
+                                : 'Ex: 00.000.000/0000-00'
+                            }
                             className="bg-slate-50"
                             {...field}
                           />
@@ -288,8 +343,10 @@ export default function FornecedorForm() {
                           type="button"
                           variant="secondary"
                           onClick={handleCnpjLookup}
-                          disabled={fetchingCnpj || !field.value}
-                          title="Buscar dados na Receita Federal"
+                          disabled={
+                            fetchingCnpj || !field.value || form.watch('tipo_pessoa') === 'PF'
+                          }
+                          title="Buscar dados na Receita Federal (Apenas CNPJ)"
                           className="px-3"
                         >
                           {fetchingCnpj ? (
@@ -316,6 +373,20 @@ export default function FornecedorForm() {
                           className="bg-slate-50"
                           {...field}
                         />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="nome_fantasia"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="text-slate-700">Nome Fantasia</FormLabel>
+                      <FormControl>
+                        <Input placeholder="Ex: AgroInsumos" className="bg-slate-50" {...field} />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -363,7 +434,7 @@ export default function FornecedorForm() {
                   control={form.control}
                   name="is_cooperado"
                   render={({ field }) => (
-                    <FormItem className="flex flex-row items-center justify-between rounded-xl border border-slate-200 bg-slate-50/50 p-4 lg:col-span-1 shadow-sm h-[72px] mt-auto">
+                    <FormItem className="flex flex-row items-center justify-between rounded-xl border border-slate-200 bg-slate-50/50 p-4 shadow-sm h-[72px] mt-auto">
                       <div className="space-y-0.5">
                         <FormLabel className="text-base text-slate-800">Cooperado?</FormLabel>
                         <p className="text-xs text-slate-500">Membro da cooperativa</p>
@@ -377,7 +448,78 @@ export default function FornecedorForm() {
               </div>
             </div>
 
-            {/* Seção 2: Endereço Completo */}
+            {/* Seção 2: Dados Fiscais */}
+            <div className="bg-white border border-slate-200 rounded-2xl p-6 sm:p-8 shadow-sm">
+              <div className="flex items-center gap-3 mb-6 pb-4 border-b border-slate-100">
+                <div className="p-2 bg-orange-50 text-orange-600 rounded-lg">
+                  <FileText className="h-5 w-5" />
+                </div>
+                <div>
+                  <h2 className="text-xl font-semibold text-slate-900">Dados Fiscais</h2>
+                  <p className="text-sm text-slate-500">Inscrições e tributação</p>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <FormField
+                  control={form.control}
+                  name="indicador_ie"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="text-slate-700">Indicador IE</FormLabel>
+                      <Select onValueChange={field.onChange} defaultValue={field.value}>
+                        <FormControl>
+                          <SelectTrigger className="bg-slate-50">
+                            <SelectValue placeholder="Selecione" />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          <SelectItem value="contribuinte">Contribuinte ICMS</SelectItem>
+                          <SelectItem value="contribuinte_isento">Contribuinte Isento</SelectItem>
+                          <SelectItem value="nao_contribuinte">Não Contribuinte</SelectItem>
+                        </SelectContent>
+                      </Select>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="inscricao_estadual"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="text-slate-700">Inscrição Estadual (IE)</FormLabel>
+                      <FormControl>
+                        <Input
+                          placeholder="Ex: 123.456.789.123"
+                          className="bg-slate-50"
+                          {...field}
+                          disabled={form.watch('indicador_ie') === 'nao_contribuinte'}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="inscricao_municipal"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="text-slate-700">Inscrição Municipal (IM)</FormLabel>
+                      <FormControl>
+                        <Input placeholder="Ex: 1234567" className="bg-slate-50" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
+            </div>
+
+            {/* Seção 3: Endereço Completo */}
             <div className="bg-white border border-slate-200 rounded-2xl p-6 sm:p-8 shadow-sm">
               <div className="flex items-center gap-3 mb-6 pb-4 border-b border-slate-100">
                 <div className="p-2 bg-emerald-50 text-emerald-600 rounded-lg">
@@ -501,7 +643,7 @@ export default function FornecedorForm() {
               </div>
             </div>
 
-            {/* Seção 3: Acesso ao Portal */}
+            {/* Seção 4: Acesso ao Portal */}
             <div className="bg-white border border-slate-200 rounded-2xl p-6 sm:p-8 shadow-sm">
               <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-6 pb-4 border-b border-slate-100 gap-4">
                 <div className="flex items-center gap-3">

@@ -7846,7 +7846,7 @@ export const Constants = {
 //   id: uuid (not null, default: gen_random_uuid())
 //   empresa_id: uuid (not null)
 //   nome: character varying (not null)
-//   cnpj: character varying (nullable)
+//   cnpj: text (nullable)
 //   email: character varying (nullable)
 //   telefone: character varying (nullable)
 //   created_at: timestamp with time zone (nullable, default: now())
