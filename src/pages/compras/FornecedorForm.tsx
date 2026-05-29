@@ -188,8 +188,7 @@ export default function FornecedorForm() {
     try {
       setLoading(true)
 
-      const payloadFornecedor = {
-        id: id || undefined,
+      const payloadFornecedor: any = {
         empresa_id: empresa!.id,
         nome: values.nome,
         nome_fantasia: values.nome_fantasia || null,
@@ -201,6 +200,10 @@ export default function FornecedorForm() {
         email: values.email || null,
         telefone: values.telefone || null,
         is_cooperado: values.is_cooperado,
+      }
+
+      if (id) {
+        payloadFornecedor.id = id
       }
 
       const payloadEndereco = {

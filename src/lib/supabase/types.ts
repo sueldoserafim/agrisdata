@@ -3164,10 +3164,15 @@ export type Database = {
           email: string | null
           empresa_id: string
           id: string
+          indicador_ie: string | null
+          inscricao_estadual: string | null
+          inscricao_municipal: string | null
           is_cooperado: boolean | null
           nome: string
+          nome_fantasia: string | null
           nome_propriedade: string | null
           telefone: string | null
+          tipo_pessoa: string | null
           updated_at: string | null
         }
         Insert: {
@@ -3178,10 +3183,15 @@ export type Database = {
           email?: string | null
           empresa_id: string
           id?: string
+          indicador_ie?: string | null
+          inscricao_estadual?: string | null
+          inscricao_municipal?: string | null
           is_cooperado?: boolean | null
           nome: string
+          nome_fantasia?: string | null
           nome_propriedade?: string | null
           telefone?: string | null
+          tipo_pessoa?: string | null
           updated_at?: string | null
         }
         Update: {
@@ -3192,10 +3202,15 @@ export type Database = {
           email?: string | null
           empresa_id?: string
           id?: string
+          indicador_ie?: string | null
+          inscricao_estadual?: string | null
+          inscricao_municipal?: string | null
           is_cooperado?: boolean | null
           nome?: string
+          nome_fantasia?: string | null
           nome_propriedade?: string | null
           telefone?: string | null
+          tipo_pessoa?: string | null
           updated_at?: string | null
         }
         Relationships: [
@@ -7855,6 +7870,11 @@ export const Constants = {
 //   is_cooperado: boolean (nullable, default: false)
 //   nome_propriedade: text (nullable)
 //   area_total_ha: numeric (nullable)
+//   nome_fantasia: text (nullable)
+//   tipo_pessoa: text (nullable)
+//   indicador_ie: text (nullable)
+//   inscricao_estadual: character varying (nullable)
+//   inscricao_municipal: text (nullable)
 // Table: frota_abastecimentos
 //   id: uuid (not null, default: gen_random_uuid())
 //   empresa_id: uuid (not null)
