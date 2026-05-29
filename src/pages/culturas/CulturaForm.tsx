@@ -1,18 +1,11 @@
-import { useEffect, useState, useMemo } from 'react'
-import { useParams, useNavigate, Link } from 'react-router-dom'
-import { useForm, useFieldArray } from 'react-hook-form'
+import { useEffect, useState } from 'react'
+import { useNavigate, useParams } from 'react-router-dom'
+import { ArrowLeft, Save } from 'lucide-react'
+import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import * as z from 'zod'
-import { Save, ArrowLeft, Info, HelpCircle, Plus, Trash2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select'
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import {
   Form,
   FormControl,
@@ -21,451 +14,470 @@ import {
   FormLabel,
   FormMessage,
 } from '@/components/ui/form'
-import { Tooltip, TooltipContent, TooltipTrigger, TooltipProvider } from '@/components/ui/tooltip'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import {
-  Sheet,
-  SheetContent,
-  SheetDescription,
-  SheetHeader,
-  SheetTitle,
-  SheetTrigger,
-} from '@/components/ui/sheet'
+import { Input } from '@/components/ui/input'
 import { useToast } from '@/hooks/use-toast'
-import { useEmpresa } from '@/hooks/use-empresa'
-import { createCultura, updateCultura, getCulturaById } from '@/services/culturas'
 import { supabase } from '@/lib/supabase/client'
+import { Skeleton } from '@/components/ui/skeleton'
 
-const optNumber = z.preprocess(
-  (val) => (val === '' || val === null || val === undefined ? null : Number(val)),
-  z.number().nullable().optional(),
-)
+const formSchema = z.object({
+  nome: z.string().min(1, 'Nome é obrigatório'),
+  nome_cientifico: z.string().optional().nullable(),
+  tipo: z.string().optional().nullable(),
+  codigo_ncm: z.string().optional().nullable(),
+  ciclo_dias: z.coerce.number().optional().nullable(),
+  unidade_medida: z.string().optional().nullable(),
+  produtividade_media_t_ha: z.coerce.number().optional().nullable(),
+  temperatura_base_gda: z.coerce.number().optional().nullable(),
+  temp_minima_ideal: z.coerce.number().optional().nullable(),
+  temp_maxima_ideal: z.coerce.number().optional().nullable(),
+  necessidade_hidrica_mm_dia: z.coerce.number().optional().nullable(),
+  brix_minimo_ideal: z.coerce.number().optional().nullable(),
+  brix_maximo_ideal: z.coerce.number().optional().nullable(),
+})
 
-const LabelWithTooltip = ({ label, tooltip }: { label: string; tooltip?: string }) => (
-  <div className="flex items-center gap-1.5">
-    <span>{label}</span>
-    {tooltip && (
-      <TooltipProvider delayDuration={200}>
-        <Tooltip>
-          <TooltipTrigger type="button" tabIndex={-1}>
-            <Info className="size-4 text-muted-foreground" />
-          </TooltipTrigger>
-          <TooltipContent>
-            <p className="max-w-xs font-normal">{tooltip}</p>
-          </TooltipContent>
-        </Tooltip>
-      </TooltipProvider>
-    )}
-  </div>
-)
+type FormValues = z.infer<typeof formSchema>
 
 export default function CulturaForm() {
   const { id } = useParams()
   const navigate = useNavigate()
   const { toast } = useToast()
-  const { empresa } = useEmpresa()
-  const [loading, setLoading] = useState(false)
-  const [fenologiaObrigatoria, setFenologiaObrigatoria] = useState(false)
+  const isEditing = !!id
+  const [isLoading, setIsLoading] = useState(isEditing)
+  const [isSaving, setIsSaving] = useState(false)
 
-  useEffect(() => {
-    if (empresa?.id) {
-      supabase
-        .from('empresas')
-        .select('configuracoes')
-        .eq('id', empresa.id)
-        .single()
-        .then(({ data }) => {
-          if (
-            data?.configuracoes &&
-            typeof data.configuracoes === 'object' &&
-            'fenologia_obrigatoria' in data.configuracoes
-          ) {
-            setFenologiaObrigatoria(!!(data.configuracoes as any).fenologia_obrigatoria)
-          }
-        })
-    }
-  }, [empresa?.id])
-
-  const formSchema = useMemo(() => {
-    return z
-      .object({
-        nome: z.string().min(3, 'Mínimo de 3 caracteres').max(100),
-        nome_cientifico: z.string().optional().nullable(),
-        tipo: z.string().min(1, 'Obrigatório'),
-        codigo_ncm: z.string().optional().nullable(),
-        unidade_medida: z.string().optional().nullable(),
-        ciclo_dias: z.preprocess(
-          (val) => (val === '' || val === null || val === undefined ? null : Number(val)),
-          z.number().int().positive('Deve ser > 0').nullable().optional(),
-        ),
-        temperatura_base_gda: z.preprocess(
-          (val) => (val === '' || val === null || val === undefined ? null : Number(val)),
-          z.number().min(-10).max(50).nullable().optional(),
-        ),
-        temp_minima_ideal: optNumber,
-        temp_maxima_ideal: optNumber,
-        necessidade_hidrica_mm_dia: optNumber,
-        brix_minimo_ideal: optNumber,
-        brix_maximo_ideal: optNumber,
-        produtividade_media_t_ha: optNumber,
-        fenologia: z
-          .array(
-            z.object({
-              estagio: z.string().min(1, 'Obrigatório'),
-              dias_desde_plantio: z.preprocess(
-                (val) => (val === '' ? undefined : Number(val)),
-                z.number().int().positive('> 0'),
-              ),
-              descricao: z.string().optional().nullable(),
-            }),
-          )
-          .optional()
-          .default([]),
-      })
-      .refine(
-        (data) => {
-          if (fenologiaObrigatoria && data.fenologia.length === 0) {
-            return false
-          }
-          return true
-        },
-        {
-          message: 'É obrigatório adicionar pelo menos um estágio fenológico.',
-          path: ['fenologia'],
-        },
-      )
-  }, [fenologiaObrigatoria])
-
-  const form = useForm<z.infer<typeof formSchema>>({
+  const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
-    defaultValues: { fenologia: [] },
+    defaultValues: {
+      nome: '',
+      nome_cientifico: '',
+      tipo: '',
+      codigo_ncm: '',
+      ciclo_dias: null,
+      unidade_medida: 't',
+      produtividade_media_t_ha: null,
+      temperatura_base_gda: null,
+      temp_minima_ideal: null,
+      temp_maxima_ideal: null,
+      necessidade_hidrica_mm_dia: null,
+      brix_minimo_ideal: null,
+      brix_maximo_ideal: null,
+    },
   })
 
-  const { fields, append, remove } = useFieldArray({ control: form.control, name: 'fenologia' })
-
   useEffect(() => {
-    if (id && empresa?.id) {
-      getCulturaById(id, empresa.id)
-        .then(({ cultura, fenologia }) => {
-          form.reset({ ...cultura, fenologia: fenologia || [] })
-        })
-        .catch((err) => toast({ title: 'Erro', description: err.message, variant: 'destructive' }))
-    }
-  }, [id, empresa?.id, form, toast])
+    async function fetchCultura() {
+      if (!id) return
+      try {
+        setIsLoading(true)
+        const { data, error } = await supabase.from('culturas').select('*').eq('id', id).single()
 
-  const onSubmit = async (values: z.infer<typeof formSchema>) => {
-    if (!empresa?.id) return
-    setLoading(true)
+        if (error) throw error
+
+        if (data) {
+          form.reset({
+            nome: data.nome || '',
+            nome_cientifico: data.nome_cientifico || '',
+            tipo: data.tipo || '',
+            codigo_ncm: data.codigo_ncm || '',
+            ciclo_dias: data.ciclo_dias,
+            unidade_medida: data.unidade_medida || 't',
+            produtividade_media_t_ha: data.produtividade_media_t_ha,
+            temperatura_base_gda: data.temperatura_base_gda,
+            temp_minima_ideal: data.temp_minima_ideal,
+            temp_maxima_ideal: data.temp_maxima_ideal,
+            necessidade_hidrica_mm_dia: data.necessidade_hidrica_mm_dia,
+            brix_minimo_ideal: data.brix_minimo_ideal,
+            brix_maximo_ideal: data.brix_maximo_ideal,
+          })
+        }
+      } catch (error: any) {
+        toast({
+          title: 'Erro ao carregar dados',
+          description: error.message,
+          variant: 'destructive',
+        })
+        navigate('/app/culturas')
+      } finally {
+        setIsLoading(false)
+      }
+    }
+
+    fetchCultura()
+  }, [id, form, navigate, toast])
+
+  const onSubmit = async (values: FormValues) => {
     try {
-      const { fenologia, ...culturaData } = values
-      if (id) await updateCultura(id, culturaData, fenologia || [], empresa.id)
-      else await createCultura(culturaData, fenologia || [], empresa.id)
-      toast({ title: 'Sucesso', description: 'Cultura salva com sucesso.' })
+      setIsSaving(true)
+      let empresaId = ''
+
+      if (!isEditing) {
+        const {
+          data: { user },
+        } = await supabase.auth.getUser()
+        if (!user) throw new Error('Usuário não autenticado')
+
+        const { data: profile } = await supabase
+          .from('usuarios')
+          .select('empresa_id')
+          .eq('id', user.id)
+          .single()
+
+        if (!profile) throw new Error('Perfil do usuário não encontrado')
+        empresaId = profile.empresa_id
+      }
+
+      const dataToSave = {
+        ...values,
+        ...(isEditing ? {} : { empresa_id: empresaId }),
+      }
+
+      if (isEditing) {
+        const { error } = await supabase.from('culturas').update(dataToSave).eq('id', id)
+
+        if (error) throw error
+        toast({ title: 'Cultura atualizada com sucesso' })
+      } else {
+        const { error } = await supabase.from('culturas').insert(dataToSave)
+
+        if (error) throw error
+        toast({ title: 'Cultura cadastrada com sucesso' })
+      }
+
       navigate('/app/culturas')
-    } catch (err: any) {
-      toast({ title: 'Erro', description: err.message, variant: 'destructive' })
+    } catch (error: any) {
+      toast({
+        title: 'Erro ao salvar',
+        description: error.message,
+        variant: 'destructive',
+      })
     } finally {
-      setLoading(false)
+      setIsSaving(false)
     }
   }
 
-  const renderInput = (
-    name: any,
-    label: string,
-    type = 'text',
-    tooltip?: string,
-    step?: string,
-  ) => (
-    <FormField
-      control={form.control}
-      name={name}
-      render={({ field }) => (
-        <FormItem>
-          <FormLabel>
-            <LabelWithTooltip label={label} tooltip={tooltip} />
-          </FormLabel>
-          <FormControl>
-            <Input type={type} step={step} {...field} value={field.value ?? ''} />
-          </FormControl>
-          <FormMessage />
-        </FormItem>
-      )}
-    />
-  )
-
-  const renderSelect = (
-    name: any,
-    label: string,
-    options: { value: string; label: string }[],
-    tooltip?: string,
-  ) => (
-    <FormField
-      control={form.control}
-      name={name}
-      render={({ field }) => (
-        <FormItem>
-          <FormLabel>
-            <LabelWithTooltip label={label} tooltip={tooltip} />
-          </FormLabel>
-          <Select onValueChange={field.onChange} value={field.value ?? ''}>
-            <FormControl>
-              <SelectTrigger>
-                <SelectValue placeholder="Selecione" />
-              </SelectTrigger>
-            </FormControl>
-            <SelectContent>
-              {options.map((o) => (
-                <SelectItem key={o.value} value={o.value}>
-                  {o.label}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-          <FormMessage />
-        </FormItem>
-      )}
-    />
-  )
-
-  const fenoError = form.formState.errors.fenologia as any
-  const fenoErrorMessage = fenoError?.message || fenoError?.root?.message
+  if (isLoading) {
+    return (
+      <div className="flex flex-col gap-6 w-full pb-16">
+        <div className="flex items-center gap-4">
+          <Skeleton className="h-10 w-10 rounded-md" />
+          <div className="space-y-2">
+            <Skeleton className="h-8 w-48" />
+            <Skeleton className="h-4 w-64" />
+          </div>
+        </div>
+        <div className="space-y-6">
+          <Skeleton className="h-[250px] w-full rounded-xl" />
+          <Skeleton className="h-[250px] w-full rounded-xl" />
+        </div>
+      </div>
+    )
+  }
 
   return (
-    <div className="p-8 max-w-5xl mx-auto space-y-6 animate-fade-in">
-      <div className="flex items-center justify-between">
+    <div className="flex flex-col gap-6 w-full pb-16">
+      {/* Top Bar */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div className="flex items-center gap-4">
-          <Button variant="ghost" size="icon" asChild>
-            <Link to="/app/culturas">
-              <ArrowLeft className="size-5" />
-            </Link>
+          <Button
+            variant="outline"
+            size="icon"
+            onClick={() => navigate('/app/culturas')}
+            className="shrink-0"
+          >
+            <ArrowLeft className="w-4 h-4" />
           </Button>
-          <h1 className="text-3xl font-bold tracking-tight">
-            {id ? 'Editar Cultura' : 'Nova Cultura'}
-          </h1>
+          <div>
+            <h1 className="text-3xl font-bold tracking-tight text-foreground">
+              {isEditing ? 'Editar Cultura' : 'Nova Cultura'}
+            </h1>
+            <p className="text-muted-foreground mt-1">
+              Preencha os dados abaixo para cadastrar uma nova cultura
+            </p>
+          </div>
         </div>
-        <Sheet>
-          <SheetTrigger asChild>
-            <Button variant="outline" size="sm" className="gap-2">
-              <HelpCircle className="size-4" />
-              Ajuda
-            </Button>
-          </SheetTrigger>
-          <SheetContent className="w-[400px] sm:w-[540px] overflow-y-auto">
-            <SheetHeader>
-              <SheetTitle>Guia de Preenchimento</SheetTitle>
-              <SheetDescription>
-                Instruções detalhadas sobre como preencher os dados técnicos e agronômicos da
-                cultura.
-              </SheetDescription>
-            </SheetHeader>
-            <div className="mt-6 space-y-6 text-sm">
-              <div>
-                <h4 className="font-semibold text-foreground">Identificação</h4>
-                <p className="text-muted-foreground mt-1">
-                  Insira o nome comum, nome científico e o código NCM para fins fiscais e
-                  comerciais.
-                </p>
-              </div>
-              <div>
-                <h4 className="font-semibold text-foreground">Parâmetros Agronômicos</h4>
-                <p className="text-muted-foreground mt-1">
-                  Defina os dias de ciclo, a necessidade hídrica diária (mm/dia) e a temperatura
-                  base GDA.
-                </p>
-              </div>
-              <div>
-                <h4 className="font-semibold text-foreground">Qualidade</h4>
-                <p className="text-muted-foreground mt-1">
-                  Configure os níveis ideais de Brix (Mínimo e Máximo) para monitorar a doçura dos
-                  frutos/produtos.
-                </p>
-              </div>
-              <div>
-                <h4 className="font-semibold text-foreground">Fenologia</h4>
-                <p className="text-muted-foreground mt-1">
-                  Mapeie os estágios de desenvolvimento, indicando como os dias após o plantio
-                  afetam a evolução da cultura.
-                </p>
-              </div>
-            </div>
-          </SheetContent>
-        </Sheet>
+        <Button
+          onClick={form.handleSubmit(onSubmit)}
+          disabled={isSaving}
+          className="w-full sm:w-auto"
+        >
+          <Save className="w-4 h-4 mr-2" />
+          {isSaving ? 'Salvando...' : 'Salvar'}
+        </Button>
       </div>
 
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-          <Card>
-            <CardHeader>
-              <CardTitle>Identificação</CardTitle>
+          {/* Informações Principais */}
+          <Card className="border-none shadow-sm">
+            <CardHeader className="border-b bg-muted/10 pb-4">
+              <CardTitle className="text-lg">Informações Principais</CardTitle>
+              <CardDescription>Dados básicos de identificação da cultura</CardDescription>
             </CardHeader>
-            <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {renderInput('nome', 'Nome da Cultura')}
-              {renderInput('nome_cientifico', 'Nome Científico')}
-              {renderSelect('tipo', 'Categoria', [
-                { value: 'fruta', label: 'Fruta' },
-                { value: 'vegetal', label: 'Vegetal' },
-                { value: 'grão', label: 'Grão' },
-                { value: 'outro', label: 'Outro' },
-              ])}
-              {renderInput('codigo_ncm', 'Código NCM')}
-              {renderSelect('unidade_medida', 'Unidade de Medida', [
-                { value: 'kg', label: 'Quilograma (kg)' },
-                { value: 'ton', label: 'Tonelada (t)' },
-                { value: 'caixa', label: 'Caixa' },
-                { value: 'unidade', label: 'Unidade' },
-              ])}
-              {renderInput('ciclo_dias', 'Ciclo Médio (dias)', 'number')}
+            <CardContent className="grid grid-cols-1 md:grid-cols-2 2xl:grid-cols-4 gap-6 pt-6">
+              <FormField
+                control={form.control}
+                name="nome"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Nome da Cultura *</FormLabel>
+                    <FormControl>
+                      <Input placeholder="Ex: Milho" {...field} value={field.value || ''} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="nome_cientifico"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Nome Científico</FormLabel>
+                    <FormControl>
+                      <Input placeholder="Ex: Zea mays" {...field} value={field.value || ''} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="tipo"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Tipo</FormLabel>
+                    <FormControl>
+                      <Input placeholder="Ex: Cereal" {...field} value={field.value || ''} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="codigo_ncm"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Código NCM</FormLabel>
+                    <FormControl>
+                      <Input placeholder="Ex: 1005.90.10" {...field} value={field.value || ''} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
             </CardContent>
           </Card>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <Card>
-              <CardHeader>
-                <CardTitle>Parâmetros Agronômicos</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                {renderInput(
-                  'temperatura_base_gda',
-                  'Temperatura Base GDA (°C)',
-                  'number',
-                  'Usada para cálculo térmico',
-                  'any',
-                )}
-                <div className="grid grid-cols-2 gap-4">
-                  {renderInput(
-                    'temp_minima_ideal',
-                    'Temp. Mínima Ideal (°C)',
-                    'number',
-                    undefined,
-                    'any',
-                  )}
-                  {renderInput(
-                    'temp_maxima_ideal',
-                    'Temp. Máxima Ideal (°C)',
-                    'number',
-                    undefined,
-                    'any',
-                  )}
-                </div>
-                {renderInput(
-                  'necessidade_hidrica_mm_dia',
-                  'Necessidade Hídrica (mm/dia)',
-                  'number',
-                  'Evapotranspiração estimada da cultura',
-                  'any',
-                )}
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardHeader>
-                <CardTitle>Parâmetros de Qualidade</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="grid grid-cols-2 gap-4">
-                  {renderInput(
-                    'brix_minimo_ideal',
-                    'Brix Mínimo Ideal',
-                    'number',
-                    undefined,
-                    'any',
-                  )}
-                  {renderInput(
-                    'brix_maximo_ideal',
-                    'Brix Máximo Ideal',
-                    'number',
-                    undefined,
-                    'any',
-                  )}
-                </div>
-                {renderInput(
-                  'produtividade_media_t_ha',
-                  'Produtividade Média (t/ha)',
-                  'number',
-                  undefined,
-                  'any',
-                )}
-              </CardContent>
-            </Card>
-          </div>
-
-          <Card>
-            <CardHeader>
-              <div className="flex items-center gap-2">
-                <CardTitle>Fenologia (Estágios)</CardTitle>
-                {fenologiaObrigatoria && (
-                  <span className="text-xs bg-primary/10 text-primary px-2 py-0.5 rounded-full font-medium">
-                    Obrigatório
-                  </span>
-                )}
-              </div>
+          {/* Especificações Técnicas */}
+          <Card className="border-none shadow-sm">
+            <CardHeader className="border-b bg-muted/10 pb-4">
+              <CardTitle className="text-lg">Especificações Técnicas</CardTitle>
+              <CardDescription>Ciclo e produtividade esperada</CardDescription>
             </CardHeader>
-            <CardContent className="space-y-4">
-              {fenoErrorMessage && (
-                <p className="text-[0.8rem] font-medium text-destructive">{fenoErrorMessage}</p>
-              )}
-              {fields.map((field, index) => (
-                <div
-                  key={field.id}
-                  className="grid grid-cols-12 gap-4 items-end bg-muted/30 p-4 rounded-xl relative border"
-                >
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size="icon"
-                    className="absolute top-2 right-2 text-destructive"
-                    onClick={() => remove(index)}
-                  >
-                    <Trash2 className="size-4" />
-                  </Button>
-                  <div className="col-span-12 md:col-span-3">
-                    {renderSelect(
-                      `fenologia.${index}.estagio`,
-                      'Estágio',
-                      ['V1', 'V2', 'V3', 'R1', 'R2', 'R3', 'R4', 'R5', 'R6', 'R7', 'R8', 'R9'].map(
-                        (v) => ({ value: v, label: v }),
-                      ),
-                    )}
-                  </div>
-                  <div className="col-span-12 md:col-span-3">
-                    {renderInput(
-                      `fenologia.${index}.dias_desde_plantio`,
-                      'Dias após plantio',
-                      'number',
-                    )}
-                  </div>
-                  <div className="col-span-12 md:col-span-6">
-                    {renderInput(`fenologia.${index}.descricao`, 'Descrição')}
-                  </div>
-                </div>
-              ))}
-              <Button
-                type="button"
-                variant="outline"
-                className="w-full border-dashed"
-                onClick={() =>
-                  append({ estagio: '', dias_desde_plantio: undefined as any, descricao: '' })
-                }
-              >
-                <Plus className="size-4 mr-2" /> Adicionar Estágio Fenológico
-              </Button>
+            <CardContent className="grid grid-cols-1 md:grid-cols-2 2xl:grid-cols-4 gap-6 pt-6">
+              <FormField
+                control={form.control}
+                name="ciclo_dias"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Ciclo (dias)</FormLabel>
+                    <FormControl>
+                      <Input
+                        type="number"
+                        placeholder="Ex: 120"
+                        {...field}
+                        value={field.value || ''}
+                        onChange={(e) =>
+                          field.onChange(e.target.value ? Number(e.target.value) : null)
+                        }
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="unidade_medida"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Unidade de Medida</FormLabel>
+                    <FormControl>
+                      <Input placeholder="Ex: t, kg, sc" {...field} value={field.value || ''} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="produtividade_media_t_ha"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>
+                      Produtividade Média ({form.watch('unidade_medida') || 't'}/ha)
+                    </FormLabel>
+                    <FormControl>
+                      <Input
+                        type="number"
+                        step="0.01"
+                        placeholder="Ex: 6.5"
+                        {...field}
+                        value={field.value || ''}
+                        onChange={(e) =>
+                          field.onChange(e.target.value ? Number(e.target.value) : null)
+                        }
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
             </CardContent>
           </Card>
 
-          <div className="flex justify-end gap-4 pb-12">
-            <Button type="button" variant="outline" onClick={() => navigate(-1)}>
-              Cancelar
-            </Button>
-            <Button type="submit" disabled={loading}>
-              {loading ? (
-                'Salvando...'
-              ) : (
-                <>
-                  <Save className="size-4 mr-2" /> Salvar Cultura
-                </>
-              )}
-            </Button>
-          </div>
+          {/* Parâmetros e Clima */}
+          <Card className="border-none shadow-sm">
+            <CardHeader className="border-b bg-muted/10 pb-4">
+              <CardTitle className="text-lg">Parâmetros e Clima</CardTitle>
+              <CardDescription>Indicadores climáticos e técnicos</CardDescription>
+            </CardHeader>
+            <CardContent className="grid grid-cols-1 md:grid-cols-2 2xl:grid-cols-4 gap-6 pt-6">
+              <FormField
+                control={form.control}
+                name="temperatura_base_gda"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Temp. Base GDA (°C)</FormLabel>
+                    <FormControl>
+                      <Input
+                        type="number"
+                        step="0.1"
+                        placeholder="Ex: 10"
+                        {...field}
+                        value={field.value || ''}
+                        onChange={(e) =>
+                          field.onChange(e.target.value ? Number(e.target.value) : null)
+                        }
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="temp_minima_ideal"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Temp. Mínima Ideal (°C)</FormLabel>
+                    <FormControl>
+                      <Input
+                        type="number"
+                        step="0.1"
+                        placeholder="Ex: 15"
+                        {...field}
+                        value={field.value || ''}
+                        onChange={(e) =>
+                          field.onChange(e.target.value ? Number(e.target.value) : null)
+                        }
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="temp_maxima_ideal"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Temp. Máxima Ideal (°C)</FormLabel>
+                    <FormControl>
+                      <Input
+                        type="number"
+                        step="0.1"
+                        placeholder="Ex: 30"
+                        {...field}
+                        value={field.value || ''}
+                        onChange={(e) =>
+                          field.onChange(e.target.value ? Number(e.target.value) : null)
+                        }
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="necessidade_hidrica_mm_dia"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Nec. Hídrica (mm/dia)</FormLabel>
+                    <FormControl>
+                      <Input
+                        type="number"
+                        step="0.1"
+                        placeholder="Ex: 5.5"
+                        {...field}
+                        value={field.value || ''}
+                        onChange={(e) =>
+                          field.onChange(e.target.value ? Number(e.target.value) : null)
+                        }
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="brix_minimo_ideal"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Brix Mínimo Ideal</FormLabel>
+                    <FormControl>
+                      <Input
+                        type="number"
+                        step="0.1"
+                        placeholder="Ex: 10"
+                        {...field}
+                        value={field.value || ''}
+                        onChange={(e) =>
+                          field.onChange(e.target.value ? Number(e.target.value) : null)
+                        }
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="brix_maximo_ideal"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Brix Máximo Ideal</FormLabel>
+                    <FormControl>
+                      <Input
+                        type="number"
+                        step="0.1"
+                        placeholder="Ex: 14"
+                        {...field}
+                        value={field.value || ''}
+                        onChange={(e) =>
+                          field.onChange(e.target.value ? Number(e.target.value) : null)
+                        }
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </CardContent>
+          </Card>
         </form>
       </Form>
     </div>

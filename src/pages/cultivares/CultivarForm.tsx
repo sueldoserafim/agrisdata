@@ -3,7 +3,7 @@ import { useNavigate, useParams } from 'react-router-dom'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useForm } from 'react-hook-form'
 import * as z from 'zod'
-import { ArrowLeft, Save, Loader2, Leaf, Box } from 'lucide-react'
+import { ArrowLeft, Save, Loader2 } from 'lucide-react'
 
 import { Button } from '@/components/ui/button'
 import {
@@ -15,7 +15,6 @@ import {
   FormMessage,
 } from '@/components/ui/form'
 import { Input } from '@/components/ui/input'
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
 import {
   Select,
   SelectContent,
@@ -174,30 +173,78 @@ export default function CultivarForm() {
   }
 
   return (
-    <div className="p-8 max-w-4xl mx-auto space-y-6 animate-fade-in-up">
-      <div className="flex items-center gap-4">
-        <Button variant="outline" size="icon" onClick={() => navigate('/app/cultivares')}>
-          <ArrowLeft className="size-4" />
-        </Button>
-        <div>
-          <h1 className="text-3xl font-bold tracking-tight">
-            {id ? 'Editar Cultivar' : 'Nova Cultivar'}
-          </h1>
-          <p className="text-muted-foreground">Preencha as informações detalhadas da variedade.</p>
+    <div className="p-8 space-y-8 animate-fade-in-up">
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-4">
+          <Button
+            variant="outline"
+            size="icon"
+            onClick={() => navigate('/app/cultivares')}
+            className="rounded-full bg-background"
+          >
+            <ArrowLeft className="size-4" />
+          </Button>
+          <div>
+            <h1 className="text-2xl font-bold tracking-tight">
+              {id ? 'Editar Cultivar' : 'Nova Cultivar'}
+            </h1>
+            <p className="text-sm text-muted-foreground">
+              Preencha os dados abaixo para cadastrar uma {id ? '' : 'nova '}cultivar.
+            </p>
+          </div>
         </div>
+        <Button
+          onClick={form.handleSubmit(onSubmit)}
+          disabled={loading}
+          className="rounded-full px-6"
+        >
+          {loading ? (
+            <Loader2 className="size-4 mr-2 animate-spin" />
+          ) : (
+            <Save className="size-4 mr-2" />
+          )}
+          Salvar
+        </Button>
       </div>
 
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-          <Card>
-            <CardHeader>
-              <div className="flex items-center gap-2">
-                <Leaf className="size-5 text-primary" />
-                <CardTitle>Produção</CardTitle>
-              </div>
-              <CardDescription>Dados gerais e expectativas de produção.</CardDescription>
-            </CardHeader>
-            <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div className="p-6 border rounded-xl bg-card space-y-6 shadow-sm">
+            <div>
+              <h3 className="text-lg font-semibold text-foreground">Informações Principais</h3>
+              <p className="text-sm text-muted-foreground">
+                Dados básicos de identificação da cultivar
+              </p>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6">
+              <FormField
+                control={form.control}
+                name="nome"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Nome da Cultivar *</FormLabel>
+                    <FormControl>
+                      <Input placeholder="Ex: Variedade X" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="codigo_interno"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Código</FormLabel>
+                    <FormControl>
+                      <Input placeholder="Ex: C-001" {...field} value={field.value || ''} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
               <FormField
                 control={form.control}
                 name="cultura_id"
@@ -225,66 +272,6 @@ export default function CultivarForm() {
 
               <FormField
                 control={form.control}
-                name="nome"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Nome da Cultivar *</FormLabel>
-                    <FormControl>
-                      <Input placeholder="Ex: Hass, Palmer, etc." {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              <FormField
-                control={form.control}
-                name="codigo_interno"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Código Interno</FormLabel>
-                    <FormControl>
-                      <Input placeholder="Ex: AV-001" {...field} value={field.value || ''} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              <FormField
-                control={form.control}
-                name="pais_origem"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>País de Origem</FormLabel>
-                    <FormControl>
-                      <Input placeholder="Ex: México" {...field} value={field.value || ''} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              <FormField
-                control={form.control}
-                name="detentor_licenciador"
-                render={({ field }) => (
-                  <FormItem className="md:col-span-2">
-                    <FormLabel>Detentor/Licenciador</FormLabel>
-                    <FormControl>
-                      <Input
-                        placeholder="Nome da empresa detentora"
-                        {...field}
-                        value={field.value || ''}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              <FormField
-                control={form.control}
                 name="dias_para_colheita"
                 render={({ field }) => (
                   <FormItem>
@@ -302,7 +289,17 @@ export default function CultivarForm() {
                   </FormItem>
                 )}
               />
+            </div>
+          </div>
 
+          <div className="p-6 border rounded-xl bg-card space-y-6 shadow-sm">
+            <div>
+              <h3 className="text-lg font-semibold text-foreground">Detalhes Técnicos</h3>
+              <p className="text-sm text-muted-foreground">
+                Características de produção e registro
+              </p>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6">
               <FormField
                 control={form.control}
                 name="produtividade_esperada_t_ha"
@@ -323,18 +320,64 @@ export default function CultivarForm() {
                   </FormItem>
                 )}
               />
-            </CardContent>
-          </Card>
 
-          <Card>
-            <CardHeader>
-              <div className="flex items-center gap-2">
-                <Box className="size-5 text-primary" />
-                <CardTitle>Shelf Life</CardTitle>
-              </div>
-              <CardDescription>Expectativa de vida útil pós-colheita.</CardDescription>
-            </CardHeader>
-            <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <FormField
+                control={form.control}
+                name="gda_objetivo_colheita"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>GDA Objetivo Colheita</FormLabel>
+                    <FormControl>
+                      <Input
+                        type="number"
+                        step="0.1"
+                        min={1}
+                        placeholder="Ex: 1500"
+                        {...field}
+                        value={field.value || ''}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="pais_origem"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>País de Origem</FormLabel>
+                    <FormControl>
+                      <Input placeholder="Ex: Brasil" {...field} value={field.value || ''} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="detentor_licenciador"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Detentor/Licenciador</FormLabel>
+                    <FormControl>
+                      <Input placeholder="Ex: Embrapa" {...field} value={field.value || ''} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </div>
+          </div>
+
+          <div className="p-6 border rounded-xl bg-card space-y-6 shadow-sm">
+            <div>
+              <h3 className="text-lg font-semibold text-foreground">Pós-Colheita</h3>
+              <p className="text-sm text-muted-foreground">Expectativa de vida útil</p>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6">
               <FormField
                 control={form.control}
                 name="shelf_life_ideal_dias"
@@ -374,42 +417,7 @@ export default function CultivarForm() {
                   </FormItem>
                 )}
               />
-
-              <FormField
-                control={form.control}
-                name="gda_objetivo_colheita"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>GDA Objetivo Colheita</FormLabel>
-                    <FormControl>
-                      <Input
-                        type="number"
-                        step="0.1"
-                        min={1}
-                        placeholder="Ex: 1500"
-                        {...field}
-                        value={field.value || ''}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-            </CardContent>
-          </Card>
-
-          <div className="flex justify-end gap-4">
-            <Button variant="outline" type="button" onClick={() => navigate('/app/cultivares')}>
-              Cancelar
-            </Button>
-            <Button type="submit" disabled={loading}>
-              {loading ? (
-                <Loader2 className="size-4 mr-2 animate-spin" />
-              ) : (
-                <Save className="size-4 mr-2" />
-              )}
-              Salvar Cultivar
-            </Button>
+            </div>
           </div>
         </form>
       </Form>

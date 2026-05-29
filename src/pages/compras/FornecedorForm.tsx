@@ -1,33 +1,56 @@
 import { useEffect, useState } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
-import { z } from 'zod'
+import {
+  ArrowLeft,
+  Save,
+  Loader2,
+  Search,
+  Eye,
+  EyeOff,
+  Building2,
+  MapPin,
+  KeyRound,
+} from 'lucide-react'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
-import { ArrowLeft, Save } from 'lucide-react'
+import * as z from 'zod'
 import { Button } from '@/components/ui/button'
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from '@/components/ui/form'
 import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
-import { Card, CardContent } from '@/components/ui/card'
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Switch } from '@/components/ui/switch'
 import { useToast } from '@/hooks/use-toast'
 import { useEmpresa } from '@/hooks/use-empresa'
 import { comprasService } from '@/services/compras'
+import { supabase } from '@/lib/supabase/client'
+import { Skeleton } from '@/components/ui/skeleton'
 
-const formSchema = z.object({
-  nome: z.string().min(1, 'Nome é obrigatório'),
+const fornecedorSchema = z.object({
+  nome: z.string().min(1, 'Nome / Razão Social é obrigatório'),
   cnpj: z.string().optional(),
   email: z.string().email('Email inválido').optional().or(z.literal('')),
   telefone: z.string().optional(),
-  habilitarPortal: z.boolean().default(false),
-  portalEmail: z.string().optional(),
-  portalSenha: z.string().optional(),
   is_cooperado: z.boolean().default(false),
-  nome_propriedade: z.string().optional(),
-  area_total_ha: z.coerce.number().optional(),
+  // Endereco
+  cep: z.string().optional(),
+  logradouro: z.string().optional(),
+  numero: z.string().optional(),
+  complemento: z.string().optional(),
+  bairro: z.string().optional(),
+  cidade: z.string().optional(),
+  estado: z.string().optional(),
+  // Portal
+  acesso_portal: z.boolean().default(false),
+  senha_portal: z.string().optional(),
 })
 
-type FormData = z.infer<typeof formSchema>
+type FornecedorFormValues = z.infer<typeof fornecedorSchema>
 
 export default function FornecedorForm() {
   const { id } = useParams()
@@ -35,267 +58,535 @@ export default function FornecedorForm() {
   const { toast } = useToast()
   const { empresa } = useEmpresa()
   const [loading, setLoading] = useState(false)
-  const [existingUser, setExistingUser] = useState<any>(null)
+  const [fetchingCnpj, setFetchingCnpj] = useState(false)
+  const [showPassword, setShowPassword] = useState(false)
+  const [usuarioPortal, setUsuarioPortal] = useState<any>(null)
 
-  const {
-    register,
-    handleSubmit,
-    reset,
-    watch,
-    setValue,
-    formState: { errors },
-  } = useForm<FormData>({
-    resolver: zodResolver(formSchema),
-    defaultValues: { habilitarPortal: false },
+  const form = useForm<FornecedorFormValues>({
+    resolver: zodResolver(fornecedorSchema),
+    defaultValues: {
+      nome: '',
+      cnpj: '',
+      email: '',
+      telefone: '',
+      is_cooperado: false,
+      cep: '',
+      logradouro: '',
+      numero: '',
+      complemento: '',
+      bairro: '',
+      cidade: '',
+      estado: '',
+      acesso_portal: false,
+      senha_portal: '',
+    },
   })
 
-  const habilitarPortal = watch('habilitarPortal')
-
   useEffect(() => {
-    if (id && id !== 'new') {
-      loadData()
+    if (id && empresa?.id) {
+      loadFornecedor()
     }
-  }, [id])
+  }, [id, empresa?.id])
 
-  async function loadData() {
+  const loadFornecedor = async () => {
     try {
+      setLoading(true)
       const data = await comprasService.getFornecedor(id!)
-      let user = null
+      const endereco = await comprasService.getEnderecoFornecedor(id!)
+      const usuario = await comprasService.getUsuarioFornecedor(id!)
 
-      try {
-        user = await comprasService.getUsuarioFornecedor(id!)
-        if (user) setExistingUser(user)
-      } catch (err) {
-        console.warn('Erro ao buscar usuário do fornecedor', err)
-      }
-
-      reset({
-        nome: data.nome,
+      form.reset({
+        nome: data.nome || '',
         cnpj: data.cnpj || '',
         email: data.email || '',
         telefone: data.telefone || '',
-        habilitarPortal: !!user,
         is_cooperado: data.is_cooperado || false,
-        nome_propriedade: data.nome_propriedade || '',
-        area_total_ha: data.area_total_ha || 0,
-        portalEmail: user?.email || data.email || '',
-        portalSenha: '',
+        cep: endereco?.cep || '',
+        logradouro: endereco?.logradouro || '',
+        numero: endereco?.numero || '',
+        complemento: endereco?.complemento || '',
+        bairro: endereco?.bairro || '',
+        cidade: endereco?.cidade || '',
+        estado: endereco?.estado || '',
+        acesso_portal: !!usuario,
+        senha_portal: '',
       })
+      setUsuarioPortal(usuario)
     } catch (error: any) {
-      toast({ title: 'Erro', description: error.message, variant: 'destructive' })
+      toast({
+        title: 'Erro ao carregar',
+        description: error.message,
+        variant: 'destructive',
+      })
+    } finally {
+      setLoading(false)
     }
   }
 
-  const onSubmit = async (data: FormData) => {
-    if (!empresa?.id) return
-
-    if (data.habilitarPortal) {
-      if (!data.portalEmail) {
-        toast({
-          title: 'Erro',
-          description: 'E-mail de acesso ao portal é obrigatório.',
-          variant: 'destructive',
-        })
-        return
-      }
-      if (!existingUser && (!data.portalSenha || data.portalSenha.length < 6)) {
-        toast({
-          title: 'Erro',
-          description: 'A senha de acesso deve ter no mínimo 6 caracteres.',
-          variant: 'destructive',
-        })
-        return
-      }
+  const handleCnpjLookup = async () => {
+    const cnpj = form.getValues('cnpj')
+    if (!cnpj || cnpj.replace(/\D/g, '').length !== 14) {
+      toast({
+        title: 'CNPJ inválido',
+        description: 'Digite um CNPJ válido com 14 dígitos.',
+        variant: 'destructive',
+      })
+      return
     }
 
-    setLoading(true)
     try {
-      const payload = {
-        nome: data.nome,
-        cnpj: data.cnpj,
-        email: data.email,
-        telefone: data.telefone,
-        is_cooperado: data.is_cooperado,
-        nome_propriedade: data.nome_propriedade,
-        area_total_ha: data.area_total_ha,
-        id: id !== 'new' ? id : undefined,
-        empresa_id: empresa.id,
+      setFetchingCnpj(true)
+      const { data, error } = await supabase.functions.invoke('fetch-cnpj', {
+        body: { cnpj: cnpj.replace(/\D/g, '') },
+      })
+
+      if (error) throw error
+      if (data.error) throw new Error(data.error)
+
+      if (data.razao_social) form.setValue('nome', data.razao_social)
+      if (data.cep) form.setValue('cep', data.cep)
+      if (data.logradouro) form.setValue('logradouro', data.logradouro)
+      if (data.numero) form.setValue('numero', data.numero)
+      if (data.complemento) form.setValue('complemento', data.complemento)
+      if (data.bairro) form.setValue('bairro', data.bairro)
+      if (data.municipio) form.setValue('cidade', data.municipio)
+      if (data.uf) form.setValue('estado', data.uf)
+
+      toast({ title: 'Dados atualizados com sucesso' })
+    } catch (err: any) {
+      toast({ title: 'Erro ao buscar CNPJ', description: err.message, variant: 'destructive' })
+    } finally {
+      setFetchingCnpj(false)
+    }
+  }
+
+  const onSubmit = async (values: FornecedorFormValues) => {
+    try {
+      setLoading(true)
+
+      const payloadFornecedor = {
+        id: id || undefined,
+        empresa_id: empresa!.id,
+        nome: values.nome,
+        cnpj: values.cnpj || null,
+        email: values.email || null,
+        telefone: values.telefone || null,
+        is_cooperado: values.is_cooperado,
       }
 
-      const savedFornecedor = await comprasService.saveFornecedor(payload)
-
-      if (data.habilitarPortal) {
-        if (!existingUser) {
-          await comprasService.criarUsuarioPortal({
-            nome: data.nome,
-            email: data.portalEmail,
-            password: data.portalSenha,
-            perfil: 'fornecedor',
-            fornecedor_id: savedFornecedor.id,
-          })
-        } else {
-          if (data.portalEmail !== existingUser.email || data.portalSenha) {
-            await comprasService.atualizarUsuarioPortal({
-              id: existingUser.id,
-              nome: data.nome,
-              email: data.portalEmail !== existingUser.email ? data.portalEmail : undefined,
-              password: data.portalSenha ? data.portalSenha : undefined,
-            })
-          }
-        }
+      const payloadEndereco = {
+        cep: values.cep || null,
+        logradouro: values.logradouro || null,
+        numero: values.numero || null,
+        complemento: values.complemento || null,
+        bairro: values.bairro || null,
+        cidade: values.cidade || null,
+        estado: values.estado || null,
       }
 
-      toast({ title: 'Fornecedor salvo com sucesso!' })
+      const res = await comprasService.saveFornecedor(payloadFornecedor, payloadEndereco)
+
+      if (values.acesso_portal && !usuarioPortal && values.email && values.senha_portal) {
+        await comprasService.criarUsuarioPortal({
+          nome: values.nome,
+          email: values.email,
+          password: values.senha_portal,
+          perfil: 'fornecedor',
+          fornecedor_id: res.id,
+        })
+      } else if (values.acesso_portal && usuarioPortal && values.senha_portal) {
+        await comprasService.atualizarUsuarioPortal({
+          id: usuarioPortal.id,
+          password: values.senha_portal,
+        })
+      }
+
+      toast({ title: 'Fornecedor salvo com sucesso' })
       navigate('/app/compras/fornecedores')
     } catch (error: any) {
-      toast({ title: 'Erro ao salvar', description: error.message, variant: 'destructive' })
+      toast({
+        title: 'Erro ao salvar',
+        description: error.message,
+        variant: 'destructive',
+      })
     } finally {
       setLoading(false)
     }
   }
 
   return (
-    <div className="p-8 max-w-3xl mx-auto space-y-6">
-      <div className="flex items-center gap-4">
-        <Button variant="ghost" size="icon" onClick={() => navigate('/app/compras/fornecedores')}>
-          <ArrowLeft className="w-5 h-5" />
+    <div className="p-6 max-w-[1200px] mx-auto space-y-6 animate-in fade-in duration-500">
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+        <div className="flex items-center gap-4">
+          <Button
+            variant="outline"
+            size="icon"
+            onClick={() => navigate(-1)}
+            className="h-10 w-10 rounded-full border-slate-200"
+          >
+            <ArrowLeft className="h-5 w-5 text-slate-600" />
+          </Button>
+          <div>
+            <h1 className="text-3xl font-bold tracking-tight text-slate-900">
+              {id ? 'Editar Fornecedor' : 'Novo Fornecedor'}
+            </h1>
+            <p className="text-muted-foreground mt-1">
+              Preencha os dados abaixo para cadastrar e integrar o parceiro
+            </p>
+          </div>
+        </div>
+        <Button
+          onClick={form.handleSubmit(onSubmit)}
+          disabled={loading}
+          className="bg-blue-600 hover:bg-blue-700 min-w-[140px] shadow-sm"
+        >
+          {loading ? (
+            <Loader2 className="h-4 w-4 animate-spin mr-2" />
+          ) : (
+            <Save className="h-4 w-4 mr-2" />
+          )}
+          Salvar Fornecedor
         </Button>
-        <h1 className="text-3xl font-bold tracking-tight">
-          {id === 'new' ? 'Novo Fornecedor' : 'Editar Fornecedor'}
-        </h1>
       </div>
 
-      <Card>
-        <CardContent className="p-6">
-          <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
-            <Tabs defaultValue="gerais" className="w-full">
-              <TabsList className="grid w-full grid-cols-2 max-w-[400px]">
-                <TabsTrigger value="gerais">Dados Gerais</TabsTrigger>
-                <TabsTrigger value="portal">Acesso ao Portal</TabsTrigger>
-              </TabsList>
-
-              <div className="mt-6">
-                <TabsContent value="gerais" className="space-y-6 mt-0">
-                  <div className="bg-primary/5 p-4 rounded-lg flex flex-col gap-4 border border-primary/20 mb-6">
-                    <div className="flex items-center space-x-2">
-                      <Switch
-                        id="is_cooperado"
-                        checked={watch('is_cooperado')}
-                        onCheckedChange={(c) => setValue('is_cooperado', c)}
-                      />
-                      <Label htmlFor="is_cooperado" className="font-semibold text-primary">
-                        É um Cooperado?
-                      </Label>
-                    </div>
-                    {watch('is_cooperado') && (
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div className="space-y-2">
-                          <Label>Nome da Propriedade (Fazenda)</Label>
-                          <Input
-                            {...register('nome_propriedade')}
-                            placeholder="Ex: Sítio São João"
-                          />
-                        </div>
-                        <div className="space-y-2">
-                          <Label>Área Total (Hectares)</Label>
-                          <Input
-                            type="number"
-                            step="0.1"
-                            {...register('area_total_ha')}
-                            placeholder="Ex: 15.5"
-                          />
-                        </div>
-                      </div>
-                    )}
-                  </div>
-                  <div className="space-y-2">
-                    <Label>Nome / Razão Social *</Label>
-                    <Input {...register('nome')} placeholder="Ex: Agro Insumos S/A" />
-                    {errors.nome && (
-                      <p className="text-sm text-destructive">{errors.nome.message}</p>
-                    )}
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label>CNPJ / CPF</Label>
-                    <Input {...register('cnpj')} placeholder="00.000.000/0000-00" />
-                  </div>
-
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div className="space-y-2">
-                      <Label>E-mail</Label>
-                      <Input
-                        type="email"
-                        {...register('email')}
-                        placeholder="contato@empresa.com"
-                      />
-                      {errors.email && (
-                        <p className="text-sm text-destructive">{errors.email.message}</p>
-                      )}
-                    </div>
-                    <div className="space-y-2">
-                      <Label>Telefone</Label>
-                      <Input {...register('telefone')} placeholder="(00) 00000-0000" />
-                    </div>
-                  </div>
-                </TabsContent>
-
-                <TabsContent value="portal" className="space-y-6 mt-0">
-                  <div className="bg-muted/50 p-4 rounded-lg space-y-6">
-                    <div className="flex items-center space-x-2">
-                      <Switch
-                        id="habilitarPortal"
-                        checked={habilitarPortal}
-                        onCheckedChange={(checked) =>
-                          setValue('habilitarPortal', checked, { shouldValidate: true })
-                        }
-                        disabled={!!existingUser}
-                      />
-                      <Label htmlFor="habilitarPortal" className="font-semibold cursor-pointer">
-                        {existingUser ? 'Acesso ao Portal Ativo' : 'Habilitar Acesso ao Portal'}
-                      </Label>
-                    </div>
-
-                    {habilitarPortal && (
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2">
-                        <div className="space-y-2">
-                          <Label>E-mail de Acesso *</Label>
-                          <Input
-                            type="email"
-                            {...register('portalEmail')}
-                            placeholder="login@empresa.com"
-                          />
-                        </div>
-                        <div className="space-y-2">
-                          <Label>
-                            {existingUser ? 'Nova Senha (opcional)' : 'Senha de Acesso *'}
-                          </Label>
-                          <Input
-                            type="password"
-                            {...register('portalSenha')}
-                            placeholder="******"
-                          />
-                        </div>
-                        <p className="text-sm text-muted-foreground col-span-full">
-                          {existingUser
-                            ? 'Deixe a senha em branco caso não queira alterá-la.'
-                            : 'O fornecedor usará este e-mail e senha para acessar o portal de cotações.'}
-                        </p>
-                      </div>
-                    )}
-                  </div>
-                </TabsContent>
+      {loading && id && !form.getValues('nome') ? (
+        <div className="space-y-6">
+          <Skeleton className="h-[250px] w-full rounded-2xl" />
+          <Skeleton className="h-[250px] w-full rounded-2xl" />
+        </div>
+      ) : (
+        <Form {...form}>
+          <form className="space-y-6 pb-20">
+            {/* Seção 1: Informações Principais */}
+            <div className="bg-white border border-slate-200 rounded-2xl p-6 sm:p-8 shadow-sm">
+              <div className="flex items-center gap-3 mb-6 pb-4 border-b border-slate-100">
+                <div className="p-2 bg-blue-50 text-blue-600 rounded-lg">
+                  <Building2 className="h-5 w-5" />
+                </div>
+                <div>
+                  <h2 className="text-xl font-semibold text-slate-900">Informações Principais</h2>
+                  <p className="text-sm text-slate-500">Dados básicos de identificação</p>
+                </div>
               </div>
-            </Tabs>
 
-            <div className="flex justify-end pt-4">
-              <Button type="submit" disabled={loading}>
-                <Save className="w-4 h-4 mr-2" /> Salvar Fornecedor
-              </Button>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <FormField
+                  control={form.control}
+                  name="cnpj"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="text-slate-700">CNPJ</FormLabel>
+                      <div className="flex gap-2">
+                        <FormControl>
+                          <Input
+                            placeholder="Ex: 00.000.000/0000-00"
+                            className="bg-slate-50"
+                            {...field}
+                          />
+                        </FormControl>
+                        <Button
+                          type="button"
+                          variant="secondary"
+                          onClick={handleCnpjLookup}
+                          disabled={fetchingCnpj || !field.value}
+                          title="Buscar dados na Receita Federal"
+                          className="px-3"
+                        >
+                          {fetchingCnpj ? (
+                            <Loader2 className="h-4 w-4 animate-spin" />
+                          ) : (
+                            <Search className="h-4 w-4" />
+                          )}
+                        </Button>
+                      </div>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="nome"
+                  render={({ field }) => (
+                    <FormItem className="lg:col-span-2">
+                      <FormLabel className="text-slate-700">Nome / Razão Social *</FormLabel>
+                      <FormControl>
+                        <Input
+                          placeholder="Ex: Agro Insumos S/A"
+                          className="bg-slate-50"
+                          {...field}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="email"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="text-slate-700">Email de Contato</FormLabel>
+                      <FormControl>
+                        <Input
+                          type="email"
+                          placeholder="Ex: contato@empresa.com"
+                          className="bg-slate-50"
+                          {...field}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="telefone"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="text-slate-700">Telefone</FormLabel>
+                      <FormControl>
+                        <Input
+                          placeholder="Ex: (00) 00000-0000"
+                          className="bg-slate-50"
+                          {...field}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="is_cooperado"
+                  render={({ field }) => (
+                    <FormItem className="flex flex-row items-center justify-between rounded-xl border border-slate-200 bg-slate-50/50 p-4 lg:col-span-1 shadow-sm h-[72px] mt-auto">
+                      <div className="space-y-0.5">
+                        <FormLabel className="text-base text-slate-800">Cooperado?</FormLabel>
+                        <p className="text-xs text-slate-500">Membro da cooperativa</p>
+                      </div>
+                      <FormControl>
+                        <Switch checked={field.value} onCheckedChange={field.onChange} />
+                      </FormControl>
+                    </FormItem>
+                  )}
+                />
+              </div>
+            </div>
+
+            {/* Seção 2: Endereço Completo */}
+            <div className="bg-white border border-slate-200 rounded-2xl p-6 sm:p-8 shadow-sm">
+              <div className="flex items-center gap-3 mb-6 pb-4 border-b border-slate-100">
+                <div className="p-2 bg-emerald-50 text-emerald-600 rounded-lg">
+                  <MapPin className="h-5 w-5" />
+                </div>
+                <div>
+                  <h2 className="text-xl font-semibold text-slate-900">Endereço Completo</h2>
+                  <p className="text-sm text-slate-500">
+                    Localização física para entregas e faturamento
+                  </p>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                <FormField
+                  control={form.control}
+                  name="cep"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="text-slate-700">CEP</FormLabel>
+                      <FormControl>
+                        <Input placeholder="Ex: 00000-000" className="bg-slate-50" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="logradouro"
+                  render={({ field }) => (
+                    <FormItem className="md:col-span-2 lg:col-span-2">
+                      <FormLabel className="text-slate-700">Logradouro</FormLabel>
+                      <FormControl>
+                        <Input
+                          placeholder="Ex: Rua das Flores"
+                          className="bg-slate-50"
+                          {...field}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="numero"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="text-slate-700">Número</FormLabel>
+                      <FormControl>
+                        <Input placeholder="Ex: 123" className="bg-slate-50" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="complemento"
+                  render={({ field }) => (
+                    <FormItem className="md:col-span-2 lg:col-span-1">
+                      <FormLabel className="text-slate-700">Complemento</FormLabel>
+                      <FormControl>
+                        <Input placeholder="Ex: Sala 2" className="bg-slate-50" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="bairro"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="text-slate-700">Bairro</FormLabel>
+                      <FormControl>
+                        <Input placeholder="Ex: Centro" className="bg-slate-50" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="cidade"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="text-slate-700">Cidade</FormLabel>
+                      <FormControl>
+                        <Input placeholder="Ex: São Paulo" className="bg-slate-50" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="estado"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="text-slate-700">Estado (UF)</FormLabel>
+                      <FormControl>
+                        <Input
+                          placeholder="Ex: SP"
+                          maxLength={2}
+                          className="bg-slate-50 uppercase"
+                          {...field}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
+            </div>
+
+            {/* Seção 3: Acesso ao Portal */}
+            <div className="bg-white border border-slate-200 rounded-2xl p-6 sm:p-8 shadow-sm">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-6 pb-4 border-b border-slate-100 gap-4">
+                <div className="flex items-center gap-3">
+                  <div className="p-2 bg-purple-50 text-purple-600 rounded-lg">
+                    <KeyRound className="h-5 w-5" />
+                  </div>
+                  <div>
+                    <h2 className="text-xl font-semibold text-slate-900">
+                      Acesso ao Portal do Fornecedor
+                    </h2>
+                    <p className="text-sm text-slate-500">Credenciais para o painel externo</p>
+                  </div>
+                </div>
+                <FormField
+                  control={form.control}
+                  name="acesso_portal"
+                  render={({ field }) => (
+                    <FormItem className="flex items-center gap-3 space-y-0 bg-slate-50 px-4 py-2 rounded-lg border border-slate-100">
+                      <FormLabel className="text-sm font-medium cursor-pointer text-slate-700">
+                        Habilitar Acesso
+                      </FormLabel>
+                      <FormControl>
+                        <Switch checked={field.value} onCheckedChange={field.onChange} />
+                      </FormControl>
+                    </FormItem>
+                  )}
+                />
+              </div>
+
+              {form.watch('acesso_portal') && (
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 animate-in fade-in slide-in-from-top-4 duration-300">
+                  <div className="space-y-2">
+                    <FormLabel className="text-slate-700">Email de Login</FormLabel>
+                    <Input
+                      value={form.watch('email')}
+                      disabled
+                      placeholder="Preencha o email principal na seção inicial"
+                      className="bg-slate-100 text-slate-500 cursor-not-allowed"
+                    />
+                    <p className="text-[0.8rem] text-slate-500 flex items-center gap-1">
+                      O email principal será o login do usuário.
+                    </p>
+                  </div>
+
+                  <FormField
+                    control={form.control}
+                    name="senha_portal"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel className="text-slate-700">
+                          {usuarioPortal
+                            ? 'Nova Senha (deixe em branco para manter)'
+                            : 'Senha de Acesso *'}
+                        </FormLabel>
+                        <FormControl>
+                          <div className="relative">
+                            <Input
+                              type={showPassword ? 'text' : 'password'}
+                              placeholder="Ex: SenhaForte123!"
+                              className="bg-slate-50 pr-10"
+                              {...field}
+                            />
+                            <button
+                              type="button"
+                              onClick={() => setShowPassword(!showPassword)}
+                              className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-700 transition-colors focus:outline-none"
+                            >
+                              {showPassword ? (
+                                <EyeOff className="h-4 w-4" />
+                              ) : (
+                                <Eye className="h-4 w-4" />
+                              )}
+                            </button>
+                          </div>
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
+              )}
             </div>
           </form>
-        </CardContent>
-      </Card>
+        </Form>
+      )}
     </div>
   )
 }

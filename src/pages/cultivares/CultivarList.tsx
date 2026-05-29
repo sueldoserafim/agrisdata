@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
-import { Plus, Leaf, Edit, Trash2, HelpCircle } from 'lucide-react'
+import { Plus, Edit, Trash2, HelpCircle, List } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import {
   Dialog,
@@ -18,7 +18,7 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
 import {
   Select,
   SelectContent,
@@ -26,6 +26,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { useEmpresa } from '@/hooks/use-empresa'
 import { useToast } from '@/hooks/use-toast'
 import { cultivaresService, CultivarRow } from '@/services/cultivares'
@@ -93,21 +94,16 @@ export default function CultivarList() {
   }
 
   return (
-    <div className="p-8 max-w-7xl mx-auto space-y-6 animate-fade-in-up">
+    <div className="p-8 space-y-6 animate-fade-in-up">
       <div className="flex items-center justify-between">
-        <div className="flex items-center gap-3">
-          <div className="p-2 bg-primary/10 rounded-lg">
-            <Leaf className="size-6 text-primary" />
-          </div>
-          <div>
-            <h1 className="text-3xl font-bold tracking-tight">Cultivares</h1>
-            <p className="text-muted-foreground">Gerencie as variedades e suas características.</p>
-          </div>
+        <div>
+          <h1 className="text-3xl font-bold tracking-tight">Cultivares</h1>
+          <p className="text-muted-foreground">Gerencie as variedades e tipos de culturas.</p>
         </div>
         <div className="flex items-center gap-2">
           <Dialog>
             <DialogTrigger asChild>
-              <Button variant="outline">
+              <Button variant="outline" className="rounded-full">
                 <HelpCircle className="size-4 mr-2" />
                 Ajuda
               </Button>
@@ -163,7 +159,7 @@ export default function CultivarList() {
               </div>
             </DialogContent>
           </Dialog>
-          <Button asChild>
+          <Button asChild className="rounded-full px-6">
             <Link to="/app/cultivares/new">
               <Plus className="size-4 mr-2" />
               Nova Cultivar
@@ -172,84 +168,96 @@ export default function CultivarList() {
         </div>
       </div>
 
-      <Card>
-        <CardHeader className="flex flex-row items-center justify-between pb-4">
-          <CardTitle>Lista de Cultivares</CardTitle>
-          <div className="w-64">
-            <Select value={filterCultura} onValueChange={setFilterCultura}>
-              <SelectTrigger>
-                <SelectValue placeholder="Filtrar por cultura" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">Todas as Culturas</SelectItem>
-                {culturas.map((c) => (
-                  <SelectItem key={c.id} value={c.id}>
-                    {c.nome}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-        </CardHeader>
-        <CardContent>
-          <div className="rounded-md border">
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Nome</TableHead>
-                  <TableHead>Cultura</TableHead>
-                  <TableHead>Código</TableHead>
-                  <TableHead>Ciclo (Dias)</TableHead>
-                  <TableHead>Shelf Life (Ideal/Mín)</TableHead>
-                  <TableHead className="w-[100px] text-right">Ações</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {loading ? (
+      <Tabs defaultValue="lista" className="w-full space-y-6">
+        <TabsList className="bg-muted/50 p-1">
+          <TabsTrigger value="lista" className="w-32 rounded-md">
+            <List className="size-4 mr-2" />
+            Lista
+          </TabsTrigger>
+        </TabsList>
+
+        <TabsContent value="lista" className="space-y-4">
+          <Card className="border-border shadow-sm overflow-hidden rounded-xl">
+            <CardHeader className="flex flex-row items-center justify-between pb-4 border-b bg-card">
+              <div>
+                <CardTitle className="text-xl">Todas as Cultivares</CardTitle>
+                <CardDescription>Listagem detalhada das variedades registradas</CardDescription>
+              </div>
+              <div className="w-64">
+                <Select value={filterCultura} onValueChange={setFilterCultura}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Filtrar por cultura" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">Todas as Culturas</SelectItem>
+                    {culturas.map((c) => (
+                      <SelectItem key={c.id} value={c.id}>
+                        {c.nome}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            </CardHeader>
+            <CardContent className="p-0">
+              <Table>
+                <TableHeader className="bg-muted/30">
                   <TableRow>
-                    <TableCell colSpan={6} className="text-center py-8 text-muted-foreground">
-                      Carregando...
-                    </TableCell>
+                    <TableHead>Nome / Código</TableHead>
+                    <TableHead>Cultura</TableHead>
+                    <TableHead>Produtividade (t/ha)</TableHead>
+                    <TableHead>Ciclo (Dias)</TableHead>
+                    <TableHead className="w-[100px] text-right">Ações</TableHead>
                   </TableRow>
-                ) : cultivares.length === 0 ? (
-                  <TableRow>
-                    <TableCell colSpan={6} className="text-center py-8 text-muted-foreground">
-                      Nenhuma cultivar encontrada.
-                    </TableCell>
-                  </TableRow>
-                ) : (
-                  cultivares.map((cultivar) => (
-                    <TableRow key={cultivar.id}>
-                      <TableCell className="font-medium">{cultivar.nome}</TableCell>
-                      <TableCell>{cultivar.culturas?.nome || '-'}</TableCell>
-                      <TableCell>{cultivar.codigo_interno || '-'}</TableCell>
-                      <TableCell>{cultivar.dias_para_colheita || '-'}</TableCell>
-                      <TableCell>
-                        {cultivar.shelf_life_ideal_dias || '-'} /{' '}
-                        {cultivar.shelf_life_minimo_dias || '-'}
-                      </TableCell>
-                      <TableCell className="text-right space-x-2">
-                        <Button variant="ghost" size="icon" asChild>
-                          <Link to={`/app/cultivares/${cultivar.id}`}>
-                            <Edit className="size-4" />
-                          </Link>
-                        </Button>
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          onClick={() => handleDelete(cultivar.id)}
-                        >
-                          <Trash2 className="size-4 text-destructive" />
-                        </Button>
+                </TableHeader>
+                <TableBody>
+                  {loading ? (
+                    <TableRow>
+                      <TableCell colSpan={5} className="text-center py-8 text-muted-foreground">
+                        Carregando...
                       </TableCell>
                     </TableRow>
-                  ))
-                )}
-              </TableBody>
-            </Table>
-          </div>
-        </CardContent>
-      </Card>
+                  ) : cultivares.length === 0 ? (
+                    <TableRow>
+                      <TableCell colSpan={5} className="text-center py-8 text-muted-foreground">
+                        Nenhuma cultivar encontrada.
+                      </TableCell>
+                    </TableRow>
+                  ) : (
+                    cultivares.map((cultivar) => (
+                      <TableRow key={cultivar.id}>
+                        <TableCell>
+                          <div className="font-medium text-foreground">{cultivar.nome}</div>
+                          <div className="text-xs text-muted-foreground">
+                            {cultivar.codigo_interno || '-'}
+                          </div>
+                        </TableCell>
+                        <TableCell>{cultivar.culturas?.nome || '-'}</TableCell>
+                        <TableCell>{cultivar.produtividade_esperada_t_ha || '-'}</TableCell>
+                        <TableCell>{cultivar.dias_para_colheita || '-'}</TableCell>
+                        <TableCell className="text-right space-x-2">
+                          <Button variant="ghost" size="icon" asChild>
+                            <Link to={`/app/cultivares/${cultivar.id}`}>
+                              <Edit className="size-4" />
+                            </Link>
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            onClick={() => handleDelete(cultivar.id)}
+                          >
+                            <Trash2 className="size-4 text-destructive" />
+                          </Button>
+                        </TableCell>
+                      </TableRow>
+                    ))
+                  )}
+                </TableBody>
+              </Table>
+            </CardContent>
+          </Card>
+        </TabsContent>
+      </Tabs>
     </div>
   )
 }
