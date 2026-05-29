@@ -174,7 +174,8 @@ export const comprasService = {
     return data
   },
 
-  async saveFornecedor(payload: any) {
+  async saveFornecedor(payload: any, endereco?: any) {
+    let fornecedorData
     if (payload.id) {
       const { data, error } = await supabase
         .from('fornecedores')
@@ -183,7 +184,7 @@ export const comprasService = {
         .select()
         .single()
       if (error) throw error
-      return data
+      fornecedorData = data
     } else {
       const { data, error } = await supabase
         .from('fornecedores')
@@ -191,8 +192,47 @@ export const comprasService = {
         .select()
         .single()
       if (error) throw error
-      return data
+      fornecedorData = data
     }
+
+    if (endereco && fornecedorData?.id) {
+      const { data: existingAddress } = await supabase
+        .from('enderecos_entidade')
+        .select('id')
+        .eq('entidade_id', fornecedorData.id)
+        .eq('entidade_tipo', 'fornecedor')
+        .maybeSingle()
+
+      const addressPayload = {
+        ...endereco,
+        entidade_id: fornecedorData.id,
+        entidade_tipo: 'fornecedor',
+        empresa_id: payload.empresa_id,
+        tipo_endereco: 'principal',
+      }
+
+      if (existingAddress) {
+        await supabase
+          .from('enderecos_entidade')
+          .update(addressPayload)
+          .eq('id', existingAddress.id)
+      } else {
+        await supabase.from('enderecos_entidade').insert([addressPayload])
+      }
+    }
+
+    return fornecedorData
+  },
+
+  async getEnderecoFornecedor(fornecedorId: string) {
+    const { data, error } = await supabase
+      .from('enderecos_entidade')
+      .select('*')
+      .eq('entidade_id', fornecedorId)
+      .eq('entidade_tipo', 'fornecedor')
+      .maybeSingle()
+    if (error && error.code !== 'PGRST116') throw error
+    return data
   },
 
   async deleteFornecedor(id: string) {
